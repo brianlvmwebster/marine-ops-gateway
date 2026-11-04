@@ -9,7 +9,7 @@ function DestinationCard({button:b}:{button:ButtonLink}) {
   return <a className="destination" href={b.url} target={b.newTab?'_blank':undefined} rel={b.newTab?'noopener noreferrer':undefined} aria-label={b.title+(b.newTab?' (opens in new tab)':'')}>
     <div className="button-image">
       {b.image&&!imageFailed?<img src={b.image} alt="" loading="lazy" onError={()=>setImageFailed(true)}/>:<span className="image-fallback" aria-hidden="true">↗</span>}
-      <span className="destination-external" aria-hidden="true">↗</span>
+      <span className="destination-external" aria-hidden="true">GO</span>
     </div>
     <div className="destination-copy"><h3>{b.title}</h3><p>{b.description||new URL(b.url).hostname}</p></div>
   </a>;

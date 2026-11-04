@@ -22,7 +22,7 @@
 .gateway-home .button-image{position:relative;display:grid;place-items:center;height:108px;margin:0;padding:14px;background:#f2f6f8;border:1px solid #e9eff2;border-radius:7px}
 .gateway-home .button-image img{position:static;z-index:auto;display:block;width:100%;height:100%;max-width:100%;max-height:78px;object-fit:contain;background:transparent}
 .gateway-home .button-image .image-fallback{font-size:32px;line-height:1;color:#39988d}
-.gateway-home .button-image .destination-external{position:absolute;top:7px;right:7px;width:23px;height:23px;display:grid;place-items:center;border-radius:5px;background:#fff;color:#65828c;font-size:15px;box-shadow:0 1px 4px #17333e0a}
+.gateway-home .button-image .destination-external{position:absolute;top:7px;right:7px;min-width:32px;height:23px;padding:0 6px;display:grid;place-items:center;border-radius:5px;background:#fff;color:#157d79;font-size:10px;font-weight:800;letter-spacing:.5px;box-shadow:0 1px 4px #17333e0a}
 .gateway-home .destination-copy{padding:12px 2px 3px}
 .gateway-home .destination-copy h3{margin:0;color:#152f3d;font-size:16px;font-weight:800;line-height:1.4;letter-spacing:-.35px;overflow-wrap:anywhere}
 .gateway-home .destination-copy p{margin:5px 0 0;color:#607783;font-size:11.5px;font-weight:500;line-height:1.55;overflow-wrap:anywhere}
