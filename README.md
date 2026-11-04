@@ -1,35 +1,53 @@
 # Marine Ops Gateway
 
-A responsive link launcher with a protected editor at `/admin`.
+A private Next.js app hosted on Vercel. Authorized users can open destination buttons; administrators can add, edit, delete, reorder, and choose text or image buttons.
 
-## Features
+## Services
 
-- Text or image buttons; optional descriptions and new-tab behavior.
-- Add, edit, remove, and reorder up to 100 links.
-- Shared D1 storage and optimistic concurrency checks.
-- PNG/JPEG/WebP uploads up to 2 MB in R2, or external image URLs.
-- ChatGPT sign-in with a server-enforced administrator email allowlist.
+- **Vercel**: Next.js 16 on Node.js 24, GitHub deployments.
+- **Neon Postgres**: shared button configuration with optimistic concurrency protection.
+- **Vercel Blob (private)**: uploaded PNG, JPEG, and WebP images, maximum 2 MB each.
+- **Clerk**: email verification and sign-in, replacing Sites' ChatGPT authentication.
 
-## Administration
+## Access
 
-Configure `ADMIN_EMAILS` as a comma-separated list of administrator email addresses through the Sites runtime environment tool, then deploy to apply it. With no allowlist configured, editing is denied. The initial hosted site is private to its owner. Site visitor sharing and administrator permissions are separate settings.
+`ADMIN_EMAILS` is a comma-separated email allowlist. The configured administrator is `brian@lakeviewwebster.com`. Only verified Clerk email addresses count. Optional `VIEWER_EMAILS` entries grant read-only access; administrators always have read access. Missing or empty allowlists deny access. Pages and every API route authorize independently, including private image retrieval.
 
-Open `/admin`, select Add destination, enter a name and HTTP(S) URL, and optionally upload or link an image. Apply to list, then Save changes. Names provide accessible labels even for image buttons. If another admin saves first, reload before editing again.
+Vercel Deployment Protection remains enabled for every deployment. This is a separate outer gate from application sign-in.
 
-## Development
+Use `/sign-up` to create a Clerk account with your authorized email, then `/admin` to manage buttons. Apply each edit to the list, then select Save changes to publish the updated list. Concurrent edits return a conflict instead of overwriting newer changes.
 
-Node 22.13+ is required. Install with `npm run install:ci`, set `ADMIN_EMAILS=seedy@sites.test` in an ignored `.dev.vars`, and start `npm run dev`. Local-only simulated sign-in is `/signin-with-chatgpt?return_to=/admin`. It is excluded from production.
+## Local setup
 
-Build with `npm run build`. For a new local database, apply the generated migration:
+1. Install Node.js 24 and run `npm ci`.
+2. Link the Vercel project: `npx vercel link --project marine-ops-gateway --scope brianlakeviewwebster`.
+3. Pull development settings: `npx vercel env pull .env.local --yes`.
+4. Check required variables against `.env.example`. Never commit real environment files.
+5. Initialize the connected database with `npm run db:migrate`.
+6. Start with `npm run dev` and open the printed loopback URL.
 
-```
-node --import ./scripts/sites-env.mjs ./node_modules/wrangler/bin/wrangler.js d1 execute DB --local --config dist/server/wrangler.json --persist-to .wrangler/state --file drizzle/0000_bent_wendell_vaughn.sql
-```
+## Validation
 
-Run `node ./node_modules/typescript/bin/tsc --noEmit` for type checking and `node scripts/verify-gateway.mjs` against the local preview for API integration checks. The latter uses the simulated local admin, temporarily changes the local link list, and restores it. Do not run it against production.
+- `npm test`: URL/image validation, body size limits, origin protection.
+- `node --env-file=.env.local scripts/verify-api.mjs`: full authenticated local API flow using a disposable Clerk development user; restores the link list and deletes the test account and upload afterward.
+- `npm run typecheck`: TypeScript checks.
+- `npm run build`: production Next.js build.
+- `node --env-file=.env.local scripts/verify-storage.mjs`: actual Neon read/write concurrency and private Blob upload/download. Creates and removes uniquely named test fixtures.
 
-## Hosting
+## Deployment and production authentication
 
-`.openai/hosting.json` retains the provisioned Site ID and declares `DB` (D1) and `BUCKET` (R2). Publish through the Sites source workflow; it applies migrations and packages the worker and client bundle. Local preview and hosted data are separate. No example destinations are seeded into production.
+The repository is connected to the Vercel project in the `brianlakeviewwebster` scope. Production follows `main`; other branches produce previews. The project uses `npm ci`, `npm run build`, and Node.js 24.
 
-Uploaded images remain stored after a button is removed or an edit is canceled. External images depend on the original host and may stop loading; upload images for durable hosting. Uploaded files are available to visitors who can access the site.
+Neon and Clerk were provisioned on their free/Hobby plans through Vercel Marketplace. The image store is private. Credentials are supplied through Vercel environment variables; the local `.vercel` link and all local runtime state are ignored.
+
+Clerk initially provisions development keys. Before production cutover, choose a domain you own, activate Clerk's production instance for that domain through its Vercel integration, configure the required DNS records, and verify production keys are synchronized to Vercel's Production environment. Keep development keys scoped to Development/Preview. Production Clerk cannot use a `*.vercel.app` domain. Redeploy after configuration changes and verify sign-in and the admin flow.
+
+Database migrations run explicitly before deploying code that needs them; they do not run during request handling. Apply `db/migrations/001_gateway.sql` to each target database before its first deployment. Neon preview branching is controlled by the Marketplace integration; verify branch isolation before using previews with live data.
+
+## Sites migration
+
+The old Sites app was exported before migration. It contained zero saved buttons and images. Its local migration backup is ignored under `outputs/sites-export`. The old deployment is retained until cutover is confirmed.
+
+To import a nonempty export into a new, empty target database, use `node --env-file=.env.local scripts/import-sites.mjs <export-folder>`. Import refuses to overwrite an existing gateway record. Uploaded image IDs and button order are preserved. The old Sites code and deployment manifest remain recoverable in Git history.
+
+Uploaded images remain in Blob after a button is deleted or an edit is canceled. External image URLs depend on the original image host. The app's private image route authenticates each request and does not publicly cache images.
