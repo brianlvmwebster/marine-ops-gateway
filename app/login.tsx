@@ -1,0 +1,8 @@
+'use client';
+import {useState} from 'react';
+import type {FormEvent} from 'react';
+export default function Login(){
+ const [email,setEmail]=useState(''),[password,setPassword]=useState(''),[error,setError]=useState(''),[busy,setBusy]=useState(false);
+ async function submit(event:FormEvent){event.preventDefault();setBusy(true);setError('');try{const response=await fetch('/api/auth/sign-in/email',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email:email.trim().toLowerCase(),password,rememberMe:true})});if(!response.ok)throw Error(response.status===429?'Too many attempts. Wait a minute and try again.':'Unable to sign in. Check your email and password or contact your administrator.');window.location.assign('/');}catch(error){setError(error instanceof Error?error.message:'Unable to sign in.');setBusy(false);}}
+ return <main className="auth-page"><div className="login-card"><a className="auth-brand" href="/">≋ MARINE OPS GATEWAY</a><h1>Welcome back.</h1><p>Sign in to access your team's links.</p><form onSubmit={submit}>{error?<div className="message error" role="alert">{error}</div>:null}<label>Email address<input type="email" autoComplete="username" required maxLength={254} value={email} onChange={e=>setEmail(e.target.value)}/></label><label>Password<input type="password" autoComplete="current-password" required maxLength={128} value={password} onChange={e=>setPassword(e.target.value)}/></label><button className="primary" disabled={busy}>{busy?'Signing in…':'Sign in'}</button></form><p className="hint">Access is by invitation. For a new account or a password reset, ask your administrator for a setup link.</p></div></main>;
+}
