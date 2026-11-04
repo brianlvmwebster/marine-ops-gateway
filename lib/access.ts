@@ -1,14 +1,12 @@
 import 'server-only';
-import { currentUser } from '@clerk/nextjs/server';
-import { cache } from 'react';
-const emails = (value: string | undefined) => (value || '').split(',').map(x => x.trim().toLowerCase()).filter(Boolean);
-
-// Verify identity through Clerk. Never trust client-supplied identity headers.
-export const getAccess = cache(async () => {
-  const user = await currentUser();
-  if (!user) return { signedIn: false, canView: false, isAdmin: false };
-  const verified = user.emailAddresses.filter(x => x.verification?.status === 'verified').map(x => x.emailAddress.toLowerCase());
-  const admins = emails(process.env.ADMIN_EMAILS);
-  const viewers = [...admins, ...emails(process.env.VIEWER_EMAILS)];
-  return { signedIn: true, canView: verified.some(x => viewers.includes(x)), isAdmin: verified.some(x => admins.includes(x)) };
+import {headers} from 'next/headers';
+import {cache} from 'react';
+import {getAuth} from './auth';
+import {getPool} from './auth-config.mjs';
+export const getAccess=cache(async()=>{
+ const session=await getAuth().api.getSession({headers:await headers()});
+ if(!session)return {signedIn:false,canView:false,isAdmin:false,email:''};
+ const email=session.user.email.toLowerCase();
+ const {rows}=await getPool().query('SELECT role FROM gateway_access WHERE email=$1 AND enabled',[email]);
+ return {signedIn:true,canView:rows.length>0,isAdmin:rows[0]?.role==='admin',email};
 });

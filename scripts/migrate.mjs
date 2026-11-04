@@ -1,7 +1,12 @@
-import { readFile } from 'node:fs/promises';
-import { neon } from '@neondatabase/serverless';
-if (!process.env.DATABASE_URL) throw new Error('DATABASE_URL is required. Pull development settings first.');
-const sql=neon(process.env.DATABASE_URL);
-const statement=await readFile(new URL('../db/migrations/001_gateway.sql',import.meta.url),'utf8');
-await sql.query(statement);
-console.log('Gateway schema is ready.');
+import {readFile,readdir} from 'node:fs/promises';
+import {getMigrations} from 'better-auth/db/migration';
+import {authOptions,getPool} from '../lib/auth-config.mjs';
+const pool=getPool();
+try{
+ for(const file of (await readdir(new URL('../db/migrations/',import.meta.url))).filter(x=>x.endsWith('.sql')).sort()){
+ await pool.query(await readFile(new URL('../db/migrations/'+file,import.meta.url),'utf8'));
+ }
+ const migrations=await getMigrations(authOptions());
+ await migrations.runMigrations();
+ console.log('Gateway, whitelist, and authentication schema are ready.');
+}finally{await pool.end();}

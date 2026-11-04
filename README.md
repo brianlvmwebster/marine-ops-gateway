@@ -1,53 +1,52 @@
 # Marine Ops Gateway
 
-A private Next.js app hosted on Vercel. Authorized users can open destination buttons; administrators can add, edit, delete, reorder, and choose text or image buttons.
+A private link launcher with an app-owned email whitelist and two roles:
 
-## Services
+- **User**: log in and view destination links and images.
+- **Admin**: edit the links and images, manage whitelisted emails and roles.
 
-- **Vercel**: Next.js 16 on Node.js 24, GitHub deployments.
-- **Neon Postgres**: shared button configuration with optimistic concurrency protection.
-- **Vercel Blob (private)**: uploaded PNG, JPEG, and WebP images, maximum 2 MB each.
-- **Clerk**: email verification and sign-in, replacing Sites' ChatGPT authentication.
+Accounts, password hashes, sessions, and roles live in the app's Neon Postgres database. Better Auth is a local code library for password hashing and session cookies; there is no external identity or user-management service. Vercel hosts Next.js, and private Vercel Blob stores button images.
 
-## Access
+## Administration
 
-`ADMIN_EMAILS` is a comma-separated email allowlist. The configured administrator is `brian@lakeviewwebster.com`. Only verified Clerk email addresses count. Optional `VIEWER_EMAILS` entries grant read-only access; administrators always have read access. Missing or empty allowlists deny access. Pages and every API route authorize independently, including private image retrieval.
+Sign in using your email and password. Administrators see Manage links and Access in the navigation. The initial administrator is `brian@lakeviewwebster.com`.
 
-Vercel Deployment Protection remains enabled for every deployment. This is a separate outer gate from application sign-in.
+On **Access** (`/admin/users`), add an email and select User or Admin. Copy the one-time password setup link and share it privately with that person. The link expires after 24 hours and works once. There is no public registration or automatic email sending. An email address alone never grants access.
 
-Use `/sign-up` to create a Clerk account with your authorized email, then `/admin` to manage buttons. Apply each edit to the list, then select Save changes to publish the updated list. Concurrent edits return a conflict instead of overwriting newer changes.
+For a forgotten password, generate a fresh Reset password link from the same Access page. It lets the account owner choose their own password and signs out existing sessions. Disabling an account also immediately revokes sessions. Role changes apply on the next request. The last enabled administrator cannot be disabled or demoted.
+
+On **Manage links**, apply edits to the list and select Save changes. The app supports up to 100 buttons, text or image appearance, optional descriptions, reordering, and new-tab behavior. Concurrent updates return a conflict instead of overwriting newer edits.
 
 ## Local setup
 
 1. Install Node.js 24 and run `npm ci`.
 2. Link the Vercel project: `npx vercel link --project marine-ops-gateway --scope brianlakeviewwebster`.
 3. Pull development settings: `npx vercel env pull .env.local --yes`.
-4. Check required variables against `.env.example`. Never commit real environment files.
-5. Initialize the connected database with `npm run db:migrate`.
-6. Start with `npm run dev` and open the printed loopback URL.
+4. Verify keys against `.env.example`; never commit actual environment files.
+5. Run `npm run db:migrate` to initialize the gateway, whitelist, and library-owned authentication tables.
+6. For an initial administrator only, run `node --env-file=.env.local scripts/bootstrap-admin.mjs your-email@example.com http://localhost:5173`. A one-time setup link is written to ignored `outputs/admin-setup.txt`. It does not choose or print a password and will not change an existing non-admin's role.
+7. Run `npm run dev`, then use the setup link to choose a password and sign in.
 
 ## Validation
 
-- `npm test`: URL/image validation, body size limits, origin protection.
-- `node --env-file=.env.local scripts/verify-api.mjs`: full authenticated local API flow using a disposable Clerk development user; restores the link list and deletes the test account and upload afterward.
+- `npm test`: URL and image validation, bounded request bodies, origin checks.
 - `npm run typecheck`: TypeScript checks.
 - `npm run build`: production Next.js build.
-- `node --env-file=.env.local scripts/verify-storage.mjs`: actual Neon read/write concurrency and private Blob upload/download. Creates and removes uniquely named test fixtures.
+- `node --env-file=.env.local scripts/verify-storage.mjs`: actual Neon concurrency and private Blob round trips.
+- `node --env-file=.env.local scripts/verify-api.mjs`: temporary user/admin accounts test setup links, login, read-only users, admin edits/uploads, role changes, disable, password reset, logout, and rate limits. Fixtures are restored/removed afterward. Run locally, not against the live site.
 
-## Deployment and production authentication
+## Hosting
 
-The repository is connected to the Vercel project in the `brianlakeviewwebster` scope. Production follows `main`; other branches produce previews. The project uses `npm ci`, `npm run build`, and Node.js 24.
+The Vercel project is `brianlakeviewwebster/marine-ops-gateway`, connected to the private GitHub repository. Next.js 16 runs on Node.js 24. Production follows `main`; branch deployments are previews.
 
-Neon and Clerk were provisioned on their free/Hobby plans through Vercel Marketplace. The image store is private. Credentials are supplied through Vercel environment variables; the local `.vercel` link and all local runtime state are ignored.
+Required environment keys are `DATABASE_URL`, `BLOB_READ_WRITE_TOKEN`, and `BETTER_AUTH_SECRET`. Production and non-production use separate signing secrets. Set `BETTER_AUTH_URL` to the production origin; previews infer their exact Vercel deployment origin. `AUTH_EXTRA_ORIGINS` can list exact additional origins when necessary. No wildcard trusted origins are needed.
 
-Clerk initially provisions development keys. Before production cutover, choose a domain you own, activate Clerk's production instance for that domain through its Vercel integration, configure the required DNS records, and verify production keys are synchronized to Vercel's Production environment. Keep development keys scoped to Development/Preview. Production Clerk cannot use a `*.vercel.app` domain. Redeploy after configuration changes and verify sign-in and the admin flow.
+Schema migrations run explicitly before deploying code that needs them. The app does not create tables during requests. App pages and APIs enforce login and roles independently, including private images. Access to the login page does not expose the saved links.
 
-Database migrations run explicitly before deploying code that needs them; they do not run during request handling. Apply `db/migrations/001_gateway.sql` to each target database before its first deployment. Neon preview branching is controlled by the Marketplace integration; verify branch isolation before using previews with live data.
+The old Sites export contained zero buttons/images. Its ignored backup remains under `outputs/sites-export`; the old source is recoverable from Git history. Imported image IDs and button order are preserved by `scripts/import-sites.mjs`.
 
-## Sites migration
+## Domain
 
-The old Sites app was exported before migration. It contained zero saved buttons and images. Its local migration backup is ignored under `outputs/sites-export`. The old deployment is retained until cutover is confirmed.
+Production is intended for `www.marineopstech.com`. Only one app DNS CNAME is needed: `www` → `5ab72928785e20bd.vercel-dns-017.com` in the `marineopstech.com` GoDaddy zone. Clerk-specific DNS records are unnecessary.
 
-To import a nonempty export into a new, empty target database, use `node --env-file=.env.local scripts/import-sites.mjs <export-folder>`. Import refuses to overwrite an existing gateway record. Uploaded image IDs and button order are preserved. The old Sites code and deployment manifest remain recoverable in Git history.
-
-Uploaded images remain in Blob after a button is deleted or an edit is canceled. External image URLs depend on the original image host. The app's private image route authenticates each request and does not publicly cache images.
+Uploaded images remain stored when a button is deleted or an edit canceled. External image URLs depend on the original image host.
