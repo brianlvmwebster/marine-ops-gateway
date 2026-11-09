@@ -2,7 +2,7 @@
 
 The gateway provides a stable address for each application:
 
-`https://lakeview-test.marineopstech.com/apps/service-management`
+`https://lakeviewwebster.marineopstech.com/apps/service-management`
 
 Use lowercase words separated by hyphens. Keep the permanent name independent of the display title, season and hosting platform. Do not put a year, access token, or preview deployment hash in a permanent name.
 
