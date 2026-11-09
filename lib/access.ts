@@ -3,7 +3,10 @@ import {headers} from 'next/headers';
 import {cache} from 'react';
 import {getAuth} from './auth';
 import {getPool} from './auth-config.mjs';
+import {microsoftSettings} from './microsoft-auth.mjs';
 export const getAccess=cache(async()=>{
+ const microsoft=microsoftSettings();
+ if(microsoft.only&&!microsoft.configured)return {signedIn:false,canView:false,isAdmin:false,email:''};
  const session=await getAuth().api.getSession({headers:await headers()});
  if(!session)return {signedIn:false,canView:false,isAdmin:false,email:''};
  const email=session.user.email.toLowerCase();
