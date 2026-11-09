@@ -30,7 +30,7 @@ Scope the following to **Preview → preproduction branch**. Do not replace prod
 | `MICROSOFT_CLIENT_SECRET` | Secret value, stored as sensitive |
 | `BETTER_AUTH_SECRET` | Existing preview-only signing secret, or a separately generated secret |
 
-Attach the domain to this project with Git branch `preproduction`. Set the DNS CNAME to the value Vercel returns for this project/domain and finish domain verification. Redeploy the branch after adding Microsoft credentials.
+The domain is attached to this project with Git branch `preproduction`. Vercel currently reports missing DNS. At the DNS provider for `serviceopstech.com`, add **CNAME** host **lakeview-test** → **5ab72928785e20bd.vercel-dns-017.com**. Do not change the existing production gateway's DNS. Redeploy the branch after adding Microsoft credentials.
 
 Pre-production should use a separate Neon branch/database and Blob store before testing writes or importing service jobs. The existing project currently shares database environment entries across targets; this change does not modify that database or run migrations.
 
