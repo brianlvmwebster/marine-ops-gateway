@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import {test} from 'node:test';
-import {microsoftSettings,companyProfile,authRouteAllowed} from '../lib/microsoft-auth.mjs';
+import {microsoftSettings,companyProfile,authRouteAllowed,microsoftLinkingPolicy} from '../lib/microsoft-auth.mjs';
 const tenant='aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee';
 const client='11111111-2222-3333-4444-555555555555';
 const oid='66666666-7777-8888-9999-aaaaaaaaaaaa';
@@ -22,4 +22,11 @@ test('Microsoft-only auth blocks password routes and public account creation',()
  for(const path of ['/sign-in/social','/callback/microsoft','/get-session','/sign-out'])assert.equal(authRouteAllowed(path,settings),true);
  assert.equal(authRouteAllowed('/sign-in/social',{only:true,configured:false}),false);
  assert.equal(authRouteAllowed('/sign-in/email',{only:false,configured:false}),true);
+});
+test('company SSO can migrate admin-provisioned legacy accounts without trusting other providers',()=>{
+ const policy=microsoftLinkingPolicy(true);
+ assert.equal(policy.requireLocalEmailVerified,false);
+ assert.deepEqual(policy.trustedProviders,['microsoft']);
+ assert.equal(policy.allowDifferentEmails,false);
+ assert.equal(microsoftLinkingPolicy(false).requireLocalEmailVerified,true);
 });
