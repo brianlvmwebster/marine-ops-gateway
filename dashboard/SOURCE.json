@@ -1,6 +1,6 @@
 {
   "repository": "https://github.com/brianlvmwebster/service-dashboard",
-  "sourceCommit": "a65d207ae9783d92c044c28790e749ee7a240c13",
+  "sourceCommit": "cdb773ff05ad7221a625722e5d0ece012b5ff257",
   "files": {
     "index.tsx": "dc2979513e00827e3b3b5240bd7124aaf2912a99ba1f38b84ce422101009ea64",
     "App.tsx": "b480445a5b9e3a913b18c700d35485cc3a02f6a4087fa0cfe9cf21bc37f415fe",
@@ -20,7 +20,7 @@
     "components/Toaster.tsx": "959face411002fc09300c895f04e4232696db9d22cce2f0938daae2c5d23410b",
     "components/ScrollToHashElement.tsx": "069ee9837bf81b86b282350823d6d7e7aa91574097a01a7cdefc9a678131cd7c",
     "helpers/useServiceDay.tsx": "240f1aa0e52129710e5de6ab91a8587928e9764b9f960e6818f669eeb5c877f0",
-    "components/DashboardWidgets.tsx": "c37ee71a435c9bae6844f32c27c7359f4631f64eb6050a90b6b1e225c3e71571",
+    "components/DashboardWidgets.tsx": "ba176431ce62e3a48bae6bf09fd09ae07f3fb60349172aaa6d0c3445777cfa7d",
     "components/ServiceReviewTray.tsx": "2a5cef6deb4283cbb94411600742a32b6d5f72bcaefb366256f895353b9d97b7",
     "components/JobWorkflowControls.tsx": "19a6439c3ed28eb1af311565bacd69374a3b207bb348ca2733b74ab6f243d1e5",
     "components/AssignmentDirectory.tsx": "fb6b3d41d16d044d3d2e0bde5b8da046d49a6cc948ca70e1a2e1551102867d61",
@@ -48,7 +48,7 @@
     "components/Toaster.module.css": "acf069a8f03df520e0c9ab3f06bb3706feda79e2f4e16b0375f8d105e5f79d6f",
     "components/Dialog.tsx": "5021a546095567221f8e362bbe7f6f29f838993e1ddcb82614367c34811d62c2",
     "helpers/dashboardWidgets.tsx": "1670245c1054395d5522d51cb4f2687ae40d8325d302f5bacd36b2b2ccf7bd1f",
-    "components/DashboardWidgets.module.css": "0d22b372a7bcdc0a56a1d938395ca82d3b26c18582a338e9487444067ded498d",
+    "components/DashboardWidgets.module.css": "43e4bae1cffea05863763638916a3826363c7967d8517c24c21e63099eacbc82",
     "components/Checkbox.tsx": "21a54cfff95f019e2225b3b53389360f4d33523f2d542520c7c0703d1032ec6e",
     "components/Textarea.tsx": "dc72d155dcb6b55fb93317f32b5328540cfbf6b5452678d5adad425abb2bdddd",
     "helpers/serviceReview.tsx": "5118a96f0ca2ffd248b60613b0ab50865963ea0eabee646f16f6c1959dd413e3",
