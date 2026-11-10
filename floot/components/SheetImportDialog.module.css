@@ -1,0 +1,4 @@
+.dialog{width:760px;max-width:calc(100vw - 32px)}
+.dialog>section{margin-bottom:0;min-width:0}
+.dialog a{overflow-wrap:anywhere}
+@media(max-width:700px){.dialog{--dialog-padding:18px}}
