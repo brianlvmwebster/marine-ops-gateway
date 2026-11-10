@@ -1,6 +1,6 @@
 {
   "repository": "https://github.com/brianlvmwebster/service-dashboard",
-  "sourceCommit": "012ce28abbe1b6e7cac1b9875833fc21690be2b0",
+  "sourceCommit": "8263df275b04b7c4d676967edd6b4f73fbe5d4b8",
   "files": {
     "AGENTS.md": "235d7b908e25e2db36a8043856ecff702859bc0d749d8bb1b0aaf2ea8641e891",
     "App.tsx": "a9ced2b10233d61e4cce2d717325656889c0a4bf2ea756e02fceff3b5eae6f28",
@@ -34,8 +34,8 @@
     "components/Collapsible.tsx": "19ea18816e7c90dc87e547861ca56a026382a91d910322dcbf620d08cb3bed34",
     "components/Command.module.css": "35b9fc8eab1122cf7cdd6b1c49fcce1635e7b54f22432580cd713fadd5fd35ac",
     "components/Command.tsx": "7b7b170575f64a40732a0b4a3d672dc136d3ee72c36b729965ba31bbfd442150",
-    "components/CompactCalendarWidget.module.css": "1a2119e66926bd1317aa501c96e12a7a58988006c554fa0eb8e07b38207a3133",
-    "components/CompactCalendarWidget.tsx": "e5fa847f1fd851c5ce89024a0d288519a6f9237b176ca7931e3adf9947373145",
+    "components/CompactCalendarWidget.module.css": "6d35e08f1c4019784c2865cdfd17f1bc663020a9bbf91fc92262e4aeb0132579",
+    "components/CompactCalendarWidget.tsx": "441e8b55946e72090eed17151f4afe20b35bff1269a1549c1a85f09788a52d63",
     "components/ConnectMicrosoftButton.module.css": "f4e94d3b40cd11e695cc72f8459c022ec04703c58143cb68069ff81795d5da77",
     "components/ConnectMicrosoftButton.tsx": "5482006e6fdff79114dc5d404b2f0bd734a7aa91e333b0d06fb5a1f4d1c9d549",
     "components/ContextMenu.module.css": "48e2ced03e4f0ea5f93862a3225add85693b243a2e81e88723d8e67c0cff2f71",

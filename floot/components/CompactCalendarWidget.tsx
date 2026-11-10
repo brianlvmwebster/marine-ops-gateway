@@ -45,7 +45,7 @@ export function CompactCalendarWidget({widget,jobs,today,assignments,disabled,on
    return <section key={day} className={day===today?s.today:s.day} aria-label={dayLabel(day,{weekday:'long',month:'long',day:'numeric'})}>
     <div className={s.dayHeading}><time dateTime={day}><strong>{day.slice(5,7)}/{day.slice(8,10)}</strong><span>{dayLabel(day,{weekday:'short'})}{day===today?' · Today':''}</span></time><small>{entries.length}</small></div>
     {entries.length?<div className={s.cards}>{entries.slice(0,widget.limit).map(job=><Button key={job.id} variant="ghost" className={s.entry} style={{'--category-color':pickupCategory(job.data.pickup).color} as React.CSSProperties} onClick={()=>onOpenJob(job.id)}>
-     <span className={s.cardTop}><span className={s.statusDate}><span className={s.status}>{job.data.status}</span><time className={s.date} dateTime={day}>{day.slice(5,7)}/{day.slice(8,10)}</time></span><span className={s.time}>{job.data.time||'TBD'} ET · #{String(job.jobNumber).padStart(4,'0')}</span></span>
+     <span className={s.cardTop}><span className={s.status}>{job.data.status}</span><span className={s.time}>{job.data.time||'TBD'} ET · #{String(job.jobNumber).padStart(4,'0')}</span></span>
      <strong className={s.customer}>{job.data.firstName} {job.data.lastName}</strong>
      <span className={s.vessel}>{job.data.make} {job.data.model}</span>
      <span className={s.tags}><span>{job.data.pickup||'Pickup not specified'}</span><span>{job.data.trailer||'Trailer not specified'}</span></span>
@@ -63,3 +63,4 @@ function FilterSelect({label,value,options,allLabel='All',disabled,onChange}:{la
  const selected=value==='all'?'':value;
  return <label className={s.filter}><span>{label}</span><Select value={selected||'__all'} disabled={disabled} onValueChange={v=>onChange(v==='__all'?'':v)}><SelectTrigger aria-label={'Compact calendar '+label}><SelectValue/></SelectTrigger><SelectContent><SelectItem value="__all">{allLabel}</SelectItem>{options.map(o=><SelectItem key={o.value} value={o.value}>{o.label}</SelectItem>)}</SelectContent></Select></label>;
 }
+

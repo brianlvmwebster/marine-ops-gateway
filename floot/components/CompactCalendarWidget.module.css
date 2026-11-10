@@ -17,10 +17,11 @@
 .entry{display:flex!important;flex-direction:column;justify-content:flex-start!important;align-items:stretch!important;width:100%;min-width:0;height:auto!important;min-height:0!important;white-space:normal!important;text-align:left;padding:12px!important;gap:6px!important;border:1px solid var(--border)!important;border-top:3px solid var(--category-color)!important;border-radius:8px!important;background:var(--surface)!important;color:var(--foreground)!important;overflow-wrap:anywhere;line-height:1.4!important}
 .entry:hover{background:var(--secondary)!important}
 .cardTop{display:flex;justify-content:space-between;align-items:center;gap:6px;flex-wrap:wrap}
-.statusDate{display:flex;align-items:center;gap:7px}.status{font-size:9px;background:var(--secondary);color:var(--secondary-foreground);padding:3px 5px;border-radius:4px}.date{font-size:20px;font-weight:800;white-space:nowrap;font-variant-numeric:tabular-nums}.time{font-size:10px;color:var(--muted-foreground);font-variant-numeric:tabular-nums}
+.status{font-size:9px;background:var(--secondary);color:var(--secondary-foreground);padding:3px 5px;border-radius:4px}.time{font-size:10px;color:var(--muted-foreground);font-variant-numeric:tabular-nums}
 .customer{font-size:15px;font-weight:700;line-height:1.3}.vessel{font-size:12px;font-weight:500}
 .tags{display:flex;gap:5px;flex-wrap:wrap}.tags>span{font-size:9px;border:1px solid var(--border);border-radius:4px;padding:3px 5px;background:var(--card);color:var(--muted-foreground)}
 .location{display:flex;flex-direction:column;gap:4px;font-size:10px;color:var(--muted-foreground)}.location>span:first-child{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}.location b{color:var(--category-color);font-weight:650}
 .assignment{font-size:10px;color:var(--muted-foreground);margin-top:auto}
 .noJobs,.more{font-size:10px;color:var(--muted-foreground);margin:5px 0}.more{padding:3px 0}
 .footer{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:6px 12px 10px;color:var(--muted-foreground);font-size:10px}.footer button{font-size:10px!important;padding:0!important;height:auto!important}
+
