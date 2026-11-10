@@ -13,7 +13,7 @@
 .dayHeading{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:5px}
 .dayHeading time{display:flex;align-items:baseline;gap:8px}.dayHeading strong{font-size:16px;font-weight:800;font-variant-numeric:tabular-nums}.dayHeading span,.dayHeading small{font-size:10px;color:var(--muted-foreground)}
 .today .dayHeading strong{color:var(--info)}
-.cards{display:grid;grid-template-columns:repeat(var(--visible-dashboard-columns,1),minmax(0,1fr));gap:10px;align-items:stretch}
+.cards{display:grid;grid-template-columns:repeat(var(--widget-columns,1),minmax(0,1fr));gap:10px;align-items:stretch}
 .entry{display:flex!important;flex-direction:column;justify-content:flex-start!important;align-items:stretch!important;width:100%;min-width:0;height:auto!important;min-height:0!important;white-space:normal!important;text-align:left;padding:12px!important;gap:6px!important;border:1px solid var(--border)!important;border-top:3px solid var(--category-color)!important;border-radius:8px!important;background:var(--surface)!important;color:var(--foreground)!important;overflow-wrap:anywhere;line-height:1.4!important}
 .entry:hover{background:var(--secondary)!important}
 .cardTop{display:flex;justify-content:space-between;align-items:center;gap:6px;flex-wrap:wrap}
@@ -24,4 +24,3 @@
 .assignment{font-size:10px;color:var(--muted-foreground);margin-top:auto}
 .noJobs,.more{font-size:10px;color:var(--muted-foreground);margin:5px 0}.more{padding:3px 0}
 .footer{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:6px 12px 10px;color:var(--muted-foreground);font-size:10px}.footer button{font-size:10px!important;padding:0!important;height:auto!important}
-

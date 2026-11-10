@@ -16,7 +16,7 @@ const filterText=z.string().max(500);
 export const calendarWidgetSchema=z.object({range:z.enum(['rolling','week']),days:z.number().int().min(1).max(14),pickup:filterText,trailer:filterText,status:z.enum(['active','all','New','Scheduled','Onsite','In progress','Awaiting parts','Ready','Done','Completed','Cancelled']),assignment:filterText,priority:z.enum(['','Normal','High','Urgent']),service:filterText,returnType:filterText}).strict();
 export type CalendarWidgetSettings=z.infer<typeof calendarWidgetSchema>;
 export const defaultCalendarSettings:CalendarWidgetSettings={range:'rolling',days:5,pickup:'',trailer:'',status:'active',assignment:'',priority:'',service:'',returnType:''};
-export const widgetSchema=z.object({id:z.string().min(1).max(80).regex(/^[\w-]+$/),type:z.enum(widgetTypes),limit:z.number().int().min(1).max(50),calendar:calendarWidgetSchema.optional()}).strict();
+export const widgetSchema=z.object({id:z.string().min(1).max(80).regex(/^[\w-]+$/),type:z.enum(widgetTypes),limit:z.number().int().min(1).max(50),calendar:calendarWidgetSchema.optional(),width:z.number().int().min(1).max(4).optional()}).strict();
 export const widgetLayoutSchema=z.array(widgetSchema).max(12).refine(items=>new Set(items.map(w=>w.id)).size===items.length,{message:'Each card must have a unique ID'});
 export type DashboardWidget=z.infer<typeof widgetSchema>;
 export const defaultWidgets:DashboardWidget[]=[{id:'tomorrow',type:'tomorrow',limit:8},{id:'road-pickups',type:'road-pickups',limit:5},{id:'deliveries',type:'deliveries',limit:5},{id:'customer-trailers',type:'customer-trailers',limit:5},{id:'upcoming',type:'upcoming',limit:5}];

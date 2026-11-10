@@ -7,6 +7,7 @@
 .actions label{display:flex;align-items:center;gap:6px;font-size:11px;color:var(--muted-foreground)}
 .columns{width:64px!important;font-size:12px!important}
 .grid{--visible-dashboard-columns:var(--dashboard-columns,3);grid-template-columns:repeat(var(--visible-dashboard-columns),minmax(0,1fr));gap:14px}
-.calendarWidget{grid-column:1/-1}
+.widget{--widget-columns:min(var(--widget-width,1),var(--visible-dashboard-columns,1));grid-column:span var(--widget-columns)}
+.resizing{outline:2px solid var(--info);outline-offset:2px}
 @media(max-width:1150px){.grid{--visible-dashboard-columns:min(var(--dashboard-columns,3),2)}}
 @media(max-width:720px){.grid{--visible-dashboard-columns:1}.grid,.libraryGrid{grid-template-columns:1fr}.heading{flex-wrap:wrap;padding:14px}.heading h1{font-size:23px}.actions{justify-content:flex-start;gap:6px}.actions>button{font-size:11px!important}}
