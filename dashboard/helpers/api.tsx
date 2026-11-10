@@ -1,0 +1,3 @@
+import {serviceApiUrl} from './serviceRuntime';
+import superjson from 'superjson';
+export async function api<T=any>(route:string,body?:unknown):Promise<T>{const r=await fetch(serviceApiUrl(route),{method:body===undefined?'GET':'POST',headers:{'Content-Type':'application/json'},...(body===undefined?{}:{body:superjson.stringify(body)})});const data=superjson.parse<any>(await r.text());if(!r.ok)throw new Error(data.error||'Request failed');return data;}

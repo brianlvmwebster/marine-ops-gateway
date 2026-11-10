@@ -1,0 +1,12 @@
+import {spawnSync} from 'node:child_process';
+import {cp,mkdir,readFile,writeFile} from 'node:fs/promises';
+import {resolve} from 'node:path';
+const root=process.cwd(),dashboard=resolve(root,'dashboard');
+const run=args=>{const result=spawnSync(process.platform==='win32'?'npm.cmd':'npm',args,{cwd:root,stdio:'inherit',shell:process.platform==='win32'});if(result.status!==0)process.exit(result.status||1);};
+run(['--prefix',dashboard,'ci','--legacy-peer-deps']);
+run(['--prefix',dashboard,'run','build','--','--base=/dashboard-assets/']);
+await mkdir(resolve(root,'service-runtime'),{recursive:true});
+await writeFile(resolve(root,'service-runtime/index.html'),await readFile(resolve(dashboard,'dist/index.html')));
+await mkdir(resolve(root,'public/dashboard-assets'),{recursive:true});
+await cp(resolve(dashboard,'dist/_assets'),resolve(root,'public/dashboard-assets/_assets'),{recursive:true});
+await cp(resolve(dashboard,'public/_cdn'),resolve(root,'public/_cdn'),{recursive:true});

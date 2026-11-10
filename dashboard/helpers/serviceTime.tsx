@@ -1,0 +1,5 @@
+const tz='America/New_York';
+export const serviceTime={
+ toUtc(date:string,time:string){const target=Date.parse(date+'T'+time+':00Z');if(!Number.isFinite(target))throw new Error('Invalid service date');let ms=target;for(let n=0;n<3;n++){const p=new Intl.DateTimeFormat('sv-SE',{timeZone:tz,year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit',second:'2-digit',hourCycle:'h23'}).format(new Date(ms)).replace(' ','T');ms+=target-Date.parse(p+'Z');}const result=new Date(ms);const local=this.fromUtc(result.toISOString());if(local.serviceDate!==date||local.time!==time)throw new Error('That service time does not exist due to daylight saving time');return result;},
+ fromUtc(value:string){const d=new Date(value.endsWith('Z')||/[+-]\d\d:\d\d$/.test(value)?value:value+'Z');if(!Number.isFinite(d.getTime()))throw new Error('Outlook returned an invalid date');const p=new Intl.DateTimeFormat('sv-SE',{timeZone:tz,year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit',hourCycle:'h23'}).format(d).split(' ');return {serviceDate:p[0],time:p[1]};}
+};

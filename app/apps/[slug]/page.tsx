@@ -10,6 +10,7 @@ export default async function Destination({params}:{params:Promise<{slug:string}
  const access=await getAccess();
  if(!access.signedIn)redirect('/sign-in?next='+encodeURIComponent('/apps/'+slug));
  if(!access.canView)return <main className="access"><h1>Access required.</h1><p>Ask your gateway administrator to approve your account.</p></main>;
+ if(slug==='service-management')redirect('/dashboard/');
  const {buttons}=await readButtons();
  const button=buttons.find(b=>b.slug===slug);
  if(!button||!webUrl(button.url))return <main className="access"><h1>Destination unavailable.</h1><p>Your administrator can update this destination in Manage links.</p><a href="/">Back to gateway</a></main>;

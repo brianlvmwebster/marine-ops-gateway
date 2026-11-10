@@ -41,3 +41,9 @@ The initial `/sign-in` page displays **Sign in with Microsoft**. In Microsoft-on
 After configuration, test: approved staff can sign in; unassigned/wrong-tenant users cannot; non-approved gateway users cannot see links; ordinary users cannot use admin APIs; sign-out clears the session. Password login on the existing production domain should retain its current behavior.
 
 This branch adds company identity to the existing gateway. The Marine Service Desk is currently a separate Floot app; its runtime services and job data have not been migrated by this authentication change. A Vercel port must replace Floot viewer authorization, Microsoft credential brokering, storage, background tasks, and database access before that dashboard runs independently on this domain.
+
+## Direct service dashboard
+
+The company route is `/dashboard/`, served directly by Vercel with the gateway Microsoft session. The old `/apps/service-management` bookmark forwards there. Floot retains the database, imports, Maps key and Microsoft calendar brokering behind a signed server-to-server dispatcher. No iframe or database migration is used. The signing key is a Vercel Secret scoped only to Preview branch preproduction. The public key and explicit owner identity mapping live in Floot. Browser claims cannot grant access or Service Admin rights. Outlook sync remains paused.
+
+For frontend updates, sync from the verified service-dashboard development source with `node scripts/sync-dashboard.mjs ../service-dashboard <source-commit>`, then commit/push preproduction and verify its Vercel build. Publish matching Floot backend updates before relying on new routes. The snapshot SOURCE.json records file hashes. Generated runtime HTML/assets are built on Vercel, not committed.

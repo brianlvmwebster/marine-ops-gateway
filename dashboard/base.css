@@ -1,0 +1,84 @@
+
+@import url('https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@400;500;600;700&display=swap');
+:root {
+  /* Overlay layers */
+  --z-overlay: 400;
+  --z-spotlight: 1000; /* Tutorial spotlights/guided help */
+  /* System layers */
+  --z-critical: 2000; /* Critical system notifications */
+  /* spacing */
+  --spacing-1: 0.25rem;
+  --spacing-2: 0.5rem;
+  --spacing-3: 0.75rem;
+  --spacing-4: 1rem;
+  --spacing-6: 1.5rem;
+  --spacing-8: 2rem;
+  --spacing-12: 3rem;
+  --spacing-16: 4rem;
+  --spacing-20: 5rem;
+}
+:root {
+--background:#edf1f5;--foreground:#142c43;--surface:#f9fafb;--surface-foreground:#142c43;--sidebar:#102b43;--sidebar-foreground:#edf3f8;--card:#ffffff;--card-foreground:#142c43;--popup:#ffffff;--popup-foreground:#142c43;--primary:#ba690b;--primary-foreground:#ffffff;--secondary:#e8eef4;--secondary-foreground:#183951;--accent:#e9f0f7;--accent-foreground:#19394f;--muted:#f0f3f6;--muted-foreground:#647588;--success:#26755b;--success-foreground:#ffffff;--error:#b53737;--error-foreground:#ffffff;--warning:#a25d08;--warning-foreground:#ffffff;--info:#24658b;--info-foreground:#ffffff;--info-hover:#1a5173;--info-active:#153e59;--border:#dce3ea;
+--font-family-base:system-ui,sans-serif;--font-family-display:'Bricolage Grotesque',sans-serif;--font-family-monospace:monospace;--font-family-cursive:cursive;
+--shadow:0 1px 3px #142c4308;--shadow-md:0 4px 15px #142c4310;--shadow-lg:0 20px 60px #142c4320;--shadow-focus:0 0 0 3px #ba690b33;--radius-sm:4px;--radius:6px;--radius-md:8px;--radius-lg:12px;--radius-full:999px;--animation-duration-fast:100ms;--animation-duration-normal:180ms;--animation-duration-slow:300ms;--chart-color-1:#183951;--chart-color-2:#ba690b;--chart-color-3:#26755b;--chart-color-4:#647588;--chart-color-5:#a7bacb;
+}
+.dark {}
+:root{color-scheme:light;--background:#536f7c;--foreground:#102d46;--surface:#f3f7fa;--surface-foreground:#102d46;--sidebar:#03172d;--sidebar-foreground:#e5f4fb;--card:#fff;--card-foreground:#102d46;--primary:#042344;--primary-foreground:#fff;--secondary:#eaf7fb;--secondary-foreground:#042344;--accent:#e1f8fd;--accent-foreground:#042344;--muted:#f0f5f8;--muted-foreground:#50687a;--info:#007b99;--info-hover:#00637b;--info-active:#004f63;--border:#cfdae3;--shadow:0 5px 18px #03172d14;--shadow-md:0 8px 24px #03172d22;--shadow-focus:0 0 0 3px #00c9ef66;--chart-color-1:#042344;--chart-color-2:#007b99;--chart-color-5:#b8c9d7}
+html{min-height:100%;background:#536f7c}
+body{margin:0;min-height:100vh;background:linear-gradient(#03172d33,#03172d66),url('/_cdn/static/f349d13f-12bb-4dee-a279-c9b71b59d23e-lakeview-background.jpg') center top / cover fixed no-repeat;color:var(--foreground);font-family:var(--font-family-base)}
+@media print{html,body{background:#fff!important}}
+
+@layer base {
+  /* Safe-area insets that resolve on every platform. iOS and the web populate
+     env(); Capacitor on Android 15+ cannot, so its SystemBars plugin sets these
+     SAME variables as inline styles on <html>, which beat this layered rule.
+     App code pads by var(--safe-area-inset-*) and never touches env() itself.
+     All 0px unless the native shell is in edge-to-edge mode (or the PWA runs
+     under a notch). */
+  :root {
+    --safe-area-inset-top: env(safe-area-inset-top, 0px);
+    --safe-area-inset-right: env(safe-area-inset-right, 0px);
+    --safe-area-inset-bottom: env(safe-area-inset-bottom, 0px);
+    --safe-area-inset-left: env(safe-area-inset-left, 0px);
+  }
+
+  ul {
+    list-style-type: none;
+    margin: 0;
+    padding: 0;
+  }
+
+  body {
+    background: var(--background);
+    color: var(--foreground);
+    font-family: var(--font-family-base);
+  }
+
+  * {
+    box-sizing: border-box;
+    padding: 0;
+    margin: 0;
+  }
+
+
+  button {
+    border: none;
+    background: none;
+    cursor: pointer;
+    font-family: inherit;
+    font-size: inherit;
+    color: inherit;
+  }
+
+  a {
+    color: inherit;
+    text-decoration: none;
+  }
+
+  th, td {
+    display: table-cell!important;
+  }
+}
+.rbc-month-view {
+  overflow: visible !important;
+}
