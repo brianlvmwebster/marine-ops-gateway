@@ -48,3 +48,9 @@ yarn-error.log*
 .env*
 
 !/.env.example
+
+/dashboard/node_modules/
+/dashboard/dist/
+/service-runtime/
+/public/dashboard-assets/
+/public/_cdn/

@@ -1,0 +1,5 @@
+.dialog{width:min(850px,95vw)!important;max-width:850px!important;max-height:90vh;overflow:auto}
+.layout{display:grid;grid-template-columns:1fr 1fr;gap:24px}.layout h3{font-size:14px}.layout p{font-size:12px;line-height:1.6;color:var(--muted-foreground)}
+.entry{display:flex;justify-content:space-between;gap:12px;align-items:center;padding:12px 0;border-bottom:1px solid var(--border)}.entry strong{font-size:12px}.entry small{display:block;font-size:11px;line-height:1.5;color:var(--muted-foreground);margin-top:5px;overflow-wrap:anywhere}
+.layout form>label{display:flex;flex-direction:column;gap:7px;margin:14px 0;font-size:12px;font-weight:600}.layout fieldset{border:1px solid var(--border);border-radius:6px;padding:12px}.layout legend{font-size:12px}.member{display:flex;gap:8px;align-items:center;padding:7px 0;font-size:12px}.actions{display:flex;gap:8px;margin-top:15px;flex-wrap:wrap}.layout .error{color:#b42318}
+@media(max-width:650px){.layout{grid-template-columns:1fr}}

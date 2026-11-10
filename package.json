@@ -7,7 +7,7 @@
   },
   "scripts": {
     "dev": "next dev --hostname localhost",
-    "build": "next build",
+    "build": "node scripts/build-dashboard.mjs && next build",
     "start": "next start --hostname localhost",
     "typecheck": "tsc --noEmit",
     "db:migrate": "node --env-file=.env.local scripts/migrate.mjs",
