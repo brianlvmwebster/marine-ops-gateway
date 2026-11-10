@@ -1,0 +1,1 @@
+import {z} from 'zod';export const schema=z.object({input:z.string().trim().min(3).max(200),sessionToken:z.uuid()});export type OutputType={suggestions:{placeId:string;description:string}[]};

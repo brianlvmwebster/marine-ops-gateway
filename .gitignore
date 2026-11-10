@@ -54,3 +54,6 @@ yarn-error.log*
 /service-runtime/
 /public/dashboard-assets/
 /public/_cdn/
+
+/floot/node_modules/
+/floot/dist/

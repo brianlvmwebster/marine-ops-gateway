@@ -1,0 +1,1 @@
+import {z} from 'zod';export const schema=z.object({force:z.boolean().default(true)});export type OutputType=any;

@@ -1,0 +1,1 @@
+import {z} from 'zod';import type {Job} from '../helpers/jobModel';export const schema=z.object({});export type OutputType={jobs:Job[]};

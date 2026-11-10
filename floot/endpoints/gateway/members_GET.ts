@@ -1,0 +1,2 @@
+import {sql} from 'kysely';import {db} from '../../helpers/db';import {nativeGatewayAdmin} from '../../helpers/nativeGatewayAccess';import {gatewayJson,gatewayFailure} from '../../helpers/gatewayResponse';
+export async function handle(request:Request){try{await nativeGatewayAdmin(request);const result=await sql`select email,role,enabled,version,auth_user_id is not null as registered from native_gateway_members order by created_at,email`.execute(db);return gatewayJson({members:result.rows});}catch(e){return gatewayFailure(e);}}

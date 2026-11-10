@@ -1,0 +1,1 @@
+import {z} from 'zod';export const schema=z.object({id:z.uuid()});export type OutputType=any;

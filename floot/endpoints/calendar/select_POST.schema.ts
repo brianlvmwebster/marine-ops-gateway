@@ -1,0 +1,1 @@
+import {z} from 'zod';export const schema=z.object({calendarId:z.string().min(1).max(2000),expectedEmail:z.email().max(320),expectedCalendarId:z.string().min(1).max(2000)});export type OutputType={changed:boolean;calendarId:string;name:string};

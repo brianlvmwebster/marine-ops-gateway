@@ -1,0 +1,5 @@
+import {gatewayFailure} from '../../helpers/gatewayResponse';
+import {requireViewer} from '../../helpers/serviceViewer';import superjson from 'superjson';import {db} from '../../helpers/db';import {SHEET_URL} from '../../helpers/sheetMapping';
+async function handleAuthorized(request:Request){await requireViewer(request);const [state,runs,sources]=await Promise.all([db.selectFrom('sheetImportState').selectAll().where('id','=',1).executeTakeFirst(),db.selectFrom('sheetImportRuns').selectAll().orderBy('finishedAt','desc').limit(5).execute(),db.selectFrom('sheetJobSources').select(['conflicts','missingSource']).execute()]);return new Response(superjson.stringify({state,runs,sourceUrl:SHEET_URL,importedJobs:sources.length,conflicts:sources.filter(r=>Array.isArray(r.conflicts)&&r.conflicts.length).length,missingSource:sources.filter(r=>r.missingSource).length}));}
+
+export async function handle(request:Request){try{return await handleAuthorized(request);}catch(error){return gatewayFailure(error);}}

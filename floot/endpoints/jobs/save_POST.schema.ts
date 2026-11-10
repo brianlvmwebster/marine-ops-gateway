@@ -1,0 +1,1 @@
+import {z} from 'zod';import {jobModel} from '../../helpers/jobModel';export const schema=z.object({id:z.uuid().optional(),version:z.number().int().positive().optional(),calendarEligible:z.boolean().optional(),data:jobModel});export type OutputType={saved:boolean;syncError:string|null};

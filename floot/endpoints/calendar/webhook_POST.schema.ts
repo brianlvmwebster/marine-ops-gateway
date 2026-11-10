@@ -1,0 +1,1 @@
+import {z} from 'zod';export const schema=z.object({value:z.array(z.object({clientState:z.string(),subscriptionId:z.string(),resourceData:z.object({id:z.string().max(2000)}).optional()})).max(100)});export type OutputType={accepted:boolean};

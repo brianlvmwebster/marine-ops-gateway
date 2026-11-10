@@ -1,0 +1,2 @@
+import {sql} from 'kysely';import {db} from '../../helpers/db';import {nativeGatewayAccess} from '../../helpers/nativeGatewayAccess';import {gatewayJson,gatewayFailure} from '../../helpers/gatewayResponse';
+export async function handle(request:Request){try{await nativeGatewayAccess(request);const r=await sql<{contents:unknown;version:number}>`select contents,version from native_gateway_links where id=1`.execute(db);return gatewayJson({buttons:r.rows[0]?.contents||[],version:r.rows[0]?.version||0});}catch(e){return gatewayFailure(e);}}

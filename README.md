@@ -1,5 +1,7 @@
 # Marine Ops Gateway
 
+The production gateway is migrating to Floot at `https://lakeviewwebster.marineopstech.net`. Native source and its manifest are in `floot/` on the development branch; see [the production workflow](docs/FLOOT-PRODUCTION.md). The Next.js/Vercel implementation below remains available for rollback.
+
 Lakeview's pre-production Microsoft sign-in configuration and administrator setup steps are documented in [docs/lakeview-preproduction.md](docs/lakeview-preproduction.md). The `preproduction` branch supports single-tenant Microsoft Entra sign-in; production keeps the existing password configuration unless its environment is explicitly changed.
 
 A private link launcher with an app-owned email whitelist and two roles:

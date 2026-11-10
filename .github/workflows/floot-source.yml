@@ -1,0 +1,22 @@
+name: Floot source build
+on:
+  push:
+    branches: [development]
+  pull_request:
+    paths: ['floot/**']
+permissions:
+  contents: read
+jobs:
+  frontend:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7.0.1
+      - uses: actions/setup-node@v7.1.0
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: floot/package-lock.json
+      - run: npm ci --legacy-peer-deps
+        working-directory: floot
+      - run: npm run build
+        working-directory: floot

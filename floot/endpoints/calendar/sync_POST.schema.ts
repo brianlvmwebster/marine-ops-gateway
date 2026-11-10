@@ -1,0 +1,1 @@
+import {z} from 'zod';export const schema=z.object({id:z.uuid().optional(),resolution:z.enum(['local','outlook']).optional()}).refine(d=>!d.resolution||!!d.id,'Choose a job to resolve');export type OutputType={connected:boolean;error:string|null;count?:number};

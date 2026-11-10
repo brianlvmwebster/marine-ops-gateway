@@ -1,0 +1,21 @@
+import React,{useEffect,useId,useRef,useState} from 'react';import {Input} from './Input';import {api} from '../helpers/api';import type {AddressSuggestion,AddressSelection} from '../helpers/googlePlaces';import s from './AddressPicker.module.css';
+type Props={label:string;value:string;onChange:(address:string,placeId?:string)=>void;disabled?:boolean};
+export function AddressPicker({label,value,onChange,disabled=false}:Props){
+ const id=useId(),token=useRef(''),generation=useRef(0);
+ const [configured,setConfigured]=useState<boolean|null>(null),[focused,setFocused]=useState(false),[edited,setEdited]=useState(false),[suggestions,setSuggestions]=useState<AddressSuggestion[]>([]),[active,setActive]=useState(-1),[busy,setBusy]=useState(false),[error,setError]=useState('');
+ useEffect(()=>{let gone=false;api('maps/status').then(r=>{if(!gone)setConfigured(r.configured);}).catch(()=>{if(!gone)setConfigured(false);});return()=>{gone=true;};},[]);
+ useEffect(()=>{
+  if(!configured||!edited||!focused||value.trim().length<3){setSuggestions([]);setActive(-1);return;}
+  let cancelled=false;const current=generation.current;
+  const timer=setTimeout(async()=>{setBusy(true);try{if(!token.current)token.current=crypto.randomUUID();const r=await api('maps/autocomplete',{input:value.trim().slice(0,200),sessionToken:token.current});if(!cancelled&&current===generation.current){setSuggestions(r.suggestions);setActive(-1);setError(r.suggestions.length?'':'No matching addresses. You can keep the address you typed.');}}catch(e){if(!cancelled&&current===generation.current){setSuggestions([]);setError(e instanceof Error?e.message:'Address search unavailable. You can type the address manually.');}}finally{if(!cancelled)setBusy(false);}},300);
+  return()=>{cancelled=true;clearTimeout(timer);};
+ },[configured,edited,focused,value]);
+ async function choose(suggestion:AddressSuggestion){
+  const current=++generation.current;setBusy(true);setSuggestions([]);setEdited(false);
+  try{const selected=await api<AddressSelection>('maps/select',{placeId:suggestion.placeId,sessionToken:token.current});if(current===generation.current){onChange(selected.address,selected.placeId);setError('');setActive(-1);token.current='';}}
+  catch(e){if(current===generation.current)setError(e instanceof Error?e.message:'Address selection failed; you can type the address manually.');}
+  finally{if(current===generation.current)setBusy(false);}
+ }
+ const open=focused&&suggestions.length>0;
+ return <div className={s.wrap}><Input aria-label={label} role="combobox" aria-autocomplete="list" aria-expanded={open} aria-controls={open?id+'-options':undefined} aria-activedescendant={open&&active>=0?id+'-option-'+active:undefined} aria-describedby={id+'-status'} autoComplete="off" value={value} disabled={disabled} placeholder="Type an address or search Google Maps…" onFocus={()=>setFocused(true)} onBlur={()=>{setFocused(false);setSuggestions([]);}} onChange={e=>{generation.current++;onChange(e.target.value);setFocused(true);setEdited(true);setError('');setSuggestions([]);setBusy(false);}} onKeyDown={e=>{if(e.key==='Escape'){setSuggestions([]);setEdited(false);return;}if(!open)return;if(e.key==='ArrowDown'){e.preventDefault();setActive(a=>(a+1)%suggestions.length);}else if(e.key==='ArrowUp'){e.preventDefault();setActive(a=>(a-1+suggestions.length)%suggestions.length);}else if(e.key==='Enter'&&active>=0){e.preventDefault();void choose(suggestions[active]);}}}/>{open&&<div className={s.dropdown}><ul role="listbox" id={id+'-options'} aria-label={label+' suggestions'}>{suggestions.map((item,i)=><li key={item.placeId} role="option" aria-selected={i===active} id={id+'-option-'+i} onMouseDown={e=>e.preventDefault()} onClick={()=>void choose(item)} className={i===active?s.active:undefined}>{item.description}</li>)}</ul><div className={s.attribution}>Google Maps</div></div>}<small id={id+'-status'} className={s.status} aria-live="polite">{busy?'Searching addresses…':error||(configured===false?'Address suggestions unavailable. You can enter the address manually.':configured?'Start typing, then choose a Google Maps suggestion or keep your own address.':'You can enter the address manually.')}</small></div>;
+}

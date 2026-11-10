@@ -1,0 +1,1 @@
+import {z} from 'zod';export const schema=z.object({base:z.url().refine(value=>{const u=new URL(value);return u.protocol==='https:'&&u.hostname.endsWith('.floot.app')&&!u.hostname.endsWith('.sandbox.floot.app')&&u.pathname==='/'&&!u.search&&!u.hash&&!u.username&&!u.password;},'Enable live updates from the published Floot app')});export type OutputType={enabled:boolean};

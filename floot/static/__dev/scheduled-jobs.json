@@ -1,0 +1,12 @@
+{
+  "renewCalendar": {
+    "enabled": true,
+    "schedule": "0 8 * * *",
+    "timezone": "America/New_York"
+  },
+  "checkSheetImports": {
+    "enabled": true,
+    "schedule": "*/15 * * * *",
+    "timezone": "America/New_York"
+  }
+}

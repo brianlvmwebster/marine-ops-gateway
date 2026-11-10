@@ -1,0 +1,3 @@
+import {gatewayFailure} from '../../helpers/gatewayResponse';
+import {calendarSyncEnabled} from '../../helpers/calendarSyncSettings';import {requireViewer} from '../../helpers/serviceViewer';import {db} from '../../helpers/db';import superjson from 'superjson';async function handleAuthorized(request:Request){await requireViewer(request);const c=await db.selectFrom('calendarConnection').select(['email','calendarId','lastSync','syncError','subscriptionExpires']).where('id','=',1).executeTakeFirst();return new Response(superjson.stringify({connection:c||null,syncEnabled:await calendarSyncEnabled()}));}
+export async function handle(request:Request){try{return await handleAuthorized(request);}catch(error){return gatewayFailure(error);}}

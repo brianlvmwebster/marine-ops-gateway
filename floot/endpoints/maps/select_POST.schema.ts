@@ -1,0 +1,1 @@
+import {z} from 'zod';export const schema=z.object({placeId:z.string().regex(/^[A-Za-z0-9_-]+$/).min(1).max(300),sessionToken:z.uuid()});export type OutputType={placeId:string;address:string};

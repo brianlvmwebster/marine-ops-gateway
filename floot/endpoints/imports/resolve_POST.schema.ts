@@ -1,0 +1,1 @@
+import {z} from 'zod';export const schema=z.object({id:z.uuid(),version:z.number().int().positive(),field:z.string().min(1),choice:z.enum(['local','source'])});export type OutputType={saved:boolean};

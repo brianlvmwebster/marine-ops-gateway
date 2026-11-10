@@ -1,0 +1,2 @@
+import React,{useState} from 'react';import {useNavigate} from 'react-router-dom';import {useAuth} from '../helpers/useAuth';
+export default function GatewayAccountMenu({email}:{email?:string}){const {logout}=useAuth(),navigate=useNavigate();const [busy,setBusy]=useState(false);return <div className="account-menu"><span>{email}</span><button disabled={busy} onClick={async()=>{setBusy(true);try{await logout();navigate('/login');}finally{setBusy(false);}}}>{busy?'Signing out…':'Sign out'}</button></div>;}

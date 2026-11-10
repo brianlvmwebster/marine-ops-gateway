@@ -1,0 +1,3 @@
+import {gatewayFailure} from '../../helpers/gatewayResponse';
+import {requireViewer} from '../../helpers/serviceViewer';import {syncCalendar} from '../../helpers/syncCalendar';import {schema} from './sync_POST.schema';import superjson from 'superjson';async function handleAuthorized(request:Request){await requireViewer(request);try{const p=schema.parse(superjson.parse(await request.text()));const result=await syncCalendar(p);return new Response(superjson.stringify(result));}catch(e){return new Response(superjson.stringify({error:e instanceof Error?e.message:'Sync failed'}),{status:400});}}
+export async function handle(request:Request){try{return await handleAuthorized(request);}catch(error){return gatewayFailure(error);}}

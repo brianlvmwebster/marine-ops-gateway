@@ -1,0 +1,1 @@
+import {z} from 'zod';export const schema=z.object({email:z.email().trim().toLowerCase().max(254),role:z.enum(['admin','user']),enabled:z.boolean().default(true),version:z.number().int().positive().optional()}).strict();
