@@ -21,7 +21,7 @@ export function DashboardWidgets({jobs,today,onOpenJob,assignments,onOpenSchedul
   {error&&<div className={s.error} role="alert">{error}<Button variant="link" size="sm" onClick={()=>void load()}>Reload my cards</Button></div>}
   {!ready&&!error&&<p role="status">Loading your dashboard cards…</p>}
   {ready&&widgets.length===0&&<div className={s.empty}><h3>Build your daily view</h3><p>Add a compact calendar or cards for tomorrow, pickups, deliveries, trailers, and upcoming jobs.</p><Button onClick={()=>setLibrary(true)}>Add your first widget</Button></div>}
-  <div className={s.grid} style={{'--dashboard-columns':columns} as React.CSSProperties}>{widgets.map((widget,index)=>{
+  {ready&&<div className={s.grid} style={{'--dashboard-columns':columns} as React.CSSProperties}>{widgets.map((widget,index)=>{
    const definition=widgetLibrary[widget.type],matches=widget.type==='calendar'?matchingCalendarJobs(jobs,today,widget.calendar||defaultCalendarSettings):matchingWidgetJobs(widget.type,jobs,today);
    return <article className={s.widget} key={widget.id} style={{'--widget-accent':definition.accent} as React.CSSProperties} aria-label={definition.title+' card'}>
     <header><div><h3>{definition.title}</h3><p>{definition.description}</p></div><strong className={s.count}>{matches.length}</strong></header>
@@ -30,7 +30,7 @@ export function DashboardWidgets({jobs,today,onOpenJob,assignments,onOpenSchedul
     <div className={s.jobs}>{matches.slice(0,widget.limit).map(job=><WidgetJob key={job.id} job={job} type={widget.type} onOpen={()=>onOpenJob(job.id)}/>)}</div>
     {!matches.length&&<p className={s.noJobs}>No matching jobs.</p>}<footer>Showing {Math.min(matches.length,widget.limit)} of {matches.length}</footer></>}
    </article>;
-  })}</div>
+  })}</div>}
   <Dialog open={library} onOpenChange={open=>{if(!busy)setLibrary(open);}}><DialogContent className={s.library}><DialogTitle>Add a dashboard widget</DialogTitle><DialogDescription>Choose a widget, then adjust its settings. Your columns, widgets, filters, and order are saved to your account.</DialogDescription><div className={s.libraryGrid}>{widgetTypes.map(type=><article key={type}><h3>{widgetLibrary[type].title}</h3><p>{widgetLibrary[type].description}</p><Button variant="outline" disabled={busy||widgets.length>=12} onClick={async()=>{if(await save([...widgets,{id:crypto.randomUUID(),type,limit:type==='tomorrow'?8:5,...(type==='calendar'?{calendar:{...defaultCalendarSettings}}:{})}]))setLibrary(false);}}><Plus size={15}/>Add {widgetLibrary[type].title}</Button></article>)}</div></DialogContent></Dialog>
  </section>;
 }

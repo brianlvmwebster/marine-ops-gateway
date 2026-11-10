@@ -1,6 +1,6 @@
 {
   "repository": "https://github.com/brianlvmwebster/service-dashboard",
-  "sourceCommit": "080ae4e4b18d1daf3572f3c1cfb9f9675b0bd9ef",
+  "sourceCommit": "0ec182b227bd268803d51c4ecf38e216709154ae",
   "files": {
     "AGENTS.md": "235d7b908e25e2db36a8043856ecff702859bc0d749d8bb1b0aaf2ea8641e891",
     "App.tsx": "a9ced2b10233d61e4cce2d717325656889c0a4bf2ea756e02fceff3b5eae6f28",
@@ -41,7 +41,7 @@
     "components/ContextMenu.module.css": "48e2ced03e4f0ea5f93862a3225add85693b243a2e81e88723d8e67c0cff2f71",
     "components/ContextMenu.tsx": "e2100ec1cfd3763d93524ad9d1d34b2f0ffa500d92354c2fe1584d870269fa6b",
     "components/DashboardWidgets.module.css": "4bf98433d78d4453fb9911983d10405dd31faec1c545b9c4b0e0eb5893dbab47",
-    "components/DashboardWidgets.tsx": "198c26c11ca6a85a697330665baea7bb25f7bece95ceb2f1dd07856ea53cf097",
+    "components/DashboardWidgets.tsx": "f248b45b631590516b78e603d609434194061a72815ce3bfe2111875d6a97840",
     "components/Dialog.module.css": "4f78f4b91ed76cf947e599c5799b7eb97ca7ee0494eabb19d6e45f7a52380029",
     "components/Dialog.tsx": "5021a546095567221f8e362bbe7f6f29f838993e1ddcb82614367c34811d62c2",
     "components/DropdownMenu.module.css": "4aa93bbc9d757d56e9df50dcf6510d7ebdb065819ff148fac259811bc2e07a5d",
