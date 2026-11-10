@@ -129,6 +129,7 @@ export interface ServiceAssignmentOptions {
 }
 
 export interface ServiceDashboardPreferences {
+  columns: Generated<number>;
   updatedAt: Generated<Timestamp>;
   userId: string;
   version: Generated<number>;
