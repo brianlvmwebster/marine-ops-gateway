@@ -44,9 +44,14 @@ export function CompactCalendarWidget({widget,jobs,today,assignments,disabled,on
    const entries=matches.filter(j=>j.data.serviceDate===day);
    return <section key={day} className={day===today?s.today:s.day} aria-label={dayLabel(day,{weekday:'long',month:'long',day:'numeric'})}>
     <div className={s.dayHeading}><time dateTime={day}><strong>{day.slice(5,7)}/{day.slice(8,10)}</strong><span>{dayLabel(day,{weekday:'short'})}{day===today?' · Today':''}</span></time><small>{entries.length}</small></div>
-    {entries.length?entries.slice(0,widget.limit).map(job=><Button key={job.id} variant="ghost" className={s.entry} style={{'--category-color':pickupCategory(job.data.pickup).color} as React.CSSProperties} onClick={()=>onOpenJob(job.id)}>
-     <time>{job.data.time||'TBD'}</time><span className={s.entryInfo}><strong>{job.data.firstName} {job.data.lastName}</strong><span>{job.data.make} {job.data.model} · {job.data.status}</span><span>{job.data.pickup||'Pickup not specified'} · {job.data.trailer||'Trailer not specified'}</span>{job.data.pickup==='Road Pickup'&&<span className={s.location} title={(job.data.pickupAddress||'Address not provided')+' · '+(job.data.lake||'Body of water not provided')}>{(job.data.pickupAddress||'Address not provided').replace(/\s+/g,' ')} · {job.data.lake||'Body of water not provided'}</span>}</span>
-    </Button>):<p className={s.noJobs}>No matching jobs</p>}
+    {entries.length?<div className={s.cards}>{entries.slice(0,widget.limit).map(job=><Button key={job.id} variant="ghost" className={s.entry} style={{'--category-color':pickupCategory(job.data.pickup).color} as React.CSSProperties} onClick={()=>onOpenJob(job.id)}>
+     <span className={s.cardTop}><span className={s.statusDate}><span className={s.status}>{job.data.status}</span><time className={s.date} dateTime={day}>{day.slice(5,7)}/{day.slice(8,10)}</time></span><span className={s.time}>{job.data.time||'TBD'} ET · #{String(job.jobNumber).padStart(4,'0')}</span></span>
+     <strong className={s.customer}>{job.data.firstName} {job.data.lastName}</strong>
+     <span className={s.vessel}>{job.data.make} {job.data.model}</span>
+     <span className={s.tags}><span>{job.data.pickup||'Pickup not specified'}</span><span>{job.data.trailer||'Trailer not specified'}</span></span>
+     {job.data.pickup==='Road Pickup'&&<span className={s.location}><span title={job.data.pickupAddress||'Address not provided'}><b>Pickup</b> {(job.data.pickupAddress||'Address not provided').replace(/\s+/g,' ')}</span><span><b>Water</b> {job.data.lake||'Body of water not provided'}</span></span>}
+     <span className={s.assignment}>Assigned: {job.data.technician||'Unassigned'}</span>
+    </Button>)}</div>:<p className={s.noJobs}>No matching jobs</p>}
     {entries.length>widget.limit&&<p className={s.more}>+{entries.length-widget.limit} more · increase “Per day” to see more</p>}
    </section>;
   })}</div>
