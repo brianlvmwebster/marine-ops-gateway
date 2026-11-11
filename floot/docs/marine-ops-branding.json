@@ -1,0 +1,13 @@
+{
+  "logos": {
+    "light": "/_cdn/static/ddcbf277-8310-4a20-93a3-175674120c04-marine-ops-light.svg",
+    "dark": "/_cdn/static/89538bcd-5069-42bf-bc71-d48d7f013223-marine-ops-dark.svg",
+    "icon": "/_cdn/static/308b2f60-372a-4579-b03e-241b327cce2b-marine-ops-boat-favicon.png"
+  },
+  "sourceHashes": {
+    "components/GatewayBrand.tsx": "b4308ff0a0160832921e76f971eef74387c7a97a483be82f500e986004a40037",
+    "components/GatewayBrand.module.css": "ecfcef57882d223d343c5cab70f29640ea39b57aa99202568e2916c2b1ca0e83",
+    "components/ServiceDashboard.tsx": "6a90f2773014777bdc299529052ad3b570d45dcd37243aaf1302ffcb9cba1157",
+    "helpers/layoutDocument.tsx": "3c4dda60de27be1276e1c928ce58b615b7a515d87c77d372045fbb9ee2b32319"
+  }
+}

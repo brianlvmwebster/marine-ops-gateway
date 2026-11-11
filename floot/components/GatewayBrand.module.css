@@ -1,0 +1,7 @@
+.brand { display: inline-flex; align-items: flex-start; flex-direction: column; gap: 8px; text-decoration: none; color: #092D46; min-width: 0; flex-shrink: 0; }
+.brand img { display: block; width: 280px; max-width: 100%; height: auto; object-fit: contain; }
+.subtitle { font: 600 12px/1.3 'Segoe UI', Arial, sans-serif; letter-spacing: .5px; color: #486879; }
+.brand:focus-visible { outline: 2px solid #F47721; outline-offset: 5px; border-radius: 4px; }
+:global(.dark) .brand img { content: url("/_cdn/static/89538bcd-5069-42bf-bc71-d48d7f013223-marine-ops-dark.svg"); }
+:global(.dark) .subtitle { color: #c2dae8; }
+@media (max-width:620px) { .brand img { width: 220px; } }
