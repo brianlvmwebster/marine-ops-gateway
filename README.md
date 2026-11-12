@@ -39,6 +39,21 @@ On **Manage links**, apply edits to the list and select Save changes. The app su
 
 ## Hosting
 
+### Shared MOT branding
+
+All gateway, administration, sign-in, and password-setup logos use `app/brand-logo.tsx`.
+The root layout supplies the same branding settings to that component and browser icons.
+Until MOT Administration is built, `lib/branding.ts` supplies the bundled MOT assets.
+
+When the Administration site exists, set `MOT_BRANDING_SETTINGS_URL` to its public,
+read-only HTTPS settings endpoint. It must return JSON with `name`, `logoUrl`,
+`faviconUrl`, and `appleTouchIconUrl`. All image URLs must be absolute HTTPS URLs
+accessible without authentication (including on the sign-in page). Do not include
+secrets in this response. The server revalidates settings every 60 seconds; refreshed
+settings appear on the next page load after revalidation. Settings errors or a two-second
+timeout use bundled MOT branding; an image load failure also uses the bundled MOT logo.
+This endpoint is an integration contract, not an existing Administration service.
+
 The Vercel project is `brianlakeviewwebster/marine-ops-gateway`, connected to the private GitHub repository. Next.js 16 runs on Node.js 24. Production follows `main`; branch deployments are previews.
 
 Required environment keys are `DATABASE_URL`, `BLOB_READ_WRITE_TOKEN`, and `BETTER_AUTH_SECRET`. Production and non-production use separate signing secrets. Set `BETTER_AUTH_URL` to the production origin; previews infer their exact Vercel deployment origin. `AUTH_EXTRA_ORIGINS` can list exact additional origins when necessary. No wildcard trusted origins are needed.

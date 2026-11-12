@@ -43,3 +43,6 @@
 }
 
 .login-environment{display:block;margin-top:20px;font-size:9px;letter-spacing:2px;color:#758b97}.microsoft-sign-in{display:flex;align-items:center;justify-content:center;gap:12px;width:100%;margin:20px 0 12px;padding:13px 16px;background:#fff;border:1px solid #bbcbd2;font-size:13px}.microsoft-mark{display:grid;grid-template-columns:repeat(2,8px);gap:2px}.microsoft-mark i{width:8px;height:8px;background:#f25022}.microsoft-mark i:nth-child(2){background:#7fba00}.microsoft-mark i:nth-child(3){background:#00a4ef}.microsoft-mark i:nth-child(4){background:#ffb900}
+/* Marine Ops Technology shared brand assets. */
+.mot-logo{display:block;width:240px;max-width:100%;height:auto;object-fit:contain;flex-shrink:0}.mot-logo-wrap{display:block}.mot-logo-dark{display:none}body.dark-theme .mot-logo-light{display:none}body.dark-theme .mot-logo-dark{display:block}@media(max-width:620px){.mot-logo{width:180px}}
+.brand .mot-logo{width:240px}.auth-brand .mot-logo{width:280px}@media(max-width:620px){.brand .mot-logo{width:165px}}
