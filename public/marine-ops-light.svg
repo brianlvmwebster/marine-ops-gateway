@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1640" height="240" viewBox="80 200 1640 240">
+<title>Marine Ops Technology - light background</title>
+
+<g transform="translate(80 165) scale(.9)" fill="#092D46">
+<path d="M14 268 Q165 231 370 247 Q467 255 519 225 Q563 200 610 147 L624 134 Q403 128 113 175 Q65 184 42 228 L29 250 Q61 192 113 191 L586 150 Q546 210 494 226 Q450 242 366 232 Q162 218 14 268Z"/>
+<path d="M191 174 L252 102 Q291 66 386 61 Q397 64 386 69 Q315 75 278 111 L221 169Z"/>
+<path d="M257 160 Q395 100 465 149 L478 150 Q400 80 257 160Z"/>
+<path fill="#F47721" d="M58 289 Q205 248 380 269 Q479 282 535 258 Q492 291 379 284 Q200 269 58 289Z"/>
+</g>
+<text x="690" y="300" fill="#092D46" font-family="Arial, Helvetica, sans-serif" font-size="125" font-weight="800" letter-spacing="-3">MARINE OPS</text>
+<text x="705" y="400" fill="#F47721" font-family="Arial, Helvetica, sans-serif" font-size="61" font-weight="600" letter-spacing="20">TECHNOLOGY</text>
+</svg>
