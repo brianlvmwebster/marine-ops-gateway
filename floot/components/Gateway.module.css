@@ -45,3 +45,14 @@
 .gateway :global(.login-environment){display:block;margin-top:20px;font-size:9px;letter-spacing:2px;color:#758b97}.gateway :global(.microsoft-sign-in){display:flex;align-items:center;justify-content:center;gap:12px;width:100%;margin:20px 0 12px;padding:13px 16px;background:#fff;border:1px solid #bbcbd2;font-size:13px}.gateway :global(.microsoft-mark){display:grid;grid-template-columns:repeat(2,8px);gap:2px}.gateway :global(.microsoft-mark i){width:8px;height:8px;background:#f25022}.gateway :global(.microsoft-mark i:nth-child(2)){background:#7fba00}.gateway :global(.microsoft-mark i:nth-child(3)){background:#00a4ef}.gateway :global(.microsoft-mark i:nth-child(4)){background:#ffb900}
 
 .gateway{min-height:100vh;--font-gateway:Segoe UI;font-family:Segoe UI,Arial,sans-serif}
+
+/* Subscriber identity belongs in the banner; Marine Ops Tech remains the system brand. */
+.gateway :global(.gateway-home .hero){align-items:center;gap:36px}
+.gateway :global(.gateway-home .hero-copy){flex:1;min-width:0;max-width:none}
+.gateway :global(.gateway-home .hero-subscriber-logo){position:relative;z-index:1;display:block;flex:0 0 auto;width:190px;max-width:30%;height:auto;object-fit:contain;filter:drop-shadow(0 0 1px #ffffffb3)}
+@media(max-width:800px){
+ .gateway :global(.gateway-home .hero){flex-direction:column;align-items:flex-start;gap:28px}
+ .gateway :global(.gateway-home .hero-subscriber-logo){flex:none;width:150px;max-width:100%;align-self:flex-end}
+}
+
+
