@@ -14,6 +14,18 @@ describe('layout workspace persistence',()=>{
  expect(editor.getState()).toEqual(draft);
  const exported=editor.getState();exported.items[0].label='changed outside';
  expect(editor.getState().items[0].label).toBe('Entrance');
+ const doc=frame.contentDocument!;
+ const sizes=doc.getElementById('dockType') as HTMLSelectElement;
+ const units=doc.getElementById('dockUnits') as HTMLSelectElement;
+ expect(sizes.options[0].textContent).toBe('4ft x 4ft');
+ sizes.value='48,102';units.value='in';(()=>{const event=doc.createEvent('Event');event.initEvent('change',true,true);units.dispatchEvent(event);})();
+ expect(sizes.selectedOptions[0].textContent).toBe('48in x 102in');
+ (doc.getElementById('addDock') as HTMLButtonElement).click();
+ const dock=editor.getState().items.find(o=>o.kind==='dock')!;
+ expect(dock.w).toBe(48);expect(dock.h).toBe(102);
+ expect(dock.label).not.toContain('RS4');
+ units.value='ft';(()=>{const event=doc.createEvent('Event');event.initEvent('change',true,true);units.dispatchEvent(event);})();
+ expect(sizes.value).toBe('48,102');expect(sizes.selectedOptions[0].textContent).toBe('4ft x 8.5ft');
  expect(()=>editor.loadState({version:100})).toThrow();
  });
 });

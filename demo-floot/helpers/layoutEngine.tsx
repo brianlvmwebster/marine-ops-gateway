@@ -14606,7 +14606,7 @@ return (function() {
 					[150, "4 × 12"],
 					[198, "4 × 16"]
 				]);
-				const name = triangle ? "RS4 triangle" : o.shape === "rectangle" ? w === 48 ? `RS4 · ${nominal.get(h) || "Section"}` : w === 72 && h === 102 ? "RS4 · 6 × 8" : "Dock section" : "Custom dock";
+				const name = triangle ? "Dock triangle" : o.shape === "rectangle" ? w === 48 ? `Dock · ${nominal.get(h) || "Section"}` : w === 72 && h === 102 ? "Dock · 6 × 8" : "Dock section" : "Custom dock";
 				types.set(key, {
 					name,
 					dimensions: `${printMeasure(w)} × ${printMeasure(h)}${triangle ? " legs" : ""}`,
@@ -15970,9 +15970,20 @@ options.onChange?.(structuredClone(state));
 		const { x, y } = center();
 		add(modelBoat(id, "", x, y, colorway));
 	});
-	$("addDock").onclick = () => {
+	function updateDockSizeLabels() {
+ const unit = $("dockUnits").value;
+ for (const option of $("dockType").options) {
+  const triangle = option.value === "triangle";
+  const [w,h] = triangle ? [36,36] : option.value.split(",").map(Number);
+  const size = n => (unit === "ft" ? n / 12 : n) + unit;
+  option.textContent = (triangle ? "Triangle · " : "") + size(w) + " x " + size(h) + (triangle ? " legs" : "");
+ }
+}
+$("dockUnits").onchange = updateDockSizeLabels;
+updateDockSizeLabels();
+$("addDock").onclick = () => {
 		const { x, y } = center();
-		if ($("dockType").value === "triangle") return add(item("dock", "RS4 · Triangle", x, y, 36, 36, {
+		if ($("dockType").value === "triangle") return add(item("dock", "Dock · Triangle", x, y, 36, 36, {
 			shape: "polygon",
 			points: [
 				[-18, -18],
@@ -15981,7 +15992,7 @@ options.onChange?.(structuredClone(state));
 			]
 		}));
 		const [w, h] = $("dockType").value.split(",").map(Number);
-		add(item("dock", "RS4 · " + $("dockType").selectedOptions[0].text.split(" · ")[0], x, y, w, h));
+		add(item("dock", "Dock · " + $("dockType").selectedOptions[0].text.split(" · ")[0], x, y, w, h));
 	};
 	$("addPole").onclick = () => {
 		const { x, y } = center();
