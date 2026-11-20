@@ -1,0 +1,1 @@
+export {layoutActionSchema as schema} from '../../helpers/savedLayoutTypes';

@@ -112,6 +112,16 @@ export interface PasswordResetCodes {
   userId: number;
 }
 
+export interface SavedLayouts {
+  createdAt: Generated<Timestamp>;
+  document: Json;
+  id: string;
+  name: string;
+  revision: Generated<number>;
+  updatedAt: Generated<Timestamp>;
+  updatedBy: string;
+}
+
 export interface ServiceAccessRoles {
   createdAt: Generated<Timestamp>;
   role: string;
@@ -229,6 +239,7 @@ export interface DB {
   oauthAccessToken: OauthAccessToken;
   oauthAccounts: OauthAccounts;
   passwordResetCodes: PasswordResetCodes;
+  savedLayouts: SavedLayouts;
   serviceAccessRoles: ServiceAccessRoles;
   serviceAssignmentOptions: ServiceAssignmentOptions;
   serviceDashboardPreferences: ServiceDashboardPreferences;

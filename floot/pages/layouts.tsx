@@ -1,0 +1,1 @@
+import React from 'react';import {Helmet} from 'react-helmet';import {NativeGatewayGuard} from '../components/NativeGatewayGuard';import {LayoutWorkspace} from '../components/LayoutWorkspace';export default function Page(){return <NativeGatewayGuard><Helmet><title>Show Layouts | Lakeview Marine</title></Helmet><LayoutWorkspace/></NativeGatewayGuard>;}
