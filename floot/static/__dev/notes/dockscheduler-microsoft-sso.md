@@ -1,0 +1,9 @@
+# Gateway Microsoft sign-in for Dock Crew Scheduler
+
+Canonical user entry: https://lakeviewwebster.marineopstech.net/dockscheduler. Scheduler runtime and database remain in Floot project 0f867433-8843-462c-bb44-d26756345281 at https://dockscheduler.marineopstech.net. The gateway project is 1552d0fb-863c-4274-8bcc-08496609ca66.
+
+The gateway checks its native company Microsoft session and current enabled membership before calling createSchedulerLaunch through a Floot app connection. The scheduler export accepts only this exact same-owner gateway app. A random 256-bit ticket is stored only as SHA256, expires after 60 seconds, and is atomically deleted on redemption. The browser POSTs it from the canonical gateway origin into the scheduler iframe; no ticket goes in a URL, browser storage, or logs. The scheduler issues its existing host-only Secure HttpOnly crew cookie and redirects internally. Existing 12-hour crew sessions, password rotation, standalone crew access, jobs, schedules, signatures, photos, and calendar behavior remain unchanged. Gateway logout does not revoke an already-established standalone crew session.
+
+Maintenance: C:/Projects/dock-crew-scheduler, literal development branch; Floot source is backed up in floot/. Preserve the root legacy Vercel implementation. Gateway source lives in C:/Projects/service-dashboard and is mirrored into marine-ops-gateway/gateway/floot. Future scheduler work should start with the Floot app and these maintained repositories, not the legacy OneDrive checkout.
+
+Release order: owner confirms the Floot connection for createSchedulerLaunch; publish the scheduler, then the gateway. Verify unauthenticated/foreign-origin access denial, one-use and expired tickets, company login return to /dockscheduler, scheduler data rendering and nested navigation. Do not create test jobs or Outlook events in production. Keep database backup/cutover work separate.
