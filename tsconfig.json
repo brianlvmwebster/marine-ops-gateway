@@ -50,6 +50,7 @@
     "outputs",
     "work",
     "dashboard",
-    "floot"
+    "floot",
+    "demo-floot"
   ]
 }
