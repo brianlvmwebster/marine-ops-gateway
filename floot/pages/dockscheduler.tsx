@@ -16,8 +16,17 @@ function Workspace() {
   const [loading,setLoading]=useState(true);
   useEffect(()=>{
     let active=true;submitted.current=false;setTicket('');setError('');setLoading(true);
-    postGatewaySchedulerLaunch().then(result=>{if(active)setTicket(result.ticket);}).catch(error=>{if(active){setError(error instanceof Error?error.message:'Unable to open scheduler.');setLoading(false);}});
-    return()=>{active=false;};
+    const controller=new AbortController();
+    const timeout=window.setTimeout(()=>{
+      if(!active)return;
+      active=false;controller.abort();setTicket('');setLoading(false);
+      setError('The scheduler did not open. Select Reopen scheduler to try again.');
+    },20000);
+    postGatewaySchedulerLaunch({}, {signal:controller.signal}).then(result=>{if(active)setTicket(result.ticket);}).catch(error=>{if(active){window.clearTimeout(timeout);setError(error instanceof Error?error.message:'Unable to open scheduler.');setLoading(false);}});
+    const loaded=()=>{if(submitted.current){window.clearTimeout(timeout);}};
+    const frame=document.getElementsByName(frameName)[0];
+    frame?.addEventListener('load',loaded);
+    return()=>{active=false;controller.abort();window.clearTimeout(timeout);frame?.removeEventListener('load',loaded);};
   },[attempt]);
   useEffect(()=>{if(ticket&&form.current&&!submitted.current){submitted.current=true;form.current.submit();}},[ticket]);
   return <main className={styles.workspace}>
@@ -34,7 +43,7 @@ function Workspace() {
       sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-popups-to-escape-sandbox allow-modals allow-downloads"
       allow="geolocation https://dockscheduler.marineopstech.net; fullscreen https://dockscheduler.marineopstech.net"
       referrerPolicy="no-referrer"
-      onLoad={()=>{if(submitted.current){setLoading(false);setTicket('');}}}
+      onLoad={()=>{if(submitted.current){setLoading(false);setTicket('');setError('');}}}
     />
   </main>;
 }
