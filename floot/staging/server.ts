@@ -1,4 +1,5 @@
 import {Hono} from 'hono';
+import {saveStagingJob} from './save-job';
 import {customersHandler,customersStore} from '../platform/customers.ts';
 import {serve} from '@hono/node-server';
 import {serveStatic} from '@hono/node-server/serve-static';
@@ -25,12 +26,13 @@ const platform=platformHandler(platformStore(platformDatabase()),async request=>
 app.all('/_api/platform',c=>platform(c.req.raw));app.all('/_api/platform/*',c=>platform(c.req.raw));
 app.get('/_api/auth/session',async c=>{try{await nativeGatewayAccess(c.req.raw);const {user}=await getServerUserSession(c.req.raw);return new Response(superjson.stringify({user}));}catch{return c.json({error:'Sign in to staging.'},401);}});
 // Deliberate allowlist: unlisted integrations, webhooks, cron and legacy dispatch cannot run here.
+app.post('/_api/jobs/save',c=>saveStagingJob(c.req.raw));
 const routes:{method:'get'|'post';path:string;module:string}[]=[
  {method:'post',path:'/auth/logout',module:'auth/logout_POST'},
  {method:'get',path:'/gateway/links',module:'gateway/links_GET'},
  {method:'get',path:'/access/session',module:'access/session_GET'},
  {method:'get',path:'/jobs',module:'jobs_GET'},
- {method:'post',path:'/jobs/save',module:'jobs/save_POST'},
+
  {method:'post',path:'/jobs/workflow',module:'jobs/workflow_POST'},
  {method:'post',path:'/jobs/complete',module:'jobs/complete_POST'},
  {method:'get',path:'/assignments/list',module:'assignments/list_GET'},

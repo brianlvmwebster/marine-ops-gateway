@@ -21,6 +21,7 @@ export function customersStore(sql:any){
    const [count]=await sql`select count(*)::integer as total from customers where ${where}`;
    return {rows,total:count.total,canManage:['owner','admin'].includes(a.role)};
   },
+  async job(actor:number,company:string,jobId:string){await access(actor,company);await platform.toolAccess(actor,company,'service-desk');if(company!==LAKEVIEW_ID)throw new PlatformError(403,'Service Desk is Lakeview-only.');const [customer]=await sql`select c.* from customers c join customer_service_jobs l on l.customer_id=c.id and l.company_id=c.company_id where l.company_id=${company} and l.job_id=${jobId}`;return {customer:customer||null};},
   async detail(actor:number,company:string,id:string){await access(actor,company);const [customer]=await sql`select * from customers where company_id=${company} and id=${id}`;if(!customer)throw new PlatformError(404,'Customer not found.');
    let jobs:any[]=[];try{await platform.toolAccess(actor,company,'service-desk');jobs=await sql`select j.id,j.job_number,j.data from customer_service_jobs l join service_jobs j on j.id=l.job_id where l.company_id=${company} and l.customer_id=${id} order by j.job_number desc`;}catch(e){if(!(e instanceof PlatformError))throw e;}
    return {customer,jobs};},
@@ -37,11 +38,12 @@ export function customersStore(sql:any){
    await audit(tx,actor,company,'customer.job_linked',{id,jobId});return {saved:true};});}
  };
 }
-async function readBody(request:Request){if(!request.headers.get('content-type')?.startsWith('application/json'))throw new PlatformError(415,'JSON required.');const reader=request.body?.getReader();if(!reader)throw new PlatformError(400,'Body required.');const chunks:Uint8Array[]=[];let n=0;try{while(true){const {done,value}=await reader.read();if(done)break;n+=value.length;if(n>1024*1024){await reader.cancel();throw new PlatformError(413,'Request too large.');}chunks.push(value);}}finally{reader.releaseLock();}try{return JSON.parse(Buffer.concat(chunks).toString());}catch{throw new PlatformError(400,'Invalid JSON.');}}
+export async function readBody(request:Request){if(!request.headers.get('content-type')?.startsWith('application/json'))throw new PlatformError(415,'JSON required.');const reader=request.body?.getReader();if(!reader)throw new PlatformError(400,'Body required.');const chunks:Uint8Array[]=[];let n=0;try{while(true){const {done,value}=await reader.read();if(done)break;n+=value.length;if(n>1024*1024){await reader.cancel();throw new PlatformError(413,'Request too large.');}chunks.push(value);}}finally{reader.releaseLock();}try{return JSON.parse(Buffer.concat(chunks).toString());}catch{throw new PlatformError(400,'Invalid JSON.');}}
 export function customersHandler(store:ReturnType<typeof customersStore>,authenticate:(r:Request)=>Promise<number>){return async(request:Request)=>{try{
  let actor:number;try{actor=await authenticate(request);}catch{throw new PlatformError(401,'Sign in to continue.');}if(!Number.isSafeInteger(actor)||actor<=0)throw new PlatformError(401,'Sign in to continue.');
  const url=new URL(request.url),company=uuid.parse(url.searchParams.get('companyId')),path=url.pathname;
  if(request.method==='GET'){if(path==='/_api/customers')return Response.json(await store.list(actor,company,z.string().max(200).parse(url.searchParams.get('q')||''),z.enum(['active','archived','all']).parse(url.searchParams.get('status')||'active'),z.coerce.number().int().min(0).max(100000).parse(url.searchParams.get('page')||0)));
+ if(path==='/_api/customers/job')return Response.json(await store.job(actor,company,uuid.parse(url.searchParams.get('jobId'))));
  if(path==='/_api/customers/detail')return Response.json(await store.detail(actor,company,uuid.parse(url.searchParams.get('id'))));}
  if(request.method==='POST'){requireSameOrigin(request);const body=await readBody(request);
  if(path==='/_api/customers/save'){const v=z.object({id:uuid.optional(),version:z.number().int().nonnegative(),data:customerFields}).strict().parse(body);return Response.json(await store.save(actor,company,v.id,v.version,v.data));}

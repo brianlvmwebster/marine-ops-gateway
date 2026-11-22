@@ -17,3 +17,13 @@ Tests in `tests/platform-customers.test.mjs` exercise HTTP authentication/CSRF, 
 ## Staging verification — November 22, 2026
 
 Imported 8,851 named Lightspeed records, excluded 388 unnamed records, and reran the import: zero inserts and 8,851 skips. Reconciled every external identity and list field against the private export using staging/verify-customers.mjs; sampled full source records, original Active flags and addresses also match. Browser checks passed for create/save, preserved postal-code leading zero, search, archive filtering and persisted Service Desk job linkage. One synthetic QA customer remains archived and linked to synthetic job #2. The 8,851 imported customers remain available. Source and customer data were never published to Floot.
+
+## Customer selection in Service Desk
+
+In standalone staging, New/Edit job includes Lakeview customer search by name, Lightspeed number, email or phone. Selecting an available customer copies first/last name, email and mobile/home/work phone in that order. Missing source details remain blank for staff to complete; existing job validation still applies. Addresses are not assumed to be pickup/delivery locations. Clearing an unsaved selection retains editable contact fields and creates no link.
+
+The staging job-save endpoint commits the job and relationship in one PostgreSQL transaction. It checks Service Desk access and Customers access for a new selection, Lakeview ownership, available status, job version and completion lock. Existing links cannot be silently reassigned. Editing/checklist saving without customerId preserves the relationship and historical contact snapshot. Existing linked archived customers remain readable; they cannot be selected for new links. Live Floot keeps its existing save handler and UI until a separate release.
+
+Regression coverage: tests/job-customer.test.mjs (run with node --import tsx --test), including atomic save failures, tenant isolation, member selection without customer-admin rights, archived customer behavior, stale versions and snapshot preservation.
+
+Deployed and verified on staging revision marine-ops-staging-00008-dcn. Browser tests created a new linked job and linked an existing unlinked job, then reopened the latter to confirm persisted association. API verification confirmed both appear on the customer record with correct name/email/mobile-phone snapshots. Synthetic Picker QA customer and test jobs remain clearly marked. Existing Service Desk smoke checks and frontend/PostgreSQL CI passed.
