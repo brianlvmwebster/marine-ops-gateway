@@ -12,7 +12,8 @@ import {nativeGatewayAccess} from '../helpers/nativeGatewayAccess';
 stagingOnly();
 if(!process.env.JWT_SECRET || process.env.JWT_SECRET.length<32)throw new Error('Session secret required');
 const app=new Hono();
-app.use('*',async(c,next)=>{await next();c.header('Cache-Control','no-store');c.header('X-Content-Type-Options','nosniff');c.header('Referrer-Policy','no-referrer');c.header('X-Frame-Options','DENY');});
+// Keep same-origin form POST origins intact for CSRF checks; no-referrer makes them null.
+app.use('*',async(c,next)=>{await next();c.header('Cache-Control','no-store');c.header('X-Content-Type-Options','nosniff');c.header('Referrer-Policy','same-origin');c.header('X-Frame-Options','DENY');});
 app.get('/staging/health',c=>c.json({status:'ok',environment:'staging',externalWrites:false}));
 app.get('/readyz',async c=>{await platformDatabase()`select 1 from platform_companies limit 1`;return c.json({ready:true});});
 app.get('/login',c=>c.html(loginPage));

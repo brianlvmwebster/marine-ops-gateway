@@ -18,6 +18,9 @@ test('standalone server starts without Floot; denied routes and anonymous APIs f
   let ready=false;
   for(let i=0;i<80;i++){try{const r=await fetch('http://127.0.0.1:18087/staging/health');if(r.ok){ready=true;break;}}catch{}await new Promise(resolve=>setTimeout(resolve,100));}
   assert.ok(ready,output);
+  const login=await fetch('http://127.0.0.1:18087/login');
+  assert.equal(login.headers.get('referrer-policy'),'same-origin','Native form login must retain its same-origin Origin header');
+  assert.equal((await fetch('http://127.0.0.1:18087/staging/login',{method:'POST',headers:{Origin:'null'},body:'password=test'})).status,403);
   for(const path of ['/_api/calendar/sync','/_api/imports/run','/_api/gateway/dispatch','/_api/auth/register_with_password']){
    assert.equal((await fetch('http://127.0.0.1:18087'+path,{method:'POST'})).status,403);
   }

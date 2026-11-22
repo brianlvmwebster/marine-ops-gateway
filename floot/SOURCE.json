@@ -1,6 +1,6 @@
 {
   "repository": "https://github.com/brianlvmwebster/service-dashboard",
-  "sourceCommit": "5b6c9270fd405d4ddaafd6158e4c1e9c2e9c4857",
+  "sourceCommit": "36103d53693c90764955efa7ad2d26347b7656dd",
   "files": {
     ".dockerignore": "bd46bf310d0466b3d9bcf2aa5a753be970584067e7199456d7850704420c0eb9",
     ".gcloudignore": "bd46bf310d0466b3d9bcf2aa5a753be970584067e7199456d7850704420c0eb9",
@@ -742,7 +742,7 @@
     "staging/cloudbuild.yaml": "ae0476f35081651a3961889bcc8ccf1aa2df848046f90f24265ef06685adc410",
     "staging/config.ts": "c008b67096416c115367e16a649f90dcb6fb6fd69de7a36ed06dca77778cea64",
     "staging/migrate.ts": "e0202f5c49dc1e6b51ee05e4d82ceca366a2306ca63cae8523dd48d8e2f45986",
-    "staging/server.ts": "27494de5394c429d0f83a85d007cbfa501b722d479cb9e844977e96969a97c87",
+    "staging/server.ts": "439fea3d9f1659f4cb547ef3acbccd29d5bad3950786679c608de91a717bae18",
     "staging/smoke.mjs": "bb5b588892610c73bfb866a70025da3fb665f31fff83aec94522eb1e31801b9a",
     "static/__dev/notes/architecture.md": "86544f201b0d09aafe164c75761db68498da384f919f75d088ec97e14cb35908",
     "static/__dev/notes/branding-refresh.md": "083a14267893f22611243f6663d78bf3354732e3ac2a35f1c629af8b0a056c83",
@@ -772,7 +772,7 @@
     "static/__dev/scheduled-jobs.json": "243e0f2247156c4f6cc5dffb4c03c7c1a81958a74c1381bc644a52d853318cad",
     "tests/platform-postgres.test.mjs": "c1c1b8a694c57cef52c0f2bd65863e3f7b91bf88c06062044adef8f8c3ba59c0",
     "tests/platform.test.mjs": "d03a200071a93a4ccf065e1a0f4cdb473a38bdfb1568f2c4d16d395a59d631d0",
-    "tests/staging.test.mjs": "0f6e591e2ce021e96a371f1c036b5f379ec26a74db826bd0b9f522a7e446dc70",
+    "tests/staging.test.mjs": "bde4de17e86988e68534b952d55fbb4568d8b80587c8fd30a3b4d7a20be7d556",
     "vite.config.ts": "0752be79657b13e8c54236222cad0e0f27f691773ed2044ba4011f8c1e9972e5"
   }
 }
