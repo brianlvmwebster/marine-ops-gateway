@@ -23,6 +23,8 @@ export type JsonPrimitive = boolean | number | string | null;
 
 export type JsonValue = JsonArray | JsonObject | JsonPrimitive;
 
+export type MapSourceKind = "aerial" | "plan";
+
 export type Timestamp = ColumnType<Date, Date | string, Date | string>;
 
 export type UserRole = "admin" | "user";
@@ -44,6 +46,12 @@ export interface CalendarSyncSettings {
   enabled: Generated<boolean>;
   id: number;
   updatedAt: Generated<Timestamp>;
+}
+
+export interface LayoutOrganization {
+  ownerId: string;
+  revision: Generated<number>;
+  sections: Generated<Json>;
 }
 
 export interface LoginAttempts {
@@ -212,6 +220,26 @@ export interface SheetJobSources {
   updatedAt: Generated<Timestamp>;
 }
 
+export interface StorageMaps {
+  archived: Generated<boolean>;
+  createdAt: Generated<Timestamp>;
+  id: string;
+  imageHeight: number;
+  imageKey: string;
+  imageWidth: number;
+  lastAnalysisAt: Timestamp | null;
+  name: string;
+  ownerId: string;
+  ready: Generated<boolean>;
+  revision: Generated<number>;
+  sectionId: string | null;
+  sortOrder: Generated<number>;
+  sourceKind: MapSourceKind;
+  spaces: Generated<Json>;
+  updatedAt: Generated<Timestamp>;
+  uploadKey: string;
+}
+
 export interface UserPasswords {
   createdAt: Generated<Timestamp | null>;
   id: Generated<number>;
@@ -232,6 +260,7 @@ export interface Users {
 export interface DB {
   calendarConnection: CalendarConnection;
   calendarSyncSettings: CalendarSyncSettings;
+  layoutOrganization: LayoutOrganization;
   loginAttempts: LoginAttempts;
   nativeGatewayAssets: NativeGatewayAssets;
   nativeGatewayLinks: NativeGatewayLinks;
@@ -251,6 +280,7 @@ export interface DB {
   sheetImportRuns: SheetImportRuns;
   sheetImportState: SheetImportState;
   sheetJobSources: SheetJobSources;
+  storageMaps: StorageMaps;
   userPasswords: UserPasswords;
   users: Users;
 }
@@ -258,6 +288,7 @@ export interface DB {
 
 // Use these for zod schema enums or other purposes, since the kysely enums are just types
 export const UserRoleArrayValues: [UserRole, ...UserRole[]] = ["admin","user"];
+export const MapSourceKindArrayValues: [MapSourceKind, ...MapSourceKind[]] = ["aerial","plan"];
 // Table/column names whose snake_case spelling kysely's default CamelCasePlugin
 // cannot recover from the camelCase name used in code (an underscore directly
 // before a digit, e.g. reminder_48h_sent ⇄ reminder48hSent). The db helper's

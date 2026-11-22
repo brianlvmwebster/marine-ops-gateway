@@ -1,0 +1,195 @@
+@layer base {
+  /* The trigger takes its look from Input.module.css (the Soft fill field). */
+  .selectTrigger {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: 2.25rem;
+    padding: 0 var(--spacing-3);
+    cursor: pointer;
+    overflow: hidden;
+
+    & > *:not(svg) {
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+  }
+
+  .selectTrigger[data-placeholder] {
+    color: var(--muted-foreground);
+  }
+
+  .selectIcon {
+    height: 1rem;
+    width: 1rem;
+    color: var(--muted-foreground);
+    margin-left: var(--spacing-2);
+    transition: transform var(--animation-duration-normal) ease;
+  }
+
+  .selectTrigger[data-state="open"] .selectIcon {
+    transform: rotate(180deg);
+  }
+
+  /* The list: the Quiet menu look shared with DropdownMenu. */
+  .selectContent {
+    z-index: var(--z-overlay);
+    max-height: var(--radix-select-content-available-height);
+    min-width: max(12rem, var(--radix-select-trigger-width));
+    max-width: 24rem;
+    overflow: hidden;
+    background-color: var(--popup);
+    color: var(--popup-foreground);
+    border-radius: 12px;
+    border: 1px solid color-mix(in srgb, var(--foreground) 9%, transparent);
+    box-shadow:
+      0 2px 6px rgb(0 0 0 / 0.06),
+      0 16px 36px -10px rgb(0 0 0 / 0.22);
+    animation: scaleIn var(--animation-duration-fast) ease-out;
+  }
+
+  @keyframes scaleIn {
+    from {
+      opacity: 0;
+      transform: scale(0.97);
+    }
+    to {
+      opacity: 1;
+      transform: scale(1);
+    }
+  }
+
+  .selectViewport {
+    padding: 4px;
+  }
+
+  .scrollButton {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: var(--spacing-6);
+    background-color: var(--popup);
+    color: var(--popup-foreground);
+    cursor: pointer;
+    border: none;
+    outline: none;
+  }
+
+  .scrollButton:hover .scrollIcon {
+    color: var(--popup-foreground);
+  }
+
+  .scrollIcon {
+    height: 1rem;
+    width: 1rem;
+    color: var(--muted-foreground);
+    transition: color var(--animation-duration-fast) ease;
+  }
+
+  .selectLabel {
+    padding: 6px 8px 4px;
+    font-size: 0.75rem;
+    font-weight: 500;
+    color: var(--muted-foreground);
+  }
+
+  .selectItem {
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 8px;
+    padding-right: 30px;
+    font-size: 0.875rem;
+    line-height: 1.4;
+    border-radius: 7px;
+    color: var(--popup-foreground);
+    user-select: none;
+    outline: none;
+    cursor: pointer;
+    transition: background-color var(--animation-duration-fast) ease;
+  }
+
+  .selectItem:hover,
+  .selectItem:focus-visible,
+  .selectItem[data-highlighted] {
+    background-color: color-mix(in srgb, var(--foreground) 6%, transparent);
+    color: var(--popup-foreground);
+  }
+
+  .selectItem[data-state="checked"] {
+    font-weight: 500;
+  }
+
+  .selectItem[data-disabled] {
+    color: var(--muted-foreground);
+    opacity: 0.5;
+    pointer-events: none;
+  }
+
+  .selectItemIndicator {
+    position: absolute;
+    right: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .checkIcon {
+    height: 0.875rem;
+    width: 0.875rem;
+    color: var(--popup-foreground);
+  }
+
+  .selectSeparator {
+    height: 1px;
+    background-color: color-mix(in srgb, var(--foreground) 8%, transparent);
+    margin: 4px -4px;
+  }
+}
+
+.selectContent{
+  /* Overlay layers */
+  --z-overlay: 400;
+
+  --z-spotlight: 1000; /* Tutorial spotlights/guided help */
+
+  /* System layers */
+  --z-critical: 2000; /* Critical system notifications */
+
+  /* spacing */
+  --spacing-1: 0.25rem;
+  --spacing-2: 0.5rem;
+  --spacing-3: 0.75rem;
+  --spacing-4: 1rem;
+  --spacing-6: 1.5rem;
+  --spacing-8: 2rem;
+  --spacing-12: 3rem;
+  --spacing-16: 4rem;
+  --spacing-20: 5rem;
+
+
+ --brand-orange:#ff9419; --brand-yellow:#ffca3a;
+ --background:#eef1f4; --foreground:#062b43;
+ --surface:#e6edf1; --surface-foreground:#062b43;
+ --sidebar:#e7eff4; --sidebar-foreground:#23485e;
+ --card:#ffffff; --card-foreground:#062b43;
+ --popup:#ffffff; --popup-foreground:#062b43;
+ --primary:#006ca5; --primary-foreground:#ffffff;
+ --secondary:#e5eef4; --secondary-foreground:#254e68;
+ --accent:#dfedf7; --accent-foreground:#07577f;
+ --muted:#eff2f4; --muted-foreground:#5c7080;
+ --success:#25745b; --success-foreground:#ffffff;
+ --error:#b13939; --error-foreground:#ffffff;
+ --warning:#a85d09; --warning-foreground:#ffffff;
+ --info:#306d89; --info-foreground:#ffffff; --info-hover:#285d75; --info-active:#204b60;
+ --border:#ccdbe4;
+ --font-family-base:'IBM Plex Sans',ui-sans-serif,system-ui,sans-serif;
+ --font-family-display:'IBM Plex Sans',ui-sans-serif,system-ui,sans-serif;
+ --font-family-monospace:ui-monospace,monospace; --font-family-cursive:cursive;
+ --shadow:0 2px 6px #062b4308; --shadow-md:0 8px 24px #062b430d; --shadow-lg:0 20px 60px #062b4320; --shadow-focus:0 0 0 3px #006ca533;
+ --radius-sm:2px; --radius:3px; --radius-md:4px; --radius-lg:5px; --radius-full:999px;
+ --animation-duration-fast:120ms; --animation-duration-normal:200ms; --animation-duration-slow:350ms;
+ --chart-color-1:#006ca5; --chart-color-2:#789891; --chart-color-3:#b89c68; --chart-color-4:#618598; --chart-color-5:#a4b7ac;
+}

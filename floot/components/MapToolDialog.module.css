@@ -1,0 +1,198 @@
+@layer base {
+  /* Sectioned footer (Soft lift): a 16px-radius panel with a hairline edge
+     and a soft deep shadow over a light backdrop. The footer is its own band,
+     tinted, with a hairline above it, running to the panel's edges. The close
+     button is a quiet ghost icon. */
+  .overlay {
+    position: fixed;
+    inset: 0;
+    background-color: rgb(0 0 0 / 0.32);
+    z-index: var(--z-overlay) !important;
+    animation: overlayShow var(--animation-duration-normal)
+      cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  :global(.dark) .overlay {
+    background-color: rgb(0 0 0 / 0.55);
+  }
+
+  .content {
+    /* The footer band uses this to reach the panel's edges. Change padding
+       through it, not directly, so the band still lines up. */
+    --dialog-padding: 24px;
+
+    /* This must be fixed, no relative or other positining, otherwise it won't show up properly. */
+    position: fixed !important;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    max-width: calc(100vw - 32px);
+    max-height: 85vh;
+    width: 28rem;
+    background-color: var(--popup);
+    color: var(--popup-foreground);
+    border: 1px solid color-mix(in srgb, var(--foreground) 8%, transparent);
+    border-radius: 16px;
+    box-shadow:
+      0 2px 6px rgb(0 0 0 / 0.06),
+      0 24px 56px -16px rgb(0 0 0 / 0.32);
+    z-index: var(--z-overlay) !important;
+    overflow: auto;
+    padding: var(--dialog-padding);
+    animation: contentShow var(--animation-duration-normal)
+      cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  .close {
+    position: absolute;
+    top: 14px;
+    right: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 2rem;
+    height: 2rem;
+    border-radius: var(--radius);
+    background-color: transparent;
+    color: var(--muted-foreground);
+    border: none;
+    cursor: pointer;
+    transition:
+      background-color var(--animation-duration-fast) ease,
+      color var(--animation-duration-fast) ease;
+  }
+
+  .close:hover {
+    background-color: color-mix(in srgb, var(--foreground) 6%, transparent);
+    color: var(--foreground);
+  }
+
+  .close:focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 4px color-mix(in srgb, var(--foreground) 9%, transparent);
+  }
+
+  .closeIcon {
+    width: 1rem;
+    height: 1rem;
+  }
+
+  /* One even gap under the header; room on the right for the close button. */
+  .header {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    margin-bottom: 20px;
+    padding-right: 32px;
+  }
+
+  /* A header with nothing between it and the footer (a confirmation). */
+  .header:has(+ .footer) {
+    margin-bottom: 0;
+  }
+
+  .footer {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    gap: 8px;
+    margin: 24px calc(-1 * var(--dialog-padding)) calc(-1 * var(--dialog-padding));
+    padding: 14px var(--dialog-padding);
+    border-top: 1px solid color-mix(in srgb, var(--foreground) 8%, transparent);
+    background-color: color-mix(in srgb, var(--foreground) 3%, var(--popup));
+  }
+
+  .title {
+    margin: 0;
+    font-family: var(--font-family-base);
+    font-size: 1.0625rem;
+    font-weight: 600;
+    line-height: 1.35;
+    letter-spacing: -0.01em;
+    color: var(--popup-foreground);
+  }
+
+  .description {
+    margin: 0;
+    font-size: 0.875rem;
+    color: var(--muted-foreground);
+    line-height: 1.5;
+  }
+
+  .screenReaderText {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border-width: 0;
+  }
+
+  @keyframes overlayShow {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
+  }
+
+  @keyframes contentShow {
+    from {
+      opacity: 0;
+      scale: 0.96;
+    }
+    to {
+      opacity: 1;
+      scale: 1;
+    }
+  }
+}
+
+.content{
+  /* Overlay layers */
+  --z-overlay: 400;
+
+  --z-spotlight: 1000; /* Tutorial spotlights/guided help */
+
+  /* System layers */
+  --z-critical: 2000; /* Critical system notifications */
+
+  /* spacing */
+  --spacing-1: 0.25rem;
+  --spacing-2: 0.5rem;
+  --spacing-3: 0.75rem;
+  --spacing-4: 1rem;
+  --spacing-6: 1.5rem;
+  --spacing-8: 2rem;
+  --spacing-12: 3rem;
+  --spacing-16: 4rem;
+  --spacing-20: 5rem;
+
+
+ --brand-orange:#ff9419; --brand-yellow:#ffca3a;
+ --background:#eef1f4; --foreground:#062b43;
+ --surface:#e6edf1; --surface-foreground:#062b43;
+ --sidebar:#e7eff4; --sidebar-foreground:#23485e;
+ --card:#ffffff; --card-foreground:#062b43;
+ --popup:#ffffff; --popup-foreground:#062b43;
+ --primary:#006ca5; --primary-foreground:#ffffff;
+ --secondary:#e5eef4; --secondary-foreground:#254e68;
+ --accent:#dfedf7; --accent-foreground:#07577f;
+ --muted:#eff2f4; --muted-foreground:#5c7080;
+ --success:#25745b; --success-foreground:#ffffff;
+ --error:#b13939; --error-foreground:#ffffff;
+ --warning:#a85d09; --warning-foreground:#ffffff;
+ --info:#306d89; --info-foreground:#ffffff; --info-hover:#285d75; --info-active:#204b60;
+ --border:#ccdbe4;
+ --font-family-base:'IBM Plex Sans',ui-sans-serif,system-ui,sans-serif;
+ --font-family-display:'IBM Plex Sans',ui-sans-serif,system-ui,sans-serif;
+ --font-family-monospace:ui-monospace,monospace; --font-family-cursive:cursive;
+ --shadow:0 2px 6px #062b4308; --shadow-md:0 8px 24px #062b430d; --shadow-lg:0 20px 60px #062b4320; --shadow-focus:0 0 0 3px #006ca533;
+ --radius-sm:2px; --radius:3px; --radius-md:4px; --radius-lg:5px; --radius-full:999px;
+ --animation-duration-fast:120ms; --animation-duration-normal:200ms; --animation-duration-slow:350ms;
+ --chart-color-1:#006ca5; --chart-color-2:#789891; --chart-color-3:#b89c68; --chart-color-4:#618598; --chart-color-5:#a4b7ac;
+}

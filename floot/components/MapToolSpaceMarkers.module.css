@@ -1,0 +1,5 @@
+.layer{position:absolute;inset:0;pointer-events:none;line-height:normal}
+.pin{position:absolute;transform:translate(-50%,-50%);pointer-events:auto;touch-action:none;width:10px!important;min-width:10px!important;height:10px!important;min-height:10px!important;padding:0!important;border:1.5px solid #fff!important;border-radius:50%!important;background:var(--brand-orange)!important;box-shadow:0 1px 3px #06284a70;cursor:pointer;z-index:1;transition:none!important}
+.pin:disabled{opacity:1!important;pointer-events:none}.named{background:var(--primary)!important}.preview{background:var(--brand-yellow)!important}
+.pin:hover,.pin:focus-visible,.highlighted{z-index:4;outline:2px solid var(--linked-highlight,var(--brand-yellow))!important;outline-offset:2px;background:var(--linked-highlight,var(--brand-yellow))!important;box-shadow:0 0 0 4px #fff,0 0 0 5px #06284a}
+.selected{z-index:5;background:var(--linked-highlight,var(--brand-yellow))!important;outline:2px solid var(--linked-highlight,var(--brand-yellow))!important;outline-offset:2px;box-shadow:0 0 0 4px #fff,0 0 0 5px #06284a}

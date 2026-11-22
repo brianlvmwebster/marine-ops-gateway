@@ -1,0 +1,1 @@
+.dialog{width:min(960px,calc(100vw - 24px));max-width:960px;max-height:calc(100dvh - 32px);overflow:auto;padding:24px;display:flex;flex-direction:column;gap:16px}@media(max-width:700px){.dialog{padding:18px 12px}}
