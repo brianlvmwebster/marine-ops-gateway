@@ -1,4 +1,5 @@
 import {Hono} from 'hono';
+import {customersHandler,customersStore} from '../platform/customers.ts';
 import {serve} from '@hono/node-server';
 import {serveStatic} from '@hono/node-server/serve-static';
 import superjson from 'superjson';
@@ -18,6 +19,8 @@ app.get('/staging/health',c=>c.json({status:'ok',environment:'staging',externalW
 app.get('/readyz',async c=>{await platformDatabase()`select 1 from platform_companies limit 1`;return c.json({ready:true});});
 app.get('/login',c=>c.html(loginPage));
 app.post('/staging/login',c=>stagingLogin(c.req.raw));
+const customers=customersHandler(customersStore(platformDatabase()),async request=>(await getServerUserSession(request)).user.id);
+app.all('/_api/customers',c=>customers(c.req.raw));app.all('/_api/customers/*',c=>customers(c.req.raw));
 const platform=platformHandler(platformStore(platformDatabase()),async request=>(await getServerUserSession(request)).user.id);
 app.all('/_api/platform',c=>platform(c.req.raw));app.all('/_api/platform/*',c=>platform(c.req.raw));
 app.get('/_api/auth/session',async c=>{try{await nativeGatewayAccess(c.req.raw);const {user}=await getServerUserSession(c.req.raw);return new Response(superjson.stringify({user}));}catch{return c.json({error:'Sign in to staging.'},401);}});

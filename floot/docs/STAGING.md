@@ -2,7 +2,7 @@
 
 Project: `marine-ops`. Region: `us-east1`. Service: `marine-ops-staging`.
 
-This is an isolated test deployment, not a Floot cutover. It uses a new Cloud SQL PostgreSQL 18 database (`marine_ops_staging`) on `marine-ops-staging-db`, seeded with synthetic Lakeview users and a clearly marked sample job. No customer records, Microsoft credentials or production database connections are copied.
+This is an isolated test deployment, not a Floot cutover. It uses a new Cloud SQL PostgreSQL 18 database (`marine_ops_staging`) on `marine-ops-staging-db`, seeded with synthetic Lakeview users and a clearly marked sample job. The Customers module now contains the authorized Lakeview Lightspeed customer export (8,851 named records); the 388 unnamed records are excluded. Service jobs and sign-in identities remain synthetic. No Microsoft credentials or production database connections are copied. See docs/CUSTOMERS.md.
 
 ## Access
 
@@ -12,7 +12,7 @@ The application uses HTTPS-only, HttpOnly cookies and persisted sessions expirin
 
 ## Isolation and limits
 
-`staging/server.ts` exposes an explicit endpoint allowlist for companies, memberships, tool access, jobs, assignments, dashboard preferences and read-only integration status. All other API routes are denied. Microsoft/Floot auth, Graph, imports, maps/AI, uploads, email, scheduler handoff, cron, webhooks and legacy gateway dispatch are unavailable. No scheduler jobs are created. There is a visible STAGING banner.
+`staging/server.ts` exposes an explicit endpoint allowlist for companies, memberships, tool access, customers, jobs, assignments, dashboard preferences and read-only integration status. All other API routes are denied. Microsoft/Floot auth, Graph, imports, maps/AI, uploads, email, scheduler handoff, cron, webhooks and legacy gateway dispatch are unavailable. No scheduler jobs are created. There is a visible STAGING banner.
 
 Database constraints prevent enabling calendar sync and sheet imports. Code also blocks outbound calendar operations and imports. Startup requires APP_ENV=staging, GOOGLE_CLOUD_PROJECT=marine-ops, a database named marine_ops_staging and no FLOOT_DATABASE_URL. The runtime has only Cloud SQL client access and access to the three staging secrets. Database network access uses the authenticated Cloud SQL connector; no authorized public networks are configured.
 
