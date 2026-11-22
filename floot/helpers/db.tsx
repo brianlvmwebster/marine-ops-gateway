@@ -17,6 +17,7 @@ export const db = new Kysely<DB>({
 plugins: [new FlootCamelCasePlugin()],
 dialect: new PostgresJSDialect({
 postgres: postgres(process.env.DATABASE_URL || process.env.FLOOT_DATABASE_URL, {
+...(process.env.CLOUD_SQL_CONNECTION_NAME?{host:'/cloudsql/'+process.env.CLOUD_SQL_CONNECTION_NAME}:{}),
 prepare: false,
 idle_timeout: 10,
 max: 3,

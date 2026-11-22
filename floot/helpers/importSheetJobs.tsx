@@ -1,5 +1,6 @@
 import {db} from './db';import {sql} from 'kysely';import {parseSheetCsv,mergeSheetJob,stableJson,SHEET_ID,SHEET_GID,type SheetConflict} from './sheetMapping';import type {JobData} from './jobModel';
 export async function importSheetJobs(options:{force?:boolean}={}){
+ if(process.env.APP_ENV==='staging')return {skipped:true,reason:'Imports are disabled in staging'};
  const started=new Date();
  const state=await db.selectFrom('sheetImportState').selectAll().where('id','=',1).executeTakeFirstOrThrow();
  if(!state.enabled)return {skipped:true,reason:'Sheet imports are paused'};

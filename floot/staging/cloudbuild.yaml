@@ -1,0 +1,6 @@
+steps:
+  - name: gcr.io/cloud-builders/docker
+    args: [build, -f, Dockerfile.staging, -t, 'us-east1-docker.pkg.dev/$PROJECT_ID/marine-ops-staging/app:$BUILD_ID', '.']
+images: ['us-east1-docker.pkg.dev/$PROJECT_ID/marine-ops-staging/app:$BUILD_ID']
+options:
+  logging: CLOUD_LOGGING_ONLY

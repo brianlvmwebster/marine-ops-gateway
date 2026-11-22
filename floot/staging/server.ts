@@ -1,0 +1,52 @@
+import {Hono} from 'hono';
+import {serve} from '@hono/node-server';
+import {serveStatic} from '@hono/node-server/serve-static';
+import superjson from 'superjson';
+import {stagingOnly} from './config.ts';
+import {stagingLogin,loginPage} from './auth.ts';
+import {platformDatabase} from '../platform/database.ts';
+import {platformStore} from '../platform/store.ts';
+import {platformHandler} from '../platform/http.ts';
+import {getServerUserSession} from '../helpers/getServerUserSession';
+import {nativeGatewayAccess} from '../helpers/nativeGatewayAccess';
+stagingOnly();
+if(!process.env.JWT_SECRET || process.env.JWT_SECRET.length<32)throw new Error('Session secret required');
+const app=new Hono();
+app.use('*',async(c,next)=>{await next();c.header('Cache-Control','no-store');c.header('X-Content-Type-Options','nosniff');c.header('Referrer-Policy','no-referrer');c.header('X-Frame-Options','DENY');});
+app.get('/healthz',c=>c.json({status:'ok',environment:'staging',externalWrites:false}));
+app.get('/readyz',async c=>{await platformDatabase()`select 1 from platform_companies limit 1`;return c.json({ready:true});});
+app.get('/login',c=>c.html(loginPage));
+app.post('/staging/login',c=>stagingLogin(c.req.raw));
+const platform=platformHandler(platformStore(platformDatabase()),async request=>(await getServerUserSession(request)).user.id);
+app.all('/_api/platform',c=>platform(c.req.raw));app.all('/_api/platform/*',c=>platform(c.req.raw));
+app.get('/_api/auth/session',async c=>{try{await nativeGatewayAccess(c.req.raw);const {user}=await getServerUserSession(c.req.raw);return new Response(superjson.stringify({user}));}catch{return c.json({error:'Sign in to staging.'},401);}});
+// Deliberate allowlist: unlisted integrations, webhooks, cron and legacy dispatch cannot run here.
+const routes:{method:'get'|'post';path:string;module:string}[]=[
+ {method:'post',path:'/auth/logout',module:'auth/logout_POST'},
+ {method:'get',path:'/gateway/links',module:'gateway/links_GET'},
+ {method:'get',path:'/access/session',module:'access/session_GET'},
+ {method:'get',path:'/jobs',module:'jobs_GET'},
+ {method:'post',path:'/jobs/save',module:'jobs/save_POST'},
+ {method:'post',path:'/jobs/workflow',module:'jobs/workflow_POST'},
+ {method:'post',path:'/jobs/complete',module:'jobs/complete_POST'},
+ {method:'get',path:'/assignments/list',module:'assignments/list_GET'},
+ {method:'post',path:'/assignments/save',module:'assignments/save_POST'},
+ {method:'get',path:'/dashboard/preferences',module:'dashboard/preferences_GET'},
+ {method:'post',path:'/dashboard/preferences',module:'dashboard/preferences_POST'},
+ {method:'get',path:'/calendar/status',module:'calendar/status_GET'},
+ {method:'get',path:'/imports/status',module:'imports/status_GET'},
+ {method:'get',path:'/imports/job',module:'imports/job_GET'}
+];
+for(const route of routes)app[route.method]('/_api'+route.path,async c=>(await import('../endpoints/'+route.module+'.ts')).handle(c.req.raw));
+app.all('/_api/*',c=>c.json({error:'This integration is disabled in isolated staging.'},403));
+app.all('/__dev/*',c=>c.notFound());app.all('/static/*',c=>c.notFound());
+app.use('*',serveStatic({root:'./dist'}));app.get('*',serveStatic({path:'./dist/index.html'}));
+app.onError((error,c)=>{console.error('Staging request failed:',error.name);return c.json({error:'Staging request failed.'},500);});
+// Cloud Run terminates TLS before Node. Use the configured public origin for CSRF checks,
+// never a caller-controlled forwarded-host/proto header.
+const server=serve({fetch:request=>{
+ const url=new URL(request.url);
+ if(process.env.PUBLIC_ORIGIN)request=new Request(new URL(url.pathname+url.search,process.env.PUBLIC_ORIGIN),request);
+ return app.fetch(request);
+},hostname:'0.0.0.0',port:Number(process.env.PORT||8080)});
+process.on('SIGTERM',()=>server.close(()=>process.exit(0)));

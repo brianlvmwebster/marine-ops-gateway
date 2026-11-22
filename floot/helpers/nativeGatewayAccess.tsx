@@ -1,4 +1,4 @@
-import {getViewer} from '@floot/viewer';
+import {stagingOnly} from '../staging/config';
 import {sql} from 'kysely';
 import {db} from './db';
 import {getServerUserSession} from './getServerUserSession';
@@ -19,12 +19,19 @@ export async function nativeMemberForMicrosoftUser(user:{id:number;email:string;
 }
 export async function nativeGatewayAccess(request:Request):Promise<NativeGatewayAccess>{
  requireGatewayOrigin(request);
+ if(process.env.APP_ENV==='staging'){
+  stagingOnly();
+  const {user}=await getServerUserSession(request).catch(()=>{throw new GatewayAccessError();});
+  const result=await sql<Member>`select email,role,service_user_id,auth_user_id from native_gateway_members where auth_user_id=${user.id} and enabled`.execute(db);
+  const member=result.rows[0];if(!member?.serviceUserId)throw new GatewayAccessError('Staging membership is disabled.',403);
+  return {userId:member.serviceUserId,email:member.email,role:member.role,authUserId:user.id,displayName:user.displayName,preview:false};
+ }
  // A valid native session must pass company-tenant and current whitelist checks on every request.
  if((request.headers.get('cookie')||'').includes('floot_built_app_session=')){
   try{const {user}=await getServerUserSession(request);return await nativeMemberForMicrosoftUser(user);}catch(error){if(error instanceof GatewayAccessError)throw error;throw new GatewayAccessError();}
  }
  // Floot preview uses the already-authorized project viewer; public deployments have no viewer.
- const viewer=getViewer();
+ const {getViewer}=await import('@floot/viewer');const viewer=getViewer();
  if(viewer){const result=await sql<Member>`select email,role,service_user_id,auth_user_id from native_gateway_members where service_user_id=${viewer.userId} and enabled`.execute(db);const member=result.rows[0];if(member)return {userId:viewer.userId,email:viewer.email,role:member.role,authUserId:0,displayName:'Floot preview',preview:true};}
  throw new GatewayAccessError();
 }

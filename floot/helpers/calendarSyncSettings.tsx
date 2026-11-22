@@ -2,18 +2,21 @@ import {db} from './db';
 import {sql} from 'kysely';
 import {runIfCalendarSyncEnabled} from './calendarSyncPolicy';
 export async function calendarSyncEnabled():Promise<boolean>{
+ if(process.env.APP_ENV==='staging')return false;
  const result=await sql<{enabled:boolean}>`select enabled from calendar_sync_settings where id = 1`.execute(db);
  return result.rows[0]?.enabled===true;
 }
 // Pausing takes the same database row lock as every outbound write. A successful
 // pause response therefore waits for already-started writes to finish.
 export async function withCalendarSyncEnabled<T>(work:()=>Promise<T>):Promise<T>{
+ if(process.env.APP_ENV==='staging')throw new Error('Outlook writes are disabled in staging');
  return db.transaction().execute(async trx=>runIfCalendarSyncEnabled(async()=>{
  const r=await sql<{enabled:boolean}>`select enabled from calendar_sync_settings where id = 1 for update`.execute(trx);
  return r.rows[0]?.enabled;
  },work));
 }
 export async function setCalendarSyncEnabled(enabled:boolean){
+ if(process.env.APP_ENV==='staging')throw new Error('Calendar settings are locked in staging');
  return db.transaction().execute(async trx=>{
  await sql`select id from calendar_sync_settings where id = 1 for update`.execute(trx);
  const result=await sql<{enabled:boolean}>`update calendar_sync_settings set enabled = ${enabled}, updated_at = now() where id = 1 returning enabled`.execute(trx);

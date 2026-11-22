@@ -1,0 +1,12 @@
+.git
+node_modules
+dist
+backups
+.env*
+env.json
+*.log
+*.dump
+*.sql.gz
+.aws
+.codex
+.agents
