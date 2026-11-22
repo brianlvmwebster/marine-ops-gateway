@@ -2,8 +2,15 @@ import "./loadEnv.js";
 import { Hono } from 'hono'
 import { serveStatic } from '@hono/node-server/serve-static'
 import { serve } from '@hono/node-server';
+import {platformDatabase} from './platform/database.ts';
+import {platformStore} from './platform/store.ts';
+import {platformHandler} from './platform/http.ts';
+import {getServerUserSession} from './helpers/getServerUserSession.tsx';
 
 const app = new Hono();
+const platformApi=platformHandler(platformStore(platformDatabase()),async request=>(await getServerUserSession(request)).user.id);
+app.all('/_api/platform',c=>platformApi(c.req.raw));
+app.all('/_api/platform/*',c=>platformApi(c.req.raw));
 
 app.get('_api/auth/microsoft_integrations_authorize',async c => {
   try {
@@ -296,7 +303,9 @@ app.get('/_api/auth/microsoft_login_authorize',async c=>{const {handle}=await im
 app.get('/_api/auth/microsoft_login_callback',async c=>{const {handle}=await import('./endpoints/auth/microsoft_login_callback_GET.js');return handle(c.req.raw);});
 app.post('/_api/auth/microsoft_login_establish_session',async c=>{const {handle}=await import('./endpoints/auth/microsoft_login_establish_session_POST.js');return handle(c.req.raw);});
 
-app.use("/*", serveStatic({ root: "./static" }));
+// Never expose development notes or platform source through static hosting.
+app.all('/__dev/*',c=>c.notFound());
+app.all('/static/__dev/*',c=>c.notFound());
 app.use('/*', serveStatic({ root: './dist' }))
 app.get("*", async (c, next) => {
   const p = c.req.path;
@@ -305,6 +314,4 @@ app.get("*", async (c, next) => {
   }
   return serveStatic({ path: "./dist/index.html" })(c, next);
 });
-serve({ fetch: app.fetch, port: 3333 });
-console.log("Running at http://localhost:3333")
-      
+serve({ fetch: app.fetch, port: Number(process.env.PORT || 3333), hostname:'0.0.0.0' });
