@@ -1,6 +1,6 @@
 {
   "repository": "https://github.com/brianlvmwebster/service-dashboard",
-  "sourceCommit": "bc3ec837270b977bcc1342af9918e6e1347c031c",
+  "sourceCommit": "5b6c9270fd405d4ddaafd6158e4c1e9c2e9c4857",
   "files": {
     ".dockerignore": "bd46bf310d0466b3d9bcf2aa5a753be970584067e7199456d7850704420c0eb9",
     ".gcloudignore": "bd46bf310d0466b3d9bcf2aa5a753be970584067e7199456d7850704420c0eb9",
@@ -257,7 +257,7 @@
     "docs/MAPS.md": "1ea66c1af9ce18658fd712c1978f28f5378711cd5c55d8bcb6df0effd1e5f3e2",
     "docs/MIGRATION.md": "dc90e508df23d743408d528d7d370374a65616c48b3d7b72776f5893cb149bee",
     "docs/PLATFORM_FOUNDATION.md": "d6f72917c80e30bc9dc1669e85ebdb881d72ee46ccb4d9bf798e27131d4950e5",
-    "docs/STAGING.md": "31d886e2a49d70fe02add624fad61c9a76b53074f5694dedae25b8996e30d5e4",
+    "docs/STAGING.md": "cfaefdf4d2d326272d69d3dc3ce13928fa3c007aaf5c6a13de79929461b81f8f",
     "docs/marine-ops-branding.json": "196967428e9c948787d120536dbe45c111765414f9aae0e1d8c1522ba378c8a6",
     "endpoints/access/session_GET.schema.ts": "809227f0fa0e981c27300715ed9477f1fa75c5dc7a38abd245e67ef785468d40",
     "endpoints/access/session_GET.ts": "598836bcecc0850694a4ded00b04217c5fb44a714b12c15e3d54cc73ddf3c943",
