@@ -12,7 +12,7 @@ The application uses HTTPS-only, HttpOnly cookies and persisted sessions expirin
 
 ## Isolation and limits
 
-`staging/server.ts` exposes an explicit endpoint allowlist for companies, memberships, tool access, customers, jobs, assignments, dashboard preferences and read-only integration status. All other API routes are denied. Microsoft/Floot auth, Graph, imports, maps/AI, uploads, email, scheduler handoff, cron, webhooks and legacy gateway dispatch are unavailable. No scheduler jobs are created. There is a visible STAGING banner.
+`staging/server.ts` exposes an explicit endpoint allowlist for companies, memberships, tool access, customers, customer units, jobs, assignments, dashboard preferences and read-only integration status. All other API routes are denied. Microsoft/Floot auth, Graph, imports, maps/AI, uploads, email, scheduler handoff, cron, webhooks and legacy gateway dispatch are unavailable. No scheduler jobs are created. There is a visible STAGING banner.
 
 Database constraints prevent enabling calendar sync and sheet imports. Code also blocks outbound calendar operations and imports. Startup requires APP_ENV=staging, GOOGLE_CLOUD_PROJECT=marine-ops, a database named marine_ops_staging and no FLOOT_DATABASE_URL. The runtime has only Cloud SQL client access and access to the three staging secrets. Database network access uses the authenticated Cloud SQL connector; no authorized public networks are configured.
 
