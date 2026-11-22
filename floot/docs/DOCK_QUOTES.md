@@ -11,3 +11,7 @@ The staging asset handler adds the integration script to the existing embedded e
 This is the first quote-management layer: shared storage, search, copies, customer links and overwrite protection. Quote status/approval workflows, revision-history browsing, attachments, sending email and production authentication/cutover are separate work. The revision counter is not a historical archive.
 
 Verification: tests/platform-dock-quotes.test.mjs exercises validation, authorization, customer snapshots, shared reads, conflicts and links against PostgreSQL in CI. Staging browser verification uses synthetic customer/quote records only.
+
+## Verification — November 22, 2026
+
+Frontend and PostgreSQL CI passed. Staging API checks passed for save/read/update, stale-version rejection, invalid customer rejection, anonymous access and same-origin framing. Browser testing selected the synthetic Picker QA customer, added a dock frame and five decking panels, set custom labor to $150, saved and reopened from another tab and from the customer record. The restored worksheet and print preview retained the $2,048.69 test total and contact snapshot. A second-tab update caused the original tab's stale save to be rejected. Save as new quote created a separate linked copy. Existing Service Desk staging smoke checks also passed. These are synthetic test quotes, not real offers or orders. Live Floot was not changed.
