@@ -10,7 +10,7 @@ export const widgetLibrary:Record<WidgetType,{title:string;description:string;ac
  'customer-trailers':{title:'Customer trailers',description:'Customer Trailer jobs excluding Road Pickup; includes Done jobs awaiting review.',accent:'#0f766e'},
  upcoming:{title:'Upcoming jobs',description:'Active appointments from today onward.',accent:'#075985'},
  today:{title:"Today's jobs",description:'Active appointments scheduled for today in Eastern Time.',accent:'#be185d'},
- calendar:{title:'Compact calendar',description:'A short agenda with saved day range and job filters.',accent:'#0369a1'}
+ calendar:{title:'Compact calendar',description:'Tuesday–Saturday columns with week navigation and saved job filters.',accent:'#0369a1'}
 };
 const filterText=z.string().max(500);
 export const calendarWidgetSchema=z.object({range:z.enum(['rolling','week']),days:z.number().int().min(1).max(14),pickup:filterText,trailer:filterText,status:z.enum(['active','all','New','Scheduled','Onsite','In progress','Awaiting parts','Ready','Done','Completed','Cancelled']),assignment:filterText,priority:z.enum(['','Normal','High','Urgent']),service:filterText,returnType:filterText}).strict();

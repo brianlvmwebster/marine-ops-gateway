@@ -30,4 +30,3 @@ export const postRequestPasswordReset = async (
 
   return superjson.parse<OutputType>(await result.text());
 };
-

@@ -1,3 +1,7 @@
+# Current direction — November 22, 2026
+
+The owner has superseded the Floot-first editing workflow and requested a full exit from Floot. GitHub is the editing source. Reconcile the latest Floot source before migration work, then implement standalone replacements here. Floot remains live only until a verified replacement and cutover are authorized; do not delete it or publish new Floot changes as a routine step. Keep development branches for work, main stable, both repositories synchronized, and Outlook sync paused. See docs/FLOOT_EXIT.md. The historical workflow below applies only where consistent with this direction.
+
 # Dashboard development workflow
 
 ## Platform and repository roles

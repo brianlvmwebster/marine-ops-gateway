@@ -7,7 +7,8 @@
   "sourceHashes": {
     "components/GatewayBrand.tsx": "b4308ff0a0160832921e76f971eef74387c7a97a483be82f500e986004a40037",
     "components/GatewayBrand.module.css": "ecfcef57882d223d343c5cab70f29640ea39b57aa99202568e2916c2b1ca0e83",
-    "components/ServiceDashboard.tsx": "6a90f2773014777bdc299529052ad3b570d45dcd37243aaf1302ffcb9cba1157",
+    "components/ServiceDashboard.tsx": "e8753e941d84861547946fb343f6ee215ac3e7405fcdc235f1b1b565581e70e9",
     "helpers/layoutDocument.tsx": "3c4dda60de27be1276e1c928ce58b615b7a515d87c77d372045fbb9ee2b32319"
-  }
+  },
+  "serviceName": "MarineOps - Service"
 }

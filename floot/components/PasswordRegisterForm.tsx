@@ -168,4 +168,3 @@ export const PasswordRegisterForm: React.FC<PasswordRegisterFormProps> = ({
     </Form>
   );
 };
-

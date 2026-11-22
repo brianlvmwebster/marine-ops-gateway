@@ -1,0 +1,38 @@
+.preview {
+  --background:#F5F7F9;
+  --foreground:#082B4C;
+  --surface:#F5F7F9;
+  --card:#FFFFFF;
+  --border:#DCE3E9;
+  --primary:#082B4C;
+  --primary-foreground:#FFFFFF;
+  --secondary:#EAF5FA;
+  --secondary-foreground:#082B4C;
+  --accent:#EAF5FA;
+  --accent-foreground:#082B4C;
+  --muted:#F0F3F6;
+  --muted-foreground:#5B6D7E;
+  --info:#24728E;
+  --shadow:0 1px 3px #082b4c08;
+  --shadow-focus:0 0 0 3px #83D2EC80;
+  --font-family-display:system-ui,sans-serif;
+  min-height:100vh;
+  background:var(--background);
+  color:var(--foreground);
+}
+.notice {
+  min-height:42px;
+  box-sizing:border-box;
+  padding:10px 24px;
+  display:flex;
+  flex-wrap:wrap;
+  justify-content:space-between;
+  gap:8px 20px;
+  background:#FFFFFF;
+  border-bottom:2px solid #F28C28;
+  font-size:12px;
+  line-height:20px;
+}
+.notice a {color:#082B4C;text-decoration:underline;text-underline-offset:3px}
+.notice a:focus-visible {outline:3px solid #83D2EC;outline-offset:3px}
+@media(max-width:600px) {.notice {padding:10px 16px}}

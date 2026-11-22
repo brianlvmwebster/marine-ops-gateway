@@ -6,7 +6,7 @@
 /* Compact service checklist; full job sheets keep their detailed layout. */
 .checklist{max-width:780px;padding:24px;font-size:12px;line-height:1.3}
 .paper.checklist header{align-items:center;gap:12px;flex-wrap:nowrap;border-bottom-width:2px;padding-bottom:7px}
-.checklist .logo{width:118px;height:59px;object-fit:contain}
+.checklist .logo{width:160px;height:auto;object-fit:contain}
 .checklist header h2{margin:0 0 3px;font-size:13px;letter-spacing:.7px}
 .checklist header strong{font-size:12px}
 .checklist header p{margin:2px 0 0}
@@ -38,3 +38,8 @@
 .jobDetails p{overflow-wrap:anywhere}
 @media screen and (max-width:600px){.jobDetails{grid-template-columns:minmax(0,1fr)}}
 @media print{.jobDetails{grid-template-columns:repeat(3,minmax(0,1fr))}}
+
+/* MarineOps service identity remains compact on job sheets and checklists. */
+.paper header>div:first-child{flex-direction:column;align-items:flex-start;gap:5px}
+.serviceName{font-size:12px;line-height:1.3}
+.checklist .serviceName{font-size:10px}

@@ -74,4 +74,3 @@ describe("layout management controls",()=>{
   }finally{cleanup();client.clear();}
  });
 });
-

@@ -52,5 +52,3 @@ export default function Gateway({admin,canManage=false,email}:{admin:boolean;can
     </main><footer><span>MARINE OPS <span className="footer-divider">/</span> GATEWAY</span><span>A clear course to your everyday tools.</span></footer>
   </div></div>;
 }
-
-

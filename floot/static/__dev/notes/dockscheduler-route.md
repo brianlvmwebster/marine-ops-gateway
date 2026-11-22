@@ -1,0 +1,7 @@
+# Dock scheduler at the gateway URL
+
+Requested public URL: https://lakeviewwebster.marineopstech.net/dockscheduler, retained in the browser.
+
+Prepared a gateway-authenticated full-page iframe route. Its fixed source is https://dockscheduler.marineopstech.net/ on the existing Dock Crew Scheduler project (0f867433-8843-462c-bb44-d26756345281). A same-site custom hostname is necessary for the scheduler's existing HttpOnly Secure SameSite=Strict crew cookies; embedding its floot.app origin would be cross-site. Crew authentication and the separate read-only migration database remain unchanged. Login return policy now accepts only the exact new route, with an optional trailing slash.
+
+PENDING: connect dockscheduler.marineopstech.net to the scheduler through Floot's Add Custom Domain wizard and its generated DNS records; verify HTTPS and that it serves without redirecting to a cross-site hostname. Then publish this gateway change and verify the requested hostname stays in the address bar, gateway login return, crew sign-in, scheduler navigation, mobile sizing and existing gateway/service routes. Do not report this route live before completing those checks. No database cutover or Outlook changes are part of this routing task.

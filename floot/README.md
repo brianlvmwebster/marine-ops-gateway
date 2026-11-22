@@ -1,6 +1,8 @@
-# Lakeview Marine Service Dashboard
+# MarineOps - Service
 
-Source repository for Lakeview Marine's service queue, scheduling, intake forms, and printable job sheets/checklists. Imported from the owner's Floot project on November 9, 2026.
+**Current direction (November 22, 2026):** migrate fully off Floot, using GitHub as the editing source. Production remains on Floot during preparation. See [the standalone replacement audit and hosting recommendation](docs/FLOOT_EXIT.md) and [source snapshot manifest](docs/FLOOT_SOURCE_SNAPSHOT.json). The earlier transfer notes below describe the pre-migration arrangement.
+
+Source repository for MarineOps - Service: the marine service queue, scheduling, intake forms, and printable job sheets/checklists. Imported from the owner's Floot project on November 9, 2026.
 
 Production gateway target: `https://lakeviewwebster.marineopstech.net`, with service at `/dashboard/`. Both run on Floot with company Microsoft login. See [production architecture](docs/GATEWAY.md). The prior Vercel frontend remains a rollback path.
 

@@ -1,26 +1,23 @@
 .calendar{min-width:0;color:var(--foreground)}
 .rangeTools{display:flex;align-items:center;flex-wrap:wrap;gap:5px;padding:10px 12px 4px}
-.rangeTools label{display:flex;align-items:center;gap:6px;font-size:11px;color:var(--muted-foreground)}
-.days{width:62px!important;min-height:28px!important;height:28px!important;font-size:11px!important}
-.rangeTools button{font-size:11px!important;min-height:28px!important;height:auto!important;padding:5px 8px!important}
-.rangeLabel{font-size:10px;padding:4px 12px 10px;color:var(--muted-foreground)}
+.rangeTools button{font-size:11px!important;min-height:30px!important;height:auto!important;padding:5px 8px!important}
+.rangeLabel{font-size:11px;padding:4px 12px 10px;color:var(--muted-foreground)}
 .filters{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(180px,100%),1fr));gap:10px;padding:12px;background:var(--surface);border-block:1px solid var(--border)}
 .filter{display:flex;flex-direction:column;gap:4px;min-width:0;font-size:10px;color:var(--muted-foreground)}
 .filter button{width:100%;min-width:0;font-size:11px!important;min-height:30px!important;height:30px!important}
-.agenda{padding:0 12px;max-height:420px;overflow:auto;overscroll-behavior:contain}
+.legend{display:flex;flex-wrap:wrap;gap:5px 12px;padding:0 12px 10px;font-size:9px;color:var(--muted-foreground)}
+.legend span{display:inline-flex;align-items:center;gap:4px}.legend i{width:7px;height:7px;border-radius:2px;flex-shrink:0}
+.agenda{display:grid;grid-template-columns:repeat(5,minmax(145px,1fr));max-height:440px;overflow:auto;overscroll-behavior:contain;border-block:1px solid var(--border)}
 .agenda:focus-visible{outline:2px solid var(--info);outline-offset:-2px}
-.day,.today{padding:9px 0;border-top:1px solid var(--border)}
-.dayHeading{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:5px}
-.dayHeading time{display:flex;align-items:baseline;gap:8px}.dayHeading strong{font-size:16px;font-weight:800;font-variant-numeric:tabular-nums}.dayHeading span,.dayHeading small{font-size:10px;color:var(--muted-foreground)}
-.today .dayHeading strong{color:var(--info)}
-.cards{display:grid;grid-template-columns:repeat(var(--widget-columns,1),minmax(0,1fr));gap:10px;align-items:stretch}
-.entry{display:flex!important;flex-direction:column;justify-content:flex-start!important;align-items:stretch!important;width:100%;min-width:0;height:auto!important;min-height:0!important;white-space:normal!important;text-align:left;padding:12px!important;gap:6px!important;border:1px solid var(--border)!important;border-top:3px solid var(--category-color)!important;border-radius:8px!important;background:var(--surface)!important;color:var(--foreground)!important;overflow-wrap:anywhere;line-height:1.4!important}
-.entry:hover{background:var(--secondary)!important}
-.cardTop{display:flex;justify-content:space-between;align-items:center;gap:6px;flex-wrap:wrap}
-.status{font-size:9px;background:var(--secondary);color:var(--secondary-foreground);padding:3px 5px;border-radius:4px}.time{font-size:10px;color:var(--muted-foreground);font-variant-numeric:tabular-nums}
-.customer{font-size:15px;font-weight:700;line-height:1.3}.vessel{font-size:12px;font-weight:500}
-.tags{display:flex;gap:5px;flex-wrap:wrap}.tags>span{font-size:9px;border:1px solid var(--border);border-radius:4px;padding:3px 5px;background:var(--card);color:var(--muted-foreground)}
-.location{display:flex;flex-direction:column;gap:4px;font-size:10px;color:var(--muted-foreground)}.location>span:first-child{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}.location b{color:var(--category-color);font-weight:650}
-.assignment{font-size:10px;color:var(--muted-foreground);margin-top:auto}
-.noJobs,.more{font-size:10px;color:var(--muted-foreground);margin:5px 0}.more{padding:3px 0}
-.footer{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:6px 12px 10px;color:var(--muted-foreground);font-size:10px}.footer button{font-size:10px!important;padding:0!important;height:auto!important}
+.day,.today{min-width:0;border-right:1px solid var(--border);padding:0 6px 8px}.day:last-child,.today:last-child{border-right:0}
+.dayHeading{position:sticky;top:0;z-index:1;display:flex;align-items:center;justify-content:space-between;gap:4px;padding:9px 2px;background:var(--surface);border-bottom:1px solid var(--border);margin-bottom:6px}
+.dayHeading time{display:flex;flex-direction:column;gap:2px}.dayHeading strong{font-size:12px;font-weight:800}.dayHeading span,.dayHeading small{font-size:10px;color:var(--muted-foreground)}
+.today .dayHeading strong{color:var(--info)}.today .dayHeading{box-shadow:inset 0 3px var(--info)}
+.cards{display:flex;flex-direction:column;gap:5px}
+.entry{display:flex!important;flex-direction:column;align-items:stretch!important;justify-content:flex-start!important;width:100%;min-width:0;height:auto!important;min-height:0!important;white-space:normal!important;text-align:left;padding:6px 7px!important;gap:2px!important;border:1px solid var(--border)!important;border-left:4px solid var(--category-color)!important;border-radius:5px!important;background:var(--surface)!important;color:var(--foreground)!important;overflow-wrap:anywhere;line-height:1.3!important}
+.entry:hover{background:var(--secondary)!important}.entry:focus-visible{outline:2px solid var(--info);outline-offset:1px}
+.cardTop{display:flex;flex-wrap:wrap;gap:2px 6px;align-items:baseline;justify-content:space-between}
+.time{font-size:9px;color:var(--muted-foreground);font-variant-numeric:tabular-nums}.category{font-size:8px;color:var(--muted-foreground)}
+.customer{font-size:12px;font-weight:750;line-height:1.3}.vessel{font-size:10px;font-weight:500}.location{font-size:10px;color:var(--muted-foreground)}
+.noJobs,.more{font-size:10px;color:var(--muted-foreground);margin:8px 2px}.more{padding:3px 0}
+.footer{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:8px 12px;color:var(--muted-foreground);font-size:10px}.footer button{font-size:10px!important;padding:0!important;height:auto!important}

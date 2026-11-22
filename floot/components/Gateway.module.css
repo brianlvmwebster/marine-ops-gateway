@@ -54,5 +54,3 @@
  .gateway :global(.gateway-home .hero){flex-direction:column;align-items:flex-start;gap:28px}
  .gateway :global(.gateway-home .hero-subscriber-logo){flex:none;width:150px;max-width:100%;align-self:flex-end}
 }
-
-

@@ -1,2 +1,2 @@
-import React from 'react';import ServiceDashboard from '../components/ServiceDashboard';import {NativeGatewayGuard} from '../components/NativeGatewayGuard';
-export default function Dashboard(){return <NativeGatewayGuard><ServiceDashboard/></NativeGatewayGuard>;}
+import React from 'react';import ServiceDashboard from '../components/ServiceDashboard';import {NativeGatewayGuard} from '../components/NativeGatewayGuard';import {useAuth} from '../helpers/useAuth';
+export default function Dashboard(){const {authState}=useAuth();return <NativeGatewayGuard><ServiceDashboard userName={authState.type==='authenticated'?authState.user.displayName:undefined}/></NativeGatewayGuard>;}
