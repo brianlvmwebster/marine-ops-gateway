@@ -19,7 +19,8 @@ test('PostgreSQL foundation: isolation, revocation, roles, concurrency and audit
       await db`insert into users values(1,'owner@example.invalid','Owner'),(2,'admin@example.invalid','Admin'),(3,'member@example.invalid','Member'),(4,'operator@example.invalid','Operator'),(5,'other@example.invalid','Other')`;
       await db`insert into native_gateway_members values(1,'admin',true,'legacy-owner'),(2,'user',true,'legacy-admin'),(3,'user',true,'legacy-member')`;
       const migration=await readFile(new URL('../migrations/007-platform-foundation.sql',import.meta.url),'utf8');
-      await db.unsafe(migration);await db.unsafe(migration);
+      async function migrate(){const connection=await db.reserve();try{await connection.unsafe(migration);}finally{connection.release();}}
+      await migrate();await migrate();
       const store=platformStore(db);
       assert.equal((await store.overview(1)).operator,false);
       assert.equal((await store.company(1,LAKEVIEW_ID)).members.length,3);
@@ -52,7 +53,7 @@ test('PostgreSQL foundation: isolation, revocation, roles, concurrency and audit
       assert.equal(Number((await db`select count(*) from platform_memberships where role='owner' and status='active'`)[0].count),1);
       await db`update platform_companies set status='suspended' where id=${LAKEVIEW_ID}`;
       await assert.rejects(store.legacyServiceAccess('legacy-owner'),{status:403});
-      await db.unsafe(migration);
+      await migrate();
       assert.equal((await db`select status from platform_memberships where user_id=3`)[0].status,'suspended');
     }finally{await db.end();}
   }finally{
