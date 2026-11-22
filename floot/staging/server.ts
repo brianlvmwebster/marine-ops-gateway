@@ -13,7 +13,7 @@ stagingOnly();
 if(!process.env.JWT_SECRET || process.env.JWT_SECRET.length<32)throw new Error('Session secret required');
 const app=new Hono();
 app.use('*',async(c,next)=>{await next();c.header('Cache-Control','no-store');c.header('X-Content-Type-Options','nosniff');c.header('Referrer-Policy','no-referrer');c.header('X-Frame-Options','DENY');});
-app.get('/healthz',c=>c.json({status:'ok',environment:'staging',externalWrites:false}));
+app.get('/staging/health',c=>c.json({status:'ok',environment:'staging',externalWrites:false}));
 app.get('/readyz',async c=>{await platformDatabase()`select 1 from platform_companies limit 1`;return c.json({ready:true});});
 app.get('/login',c=>c.html(loginPage));
 app.post('/staging/login',c=>stagingLogin(c.req.raw));
@@ -46,7 +46,9 @@ app.onError((error,c)=>{console.error('Staging request failed:',error.name);retu
 // never a caller-controlled forwarded-host/proto header.
 const server=serve({fetch:request=>{
  const url=new URL(request.url);
- if(process.env.PUBLIC_ORIGIN)request=new Request(new URL(url.pathname+url.search,process.env.PUBLIC_ORIGIN),request);
+ const proxyOrigin='http://127.0.0.1:18089';
+ const origin=process.env.STAGING_PROXY_ORIGIN===proxyOrigin&&request.headers.get('origin')===proxyOrigin?proxyOrigin:process.env.PUBLIC_ORIGIN;
+ if(origin)request=new Request(new URL(url.pathname+url.search,origin),request);
  return app.fetch(request);
 },hostname:'0.0.0.0',port:Number(process.env.PORT||8080)});
 process.on('SIGTERM',()=>server.close(()=>process.exit(0)));

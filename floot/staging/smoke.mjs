@@ -2,8 +2,10 @@ import assert from 'node:assert/strict';
 import superjson from 'superjson';
 const origin=process.env.STAGING_URL,secret=process.env.STAGING_LOGIN_SECRET;
 if(!origin?.startsWith('https://')||!secret)throw new Error('Set STAGING_URL and STAGING_LOGIN_SECRET securely.');
-const call=(path,options={})=>fetch(origin+path,{redirect:'manual',...options});
-assert.equal((await call('/healthz')).status,200);
+const transport=process.env.STAGING_TRANSPORT_URL||origin;
+if(transport!==origin&&transport!=='http://127.0.0.1:8080')throw new Error('Only loopback verification may override transport.');
+const call=(path,options={})=>fetch(transport+path,{redirect:'manual',...options,headers:{...(process.env.CLOUD_RUN_ID_TOKEN?{Authorization:'Bearer '+process.env.CLOUD_RUN_ID_TOKEN}:{}),...options.headers}});
+assert.equal((await call('/staging/health')).status,200);
 assert.equal((await call('/readyz')).status,200);
 assert.equal((await call('/_api/jobs')).status,401);
 assert.equal((await call('/_api/platform')).status,401);
@@ -30,4 +32,4 @@ assert.equal((await setTool('disabled')).status,200);entitlement.version++;
 try{assert.equal((await call('/_api/jobs',{headers})).status,403);}finally{assert.equal((await setTool('enabled')).status,200);}
 assert.equal((await call('/_api/auth/logout',{method:'POST',headers,body:'{}'})).status,200);
 assert.equal((await call('/_api/platform',{headers})).status,401);
-console.log('PASS: HTTPS health, login, session, company/tools, dashboard/print routes, job read/edit, integration isolation, entitlement revocation and logout.');
+console.log('PASS: '+(transport===origin?'HTTPS':'in-container loopback')+' health, login, session, company/tools, dashboard/print routes, job read/edit, integration isolation, entitlement revocation and logout.');

@@ -1,6 +1,6 @@
 {
   "repository": "https://github.com/brianlvmwebster/service-dashboard",
-  "sourceCommit": "b78b09b57c4626e514577c25e1179ef539ff5a40",
+  "sourceCommit": "bc3ec837270b977bcc1342af9918e6e1347c031c",
   "files": {
     ".dockerignore": "bd46bf310d0466b3d9bcf2aa5a753be970584067e7199456d7850704420c0eb9",
     ".gcloudignore": "bd46bf310d0466b3d9bcf2aa5a753be970584067e7199456d7850704420c0eb9",
@@ -257,7 +257,7 @@
     "docs/MAPS.md": "1ea66c1af9ce18658fd712c1978f28f5378711cd5c55d8bcb6df0effd1e5f3e2",
     "docs/MIGRATION.md": "dc90e508df23d743408d528d7d370374a65616c48b3d7b72776f5893cb149bee",
     "docs/PLATFORM_FOUNDATION.md": "d6f72917c80e30bc9dc1669e85ebdb881d72ee46ccb4d9bf798e27131d4950e5",
-    "docs/STAGING.md": "ba7d4b26b76beeb7bfd47dcff3b17780c42183bb0e224466dbbce2801d5db914",
+    "docs/STAGING.md": "31d886e2a49d70fe02add624fad61c9a76b53074f5694dedae25b8996e30d5e4",
     "docs/marine-ops-branding.json": "196967428e9c948787d120536dbe45c111765414f9aae0e1d8c1522ba378c8a6",
     "endpoints/access/session_GET.schema.ts": "809227f0fa0e981c27300715ed9477f1fa75c5dc7a38abd245e67ef785468d40",
     "endpoints/access/session_GET.ts": "598836bcecc0850694a4ded00b04217c5fb44a714b12c15e3d54cc73ddf3c943",
@@ -742,8 +742,8 @@
     "staging/cloudbuild.yaml": "ae0476f35081651a3961889bcc8ccf1aa2df848046f90f24265ef06685adc410",
     "staging/config.ts": "c008b67096416c115367e16a649f90dcb6fb6fd69de7a36ed06dca77778cea64",
     "staging/migrate.ts": "e0202f5c49dc1e6b51ee05e4d82ceca366a2306ca63cae8523dd48d8e2f45986",
-    "staging/server.ts": "1ecb78c753f95b107212f69f6dd5cf8e70854595ab5a7b814a7b227b7bd78673",
-    "staging/smoke.mjs": "e1f9bb7c6546a0f376071724c0ae3eb13272a409c7ca4e08d96694f3e7518ffc",
+    "staging/server.ts": "27494de5394c429d0f83a85d007cbfa501b722d479cb9e844977e96969a97c87",
+    "staging/smoke.mjs": "bb5b588892610c73bfb866a70025da3fb665f31fff83aec94522eb1e31801b9a",
     "static/__dev/notes/architecture.md": "86544f201b0d09aafe164c75761db68498da384f919f75d088ec97e14cb35908",
     "static/__dev/notes/branding-refresh.md": "083a14267893f22611243f6663d78bf3354732e3ac2a35f1c629af8b0a056c83",
     "static/__dev/notes/calendar-sync-pause.md": "da92820de690785c8ce59a5a26cce95edb70a387a676b9026cd17e6ebda568bf",
@@ -772,7 +772,7 @@
     "static/__dev/scheduled-jobs.json": "243e0f2247156c4f6cc5dffb4c03c7c1a81958a74c1381bc644a52d853318cad",
     "tests/platform-postgres.test.mjs": "c1c1b8a694c57cef52c0f2bd65863e3f7b91bf88c06062044adef8f8c3ba59c0",
     "tests/platform.test.mjs": "d03a200071a93a4ccf065e1a0f4cdb473a38bdfb1568f2c4d16d395a59d631d0",
-    "tests/staging.test.mjs": "7cda608d4150d7153ae933517c0dd9d0fa28218ee02c7f915198764a00ca86a3",
+    "tests/staging.test.mjs": "0f6e591e2ce021e96a371f1c036b5f379ec26a74db826bd0b9f522a7e446dc70",
     "vite.config.ts": "0752be79657b13e8c54236222cad0e0f27f691773ed2044ba4011f8c1e9972e5"
   }
 }
