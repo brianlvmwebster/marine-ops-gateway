@@ -1,0 +1,52 @@
+// Staging-only integration with the bundled Dock Builder workspace API.
+(() => {
+ 'use strict';
+ const company='00000000-0000-4000-8000-000000000001',workspace=window.LVMQuoteWorkspace,$=id=>document.getElementById(id);
+ let active=null,customerId=null,locked=false,busy=false,dirty=false,muted=false,draftId=crypto.randomUUID(),page=0;
+ const entry=document.createElement('button');entry.type='button';entry.textContent='Customer & saved quotes';entry.id='customerQuotes';
+ document.querySelector('.site-logout').before(entry);
+ const dialog=document.createElement('dialog');dialog.id='customerQuoteDialog';dialog.setAttribute('aria-labelledby','customerQuoteTitle');dialog.style.cssText='width:800px;max-height:90vh;overflow:auto';
+ dialog.innerHTML=`<h2 id="customerQuoteTitle">Customer & saved quotes</h2><button type="button" id="closeCustomerQuote">Close</button>
+ <p id="quoteCustomerMessage" role="status"></p><p id="quoteCustomerError" role="alert"></p>
+ <fieldset id="quoteCustomerFields"><legend>Lakeview customer</legend><label for="quoteCustomerSearch">Find a Lakeview customer</label><input id="quoteCustomerSearch" maxlength="200" placeholder="Name, Lightspeed number, email or phone"><button type="button" id="searchQuoteCustomer">Search customers</button><div id="quoteCustomerResults"></div><p id="quoteCustomerSelected"></p><button type="button" id="clearQuoteCustomer">Clear selection</button>
+ <p>Selection fills the contact details below. Mobile phone is preferred, then home, then work. Editing these details changes this quote only.</p>
+ <label for="quoteContactName">Customer name</label><input id="quoteContactName" maxlength="200">
+ <label for="quoteContactEmail">Contact email</label><input id="quoteContactEmail" maxlength="500">
+ <label for="quoteContactPhone">Contact phone</label><input id="quoteContactPhone" maxlength="500">
+ <label for="quoteContactAddress">Contact address</label><input id="quoteContactAddress" maxlength="1500">
+ <label for="stagingQuoteName">Quote name</label><input id="stagingQuoteName" maxlength="200">
+ <button type="button" id="saveCustomerQuote">Save quote</button><button type="button" id="copyCustomerQuote">Save as new quote</button></fieldset>
+ <h3>Saved Lakeview quotes</h3><label for="savedQuoteSearch">Search saved quotes</label><input id="savedQuoteSearch" maxlength="200"><button type="button" id="findSavedQuotes">Find saved quotes</button><div id="savedCustomerQuotes"></div><button type="button" id="previousSavedQuotes" hidden>Previous quotes</button><button type="button" id="nextSavedQuotes" hidden>Next quotes</button>`;
+ document.body.append(dialog);
+ function message(value){$('quoteCustomerMessage').textContent=value;}
+ function error(value){$('quoteCustomerError').textContent=value;}
+ function controls(){dialog.querySelectorAll('button,input').forEach(e=>e.disabled=busy);$('quoteCustomerSearch').disabled=busy||locked;$('searchQuoteCustomer').disabled=busy||locked;$('clearQuoteCustomer').disabled=busy||locked||!customerId;}
+ function selection(){ $('quoteCustomerSelected').textContent=customerId?(locked?'Linked customer: ':'Selected customer: ')+$('quoteContactName').value:'No customer linked. You can save a standalone quote.';controls();}
+ async function request(path,data){const r=await fetch(path,{credentials:'same-origin',...(data?{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(data)}:{})});const v=await r.json();if(!r.ok)throw Error(v.error||'Request failed.');return v;}
+ const customers=path=>request('/_api/customers'+path+(path.includes('?')?'&':'?')+'companyId='+company);
+ function contact(){return {name:$('quoteContactName').value.trim(),email:$('quoteContactEmail').value,phone:$('quoteContactPhone').value,address:$('quoteContactAddress').value};}
+ function fill(c){$('quoteContactName').value=c.name||'';$('quoteContactEmail').value=c.email||'';$('quoteContactPhone').value=c.phone||'';$('quoteContactAddress').value=c.address||'';}
+ function applyName(){const name=contact().name;if(!name)throw Error('Enter a customer name.');const doc=workspace.capture();if(doc.customerName!==name){doc.customerName=name;if(doc.worksheet)doc.worksheet.customerName=name;if(doc.quote)doc.quote.preparedFor=name;workspace.restore(doc);}}
+ async function act(fn){if(busy)return;busy=true;controls();error('');try{await fn();}catch(e){error(e.message);}finally{busy=false;controls();}}
+ async function searchCustomers(){await act(async()=>{const q=$('quoteCustomerSearch').value.trim();if(!q)throw Error('Enter a customer name, number, email or phone.');const v=await customers('?q='+encodeURIComponent(q)+'&status=active');$('quoteCustomerResults').replaceChildren();for(const c of v.rows){const b=document.createElement('button');b.type='button';b.style.cssText='display:block;white-space:normal;margin:6px 0;text-align:left';b.textContent=[c.first_name,c.last_name].filter(Boolean).join(' ')+' · '+(c.source_number||'Local customer')+' · '+(c.email||c.mobile_phone||c.home_phone||'No contact details');b.onclick=()=>act(async()=>{const {customer}=await customers('/detail?id='+c.id);const a=customer.addresses.find(a=>a.label==='primary')||customer.addresses[0];fill({name:[customer.first_name,customer.last_name].filter(Boolean).join(' '),email:customer.email,phone:customer.mobile_phone||customer.home_phone||customer.work_phone,address:a?[a.line1,a.line2,a.city,a.state,a.postal_code,a.country].filter(Boolean).join(', '):''});applyName();customerId=customer.id;dirty=true;selection();$('quoteCustomerResults').replaceChildren();message('Contact details filled. Save the quote to keep its customer link.');});$('quoteCustomerResults').append(b);}if(!v.rows.length)$('quoteCustomerResults').textContent='No matching available customers.';});}
+ async function save(asNew){await act(async()=>{applyName();const name=$('stagingQuoteName').value.trim();if(!name)throw Error('Enter a quote name.');const document=window.LVMQuoteDocument.pack(workspace.capture()),snapshot=contact();const id=asNew?crypto.randomUUID():active?.id||draftId;const result=await request('/_api/dock-quotes',{id,version:asNew?0:active?.version||0,customerId,name,contact:snapshot,document});active=result;draftId=result.id;locked=!!customerId;dirty=false;selection();setUrl(result.id);message('Quote saved · Revision '+result.version);});}
+ function setUrl(id){const u=new URL(window.parent.location.href);u.searchParams.set('quote',id);window.parent.history.replaceState(null,'',u.pathname+u.search);}
+ async function openQuote(id,confirmReplace=true){await act(async()=>{if(confirmReplace&&dirty&&!window.confirm('Open this saved quote and replace the current draft? Export or save your changes first if needed.'))return;const q=await request('/_api/dock-quotes?id='+encodeURIComponent(id));muted=true;try{workspace.restore(q.document);fill(q.contact);$('stagingQuoteName').value=q.name;active={id:q.id,version:q.version,name:q.name};draftId=q.id;customerId=q.customer_id;locked=!!customerId;dirty=false;selection();setUrl(q.id);message('Opened saved quote · Revision '+q.version);}finally{muted=false;}});}
+ async function list(){await act(async()=>{const v=await request('/_api/dock-quotes?q='+encodeURIComponent($('savedQuoteSearch').value.trim())+'&page='+page);$('savedCustomerQuotes').replaceChildren();for(const q of v.quotes){const row=document.createElement('p'),b=document.createElement('button');b.type='button';b.textContent='Open '+q.name;b.onclick=()=>openQuote(q.id);row.append(b,document.createTextNode(' · '+q.contact.name+' · Revision '+q.version));$('savedCustomerQuotes').append(row);}if(!v.quotes.length)$('savedCustomerQuotes').textContent='No saved quotes found.';$('previousSavedQuotes').hidden=page===0;$('nextSavedQuotes').hidden=v.quotes.length<50;});}
+ entry.onclick=()=>{dialog.showModal();message(active?(dirty?'Unsaved changes · ':'Saved quote · ')+active.name:'Draft: choose a customer and save the complete layout and worksheet.');selection();page=0;list();};
+ $('closeCustomerQuote').onclick=()=>dialog.close();dialog.addEventListener('cancel',e=>{if(busy)e.preventDefault();});
+ $('searchQuoteCustomer').onclick=searchCustomers;$('quoteCustomerSearch').onkeydown=e=>{if(e.key==='Enter'){e.preventDefault();if(!busy&&!locked)searchCustomers();}};
+ $('clearQuoteCustomer').onclick=()=>{customerId=null;dirty=true;selection();};
+ $('saveCustomerQuote').onclick=()=>save(false);$('copyCustomerQuote').onclick=()=>save(true);
+ $('findSavedQuotes').onclick=()=>{page=0;list();};$('previousSavedQuotes').onclick=()=>{page--;list();};$('nextSavedQuotes').onclick=()=>{page++;list();};
+ for(const id of ['quoteContactName','quoteContactEmail','quoteContactPhone','quoteContactAddress','stagingQuoteName'])$(id).oninput=()=>{dirty=true;};
+ $('quoteContactName').onchange=()=>{try{applyName();selection();}catch(e){error(e.message);}};
+ window.addEventListener('lvm:quote-change',()=>{if(muted)return;dirty=true;try{$('quoteContactName').value=workspace.capture().customerName||'';}catch{}});
+ window.addEventListener('lvm:quote-detach',()=>queueMicrotask(()=>{active=null;customerId=null;locked=false;draftId=crypto.randomUUID();fill({name:workspace.capture().customerName||''});$('stagingQuoteName').value='';selection();message('New draft. Choose a customer before saving.');const u=new URL(parent.location.href);u.searchParams.delete('quote');parent.history.replaceState(null,'',u.pathname+u.search);}));
+ window.addEventListener('beforeunload',e=>{if(active&&dirty){e.preventDefault();e.returnValue='';}});
+ // Contact snapshot is added using text nodes, never interpolated into quote markup.
+ new MutationObserver(()=>{if(!$('quotePrintDialog').open)return;const summary=$('quotePrintSummary');summary.querySelector('[data-quote-contact]')?.remove();const p=document.createElement('p');p.dataset.quoteContact='true';p.textContent=[contact().email,contact().phone,contact().address].filter(Boolean).join(' · ');summary.prepend(p);}).observe($('quotePrintDialog'),{attributes:true,attributeFilter:['open']});
+ const requested=new URL(location.href).searchParams.get('quote');let opened=false;
+ function ready(){if(opened||!window.LVMWorksheetBridge?.layoutReady)return;opened=true;if(requested){dialog.showModal();openQuote(requested,false);}else{try{fill({name:workspace.capture().customerName||''});}catch{}}}
+ window.addEventListener('lvm:quote-change',ready);ready();selection();
+})();

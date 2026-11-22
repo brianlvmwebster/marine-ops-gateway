@@ -1,0 +1,54 @@
+import {test} from 'node:test';
+import assert from 'node:assert/strict';
+import {randomUUID} from 'node:crypto';
+import {readFile} from 'node:fs/promises';
+import postgres from 'postgres';
+import {dockQuoteStore,dockQuotesHandler,validateQuote} from '../platform/dock-quotes.ts';
+import {customersStore} from '../platform/customers.ts';
+import {LAKEVIEW_ID} from '../platform/policy.ts';
+const document={schemaVersion:1,widthIn:480,heightIn:840,shoreline:'natural',customerName:'Synthetic Quote Customer',items:[]};
+const contact={name:document.customerName,email:'quote@example.invalid',phone:'202-555-0123',address:'Synthetic address'};
+test('quote validation and HTTP authentication, origin and malformed document boundaries',async()=>{
+ assert.equal(validateQuote(document).format,'lakeview-quote');
+ for(const invalid of [null,{}, {...document,items:'bad'},JSON.parse('{"__proto__":{}}')])assert.throws(()=>validateQuote(invalid),{status:400});
+ const url='https://staging.example/_api/dock-quotes';
+ assert.equal((await dockQuotesHandler({},async()=>{throw Error();})(new Request(url))).status,401);
+ const handler=dockQuotesHandler({save:async()=>{throw Error('unexpected');}},async()=>1);
+ assert.equal((await handler(new Request(url,{method:'POST',headers:{Origin:'https://evil.invalid'}}))).status,403);
+ assert.equal((await handler(new Request(url+'?id=invalid'))).status,400);
+});
+test('shared quotes persist customer snapshots and enforce tenant, entitlement and revision boundaries',{skip:!process.env.TEST_DATABASE_URL},async()=>{
+ const schema='test_quotes_'+Date.now(),setup=postgres(process.env.TEST_DATABASE_URL,{onnotice:()=>{}});
+ await setup.unsafe(`create schema ${schema}`);await setup.end();
+ const db=postgres(process.env.TEST_DATABASE_URL,{connection:{search_path:schema},onnotice:()=>{}});
+ try{
+  await db`create table users(id integer primary key,email text,display_name text)`;
+  await db`create table native_gateway_members(auth_user_id integer,role text,enabled boolean)`;
+  await db`create table service_jobs(id uuid primary key,job_number integer,data jsonb)`;
+  await db`insert into users values(1,'owner@example.invalid','Owner'),(2,'member@example.invalid','Member'),(3,'other@example.invalid','Other')`;
+  await db`insert into native_gateway_members values(1,'admin',true),(2,'user',true)`;
+  const conn=await db.reserve();try{for(const name of ['007-platform-foundation','008-customers','009-dock-quotes'])await conn.unsafe(await readFile(new URL('../migrations/'+name+'.sql',import.meta.url),'utf8'));}finally{conn.release();}
+  const customers=customersStore(db),store=dockQuoteStore(db);
+  const data={first_name:'Synthetic',last_name:'Quote Customer',email:contact.email,home_phone:'',work_phone:'',mobile_phone:contact.phone,addresses:[],notes:'',status:'active'};
+  const customer=await customers.save(1,LAKEVIEW_ID,undefined,0,data);
+  const input={id:randomUUID(),version:0,customerId:customer.id,name:'Synthetic shared dock quote',contact,document};
+  assert.equal((await store.save(2,input)).version,1);
+  assert.equal((await store.get(1,input.id)).document.configuration.widthIn,480);
+  assert.equal((await store.list(1,'shared',0)).quotes.length,1);
+  assert.equal((await customers.detail(1,LAKEVIEW_ID,customer.id)).quotes[0].id,input.id);
+  await customers.save(1,LAKEVIEW_ID,customer.id,1,{...data,email:'changed@example.invalid',status:'archived'});
+  assert.equal((await store.get(1,input.id)).contact.email,contact.email);
+  assert.equal((await store.save(1,{...input,version:1})).version,2);
+  await assert.rejects(store.save(1,{...input,version:1}),{status:409});
+  await assert.rejects(store.save(1,{...input,id:randomUUID()}),{status:409});
+  await assert.rejects(store.save(1,{...input,version:2,customerId:null}),{status:409});
+  await assert.rejects(store.save(1,{...input,id:randomUUID(),customerId:randomUUID()}),{status:404});
+  const standalone={...input,id:randomUUID(),customerId:null};await store.save(1,standalone);
+  assert.equal((await store.get(2,standalone.id)).customer_id,null);
+  await assert.rejects(store.get(3,input.id),{status:403});
+  await assert.rejects(store.get(1,randomUUID()),{status:404});
+  await db`update platform_entitlements set status='disabled' where tool_key='dock-builder'`;
+  await assert.rejects(store.list(1,'',0),{status:403});
+  assert.equal((await customers.detail(1,LAKEVIEW_ID,customer.id)).quotes.length,0);
+ }finally{await db.end();const clean=postgres(process.env.TEST_DATABASE_URL,{onnotice:()=>{}});await clean.unsafe(`drop schema ${schema} cascade`);await clean.end();}
+});

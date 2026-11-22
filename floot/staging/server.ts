@@ -1,3 +1,5 @@
+import {stagingDockAsset} from './dock-assets';
+import {dockQuotesHandler,dockQuoteStore} from '../platform/dock-quotes';
 import {Hono} from 'hono';
 import {saveStagingJob} from './save-job';
 import {customersHandler,customersStore} from '../platform/customers.ts';
@@ -15,13 +17,16 @@ stagingOnly();
 if(!process.env.JWT_SECRET || process.env.JWT_SECRET.length<32)throw new Error('Session secret required');
 const app=new Hono();
 // Keep same-origin form POST origins intact for CSRF checks; no-referrer makes them null.
-app.use('*',async(c,next)=>{await next();c.header('Cache-Control','no-store');c.header('X-Content-Type-Options','nosniff');c.header('Referrer-Policy','same-origin');c.header('X-Frame-Options','DENY');});
+app.use('*',async(c,next)=>{await next();c.header('Cache-Control','no-store');c.header('X-Content-Type-Options','nosniff');c.header('Referrer-Policy','same-origin');c.header('X-Frame-Options',c.req.path==='/_api/dock_builder/asset'?'SAMEORIGIN':'DENY');});
 app.get('/staging/health',c=>c.json({status:'ok',environment:'staging',externalWrites:false}));
 app.get('/readyz',async c=>{await platformDatabase()`select 1 from platform_companies limit 1`;return c.json({ready:true});});
 app.get('/login',c=>c.html(loginPage));
 app.post('/staging/login',c=>stagingLogin(c.req.raw));
 const customers=customersHandler(customersStore(platformDatabase()),async request=>(await getServerUserSession(request)).user.id);
 app.all('/_api/customers',c=>customers(c.req.raw));app.all('/_api/customers/*',c=>customers(c.req.raw));
+app.get('/_api/dock_builder/asset',c=>stagingDockAsset(c.req.raw));
+const quotes=dockQuotesHandler(dockQuoteStore(platformDatabase()),async request=>(await nativeGatewayAccess(request)).authUserId);
+app.all('/_api/dock-quotes',c=>quotes(c.req.raw));
 const platform=platformHandler(platformStore(platformDatabase()),async request=>(await getServerUserSession(request)).user.id);
 app.all('/_api/platform',c=>platform(c.req.raw));app.all('/_api/platform/*',c=>platform(c.req.raw));
 app.get('/_api/auth/session',async c=>{try{await nativeGatewayAccess(c.req.raw);const {user}=await getServerUserSession(c.req.raw);return new Response(superjson.stringify({user}));}catch{return c.json({error:'Sign in to staging.'},401);}});

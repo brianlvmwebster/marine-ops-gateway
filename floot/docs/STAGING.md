@@ -26,4 +26,6 @@ Apply the synthetic baseline and migrations with an explicitly invoked Cloud Run
 
 `node --test tests/staging.test.mjs tests/platform.test.mjs` verifies startup without installed Floot packages, denied integration routes, anonymous access, CSRF and policy checks. The full database permission tests run in GitHub CI. After deployment, verify login, member/tool access, job create/edit/workflow/print, revoked access and logout over HTTPS. Never enable the blocked integrations just to clear a staging error.
 
+Dock Builder now supports shared quote storage, customer search/contact autofill, saved-quote search and reopening. See docs/DOCK_QUOTES.md. Its authenticated assets can be framed only by this same origin; the rest of staging retains frame denial.
+
 Production remains on Floot. `main`, production DNS, production data and Outlook sync are unchanged. A production-ready login, full schema/data migration and integrations remain separate work.
