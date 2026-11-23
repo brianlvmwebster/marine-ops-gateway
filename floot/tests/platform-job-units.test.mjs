@@ -26,9 +26,10 @@ test('job unit linking is atomic, owner checked, immutable and preserves histori
  const cs=customersStore(db),us=unitsStore(db),save=serviceJobSaveStore(db);
  const a=await cs.save(1,LAKEVIEW_ID,undefined,0,customer),b=await cs.save(1,LAKEVIEW_ID,undefined,0,{...customer,last_name:'Other'});
  const ua=await us.save(1,LAKEVIEW_ID,undefined,0,a.id,unit),ub=await us.save(1,LAKEVIEW_ID,undefined,0,b.id,unit),unassigned=await us.save(1,LAKEVIEW_ID,undefined,0,null,unit);
+ const customerContext=await cs.jobContext(2,LAKEVIEW_ID,a.id);assert.equal(customerContext.customer.id,a.id);assert.equal(customerContext.customer.email,customer.email);await assert.rejects(cs.jobContext(3,LAKEVIEW_ID,a.id),{status:403});await assert.rejects(cs.jobContext(2,LAKEVIEW_ID,randomUUID()),{status:404});
  const context=await us.jobContext(2,LAKEVIEW_ID,ua.id);assert.equal(context.customer.id,a.id);assert.equal(context.unit.id,ua.id);assert.equal(context.customer.email,customer.email);assert.equal(context.unit.vin,vessel.vin);
  await assert.rejects(us.jobContext(2,LAKEVIEW_ID,unassigned.id),{status:409});await assert.rejects(us.jobContext(3,LAKEVIEW_ID,ua.id),{status:403});
- await db`update customers set status='archived' where id=${a.id}`;await assert.rejects(us.jobContext(2,LAKEVIEW_ID,ua.id),{status:409});await db`update customers set status='active' where id=${a.id}`;
+ await db`update customers set status='archived' where id=${a.id}`;await assert.rejects(us.jobContext(2,LAKEVIEW_ID,ua.id),{status:409});await assert.rejects(cs.jobContext(2,LAKEVIEW_ID,a.id),{status:409});await db`update customers set status='active' where id=${a.id}`;
  await assert.rejects(save(2,{data:job,unitId:ua.id}),{status:400});
  for(const id of [ub.id,unassigned.id])await assert.rejects(save(2,{data:job,customerId:a.id,unitId:id}),{status:409});
  await assert.rejects(save(2,{data:job,customerId:a.id,unitId:randomUUID()}),{status:404});
@@ -69,7 +70,7 @@ test('job unit linking is atomic, owner checked, immutable and preserves histori
  assert.equal((await handler(new Request(url))).status,200);assert.equal((await handler(new Request(url.replace('/history','/service-job')+'&jobId='+created.id))).status,200);assert.equal((await handler(new Request(url.replace('/history','/service-job')+'&jobId=invalid'))).status,400);assert.equal((await handler(new Request(url.replace('/history','/job-context').replace(ua.id,ub.id)))).status,200);
  assert.equal((await unitsHandler(us,async()=>{throw Error('no session');})(new Request(url))).status,401);
  await db`update platform_entitlements set status='disabled' where company_id=${LAKEVIEW_ID} and tool_key='service-desk'`;
- await assert.rejects(us.history(2,LAKEVIEW_ID,ua.id,0),{status:403});await assert.rejects(us.jobContext(2,LAKEVIEW_ID,ub.id),{status:403});await assert.rejects(us.serviceJob(2,LAKEVIEW_ID,ua.id,created.id),{status:403});await assert.rejects(cs.serviceJob(2,LAKEVIEW_ID,a.id,created.id),{status:403});
+ await assert.rejects(us.history(2,LAKEVIEW_ID,ua.id,0),{status:403});await assert.rejects(us.jobContext(2,LAKEVIEW_ID,ub.id),{status:403});await assert.rejects(us.serviceJob(2,LAKEVIEW_ID,ua.id,created.id),{status:403});await assert.rejects(cs.serviceJob(2,LAKEVIEW_ID,a.id,created.id),{status:403});await assert.rejects(cs.jobContext(2,LAKEVIEW_ID,b.id),{status:403});
  await db`update platform_entitlements set status='enabled' where company_id=${LAKEVIEW_ID} and tool_key='service-desk'`;
  await db`update platform_entitlements set status='disabled' where company_id=${LAKEVIEW_ID} and tool_key='customers'`;
  await assert.rejects(save(2,{data:job,unitId:ub.id}),{status:403});await assert.rejects(us.job(2,LAKEVIEW_ID,created.id),{status:403});await assert.rejects(us.history(2,LAKEVIEW_ID,ua.id,0),{status:403});
