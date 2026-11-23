@@ -16,6 +16,7 @@ export function customersStore(sql:any){
  async function access(actor:number,company:string,write=false){const a=await platform.toolAccess(actor,company,'customers');if(write)requireManager(a);return a;}
  async function audit(tx:any,actor:number,company:string,action:string,detail:object){await tx`insert into platform_audit(actor_user_id,company_id,action,detail) values(${actor},${company},${action},${tx.json(detail)})`;}
  return {
+ async quoteContext(actor:number,company:string,id:string){await access(actor,company);await platform.toolAccess(actor,company,'dock-builder');if(company!==LAKEVIEW_ID)throw new PlatformError(403,'Dock Builder is Lakeview-only.');const [customer]=await sql`select id,first_name,last_name,email,mobile_phone,home_phone,work_phone,addresses,status from customers where company_id=${company} and id=${id}`;if(!customer)throw new PlatformError(404,'Customer not found.');if(customer.status!=='active')throw new PlatformError(409,'This customer is archived. Make the customer available before starting a quote.');return {customer};},
  async jobContext(actor:number,company:string,id:string){await access(actor,company);await platform.toolAccess(actor,company,'service-desk');if(company!==LAKEVIEW_ID)throw new PlatformError(403,'Service Desk is Lakeview-only.');
  const [customer]=await sql`select id,first_name,last_name,email,mobile_phone,home_phone,work_phone,source_number,status from customers where company_id=${company} and id=${id}`;
  if(!customer)throw new PlatformError(404,'Customer not found.');if(customer.status!=='active')throw new PlatformError(409,'This customer is archived. Make the customer available before creating a job.');return {customer};},
@@ -53,6 +54,7 @@ export function customersHandler(store:ReturnType<typeof customersStore>,authent
  let actor:number;try{actor=await authenticate(request);}catch{throw new PlatformError(401,'Sign in to continue.');}if(!Number.isSafeInteger(actor)||actor<=0)throw new PlatformError(401,'Sign in to continue.');
  const url=new URL(request.url),company=uuid.parse(url.searchParams.get('companyId')),path=url.pathname;
  if(request.method==='GET'){if(path==='/_api/customers')return Response.json(await store.list(actor,company,z.string().max(200).parse(url.searchParams.get('q')||''),z.enum(['active','archived','all']).parse(url.searchParams.get('status')||'active'),z.coerce.number().int().min(0).max(100000).parse(url.searchParams.get('page')||0)));
+ if(path==='/_api/customers/quote-context')return Response.json(await store.quoteContext(actor,company,uuid.parse(url.searchParams.get('id'))));
  if(path==='/_api/customers/job-context')return Response.json(await store.jobContext(actor,company,uuid.parse(url.searchParams.get('id'))));
  if(path==='/_api/customers/service-job')return Response.json(await store.serviceJob(actor,company,uuid.parse(url.searchParams.get('id')),uuid.parse(url.searchParams.get('jobId'))));
  if(path==='/_api/customers/job')return Response.json(await store.job(actor,company,uuid.parse(url.searchParams.get('jobId'))));

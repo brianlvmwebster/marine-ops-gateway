@@ -15,3 +15,9 @@ Verification: tests/platform-dock-quotes.test.mjs exercises validation, authoriz
 ## Verification — November 22, 2026
 
 Frontend and PostgreSQL CI passed. Staging API checks passed for save/read/update, stale-version rejection, invalid customer rejection, anonymous access and same-origin framing. Browser testing selected the synthetic Picker QA customer, added a dock frame and five decking panels, set custom labor to $150, saved and reopened from another tab and from the customer record. The restored worksheet and print preview retained the $2,048.69 test total and contact snapshot. A second-tab update caused the original tab's stale save to be rejected. Save as new quote created a separate linked copy. Existing Service Desk staging smoke checks also passed. These are synthetic test quotes, not real offers or orders. Live Floot was not changed.
+
+## Start from a customer
+
+Customer records offer **New Dock Builder Quote**, opening a fresh draft with the saved customer selected and name, email, preferred phone and primary address filled in. Save customer edits before launching. The draft receives a suggested quote name; no quote is created until Save quote. Saving retains the customer relationship and changes the link to the saved quote for reopening. Launch requires Customers and Dock Builder access and rejects archived or unavailable customers. Existing quotes and their contact snapshots are unchanged.
+
+Customer launch verified in Google staging revision `marine-ops-staging-00019-8j2`: opened from the synthetic customer record, confirmed a fresh layout and autofilled contact details, saved, and reopened using the new quote link on the customer record. API checks confirmed the customer relationship and contact/document snapshot; existing shared-quote regression checks passed. Frontend and PostgreSQL CI passed. Live Floot was unchanged.

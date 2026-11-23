@@ -8,7 +8,16 @@ async function api(path,data,status=200){const r=await fetch(origin+'/_api/'+pat
 try{
  const found=await api('customers?companyId='+company+'&q=picker-qa%40example.invalid');assert.equal(found.rows.length,1);
  const customer=(await api('customers/detail?companyId='+company+'&id='+found.rows[0].id)).customer;
- if(process.argv.includes('--verify-browser')){
+ if(process.argv.includes('--verify-customer-launch')){
+  const context=await api('customers/quote-context?companyId='+company+'&id='+customer.id);assert.equal(context.customer.email,customer.email);
+  await api('customers/quote-context?companyId='+company+'&id='+randomUUID(),undefined,404);
+  const quotes=(await api('dock-quotes?q=Customer%20Record%20Dock%20Quote%20QA')).quotes;assert.equal(quotes.length,1);
+  const quote=await api('dock-quotes?id='+quotes[0].id);
+  assert.equal(quote.customer_id,customer.id);assert.equal(quote.contact.email,customer.email);assert.equal(quote.contact.phone,customer.mobile_phone);
+  assert.equal(quote.contact.name,[customer.first_name,customer.last_name].filter(Boolean).join(' '));assert.equal(quote.document.configuration.customerName,quote.contact.name);
+  assert.ok((await api('customers/detail?companyId='+company+'&id='+customer.id)).quotes.some(q=>q.id===quote.id));
+  console.log('PASS: customer-launched quote retains customer link, autofilled contact snapshot and document name, and appears on the customer record.');
+ }else if(process.argv.includes('--verify-browser')){
   const quotes=(await api('dock-quotes?q=Browser%20Dock%20QA')).quotes;assert.ok(quotes.length);
   const quote=await api('dock-quotes?id='+quotes[0].id);
   assert.equal(quote.customer_id,customer.id);assert.equal(quote.contact.email,customer.email);assert.equal(quote.contact.phone,customer.mobile_phone);

@@ -4,7 +4,7 @@ import {randomUUID} from 'node:crypto';
 import {readFile} from 'node:fs/promises';
 import postgres from 'postgres';
 import {dockQuoteStore,dockQuotesHandler,validateQuote} from '../platform/dock-quotes.ts';
-import {customersStore} from '../platform/customers.ts';
+import {customersStore,customersHandler} from '../platform/customers.ts';
 import {LAKEVIEW_ID} from '../platform/policy.ts';
 const document={schemaVersion:1,widthIn:480,heightIn:840,shoreline:'natural',customerName:'Synthetic Quote Customer',items:[]};
 const contact={name:document.customerName,email:'quote@example.invalid',phone:'202-555-0123',address:'Synthetic address'};
@@ -31,12 +31,18 @@ test('shared quotes persist customer snapshots and enforce tenant, entitlement a
   const customers=customersStore(db),store=dockQuoteStore(db);
   const data={first_name:'Synthetic',last_name:'Quote Customer',email:contact.email,home_phone:'',work_phone:'',mobile_phone:contact.phone,addresses:[],notes:'',status:'active'};
   const customer=await customers.save(1,LAKEVIEW_ID,undefined,0,data);
+  assert.equal((await customers.quoteContext(2,LAKEVIEW_ID,customer.id)).customer.email,contact.email);
+  await assert.rejects(customers.quoteContext(3,LAKEVIEW_ID,customer.id),{status:403});await assert.rejects(customers.quoteContext(2,LAKEVIEW_ID,randomUUID()),{status:404});
+  const contextUrl='https://staging.example/_api/customers/quote-context?companyId='+LAKEVIEW_ID+'&id='+customer.id;
+  assert.equal((await customersHandler(customers,async()=>2)(new Request(contextUrl))).status,200);assert.equal((await customersHandler(customers,async()=>2)(new Request(contextUrl.replace(customer.id,'invalid')))).status,400);
+  await db`update platform_entitlements set status='disabled' where tool_key='customers'`;await assert.rejects(customers.quoteContext(2,LAKEVIEW_ID,customer.id),{status:403});await db`update platform_entitlements set status='enabled' where tool_key='customers'`;
   const input={id:randomUUID(),version:0,customerId:customer.id,name:'Synthetic shared dock quote',contact,document};
   assert.equal((await store.save(2,input)).version,1);
   assert.equal((await store.get(1,input.id)).document.configuration.widthIn,480);
   assert.equal((await store.list(1,'shared',0)).quotes.length,1);
   assert.equal((await customers.detail(1,LAKEVIEW_ID,customer.id)).quotes[0].id,input.id);
   await customers.save(1,LAKEVIEW_ID,customer.id,1,{...data,email:'changed@example.invalid',status:'archived'});
+  await assert.rejects(customers.quoteContext(2,LAKEVIEW_ID,customer.id),{status:409});
   assert.equal((await store.get(1,input.id)).contact.email,contact.email);
   assert.equal((await store.save(1,{...input,version:1})).version,2);
   await assert.rejects(store.save(1,{...input,version:1}),{status:409});
@@ -48,7 +54,7 @@ test('shared quotes persist customer snapshots and enforce tenant, entitlement a
   await assert.rejects(store.get(3,input.id),{status:403});
   await assert.rejects(store.get(1,randomUUID()),{status:404});
   await db`update platform_entitlements set status='disabled' where tool_key='dock-builder'`;
-  await assert.rejects(store.list(1,'',0),{status:403});
+  await assert.rejects(store.list(1,'',0),{status:403});await assert.rejects(customers.quoteContext(2,LAKEVIEW_ID,customer.id),{status:403});
   assert.equal((await customers.detail(1,LAKEVIEW_ID,customer.id)).quotes.length,0);
  }finally{await db.end();const clean=postgres(process.env.TEST_DATABASE_URL,{onnotice:()=>{}});await clean.unsafe(`drop schema ${schema} cascade`);await clean.end();}
 });
