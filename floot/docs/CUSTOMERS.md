@@ -27,3 +27,9 @@ The staging job-save endpoint commits the job and relationship in one PostgreSQL
 Regression coverage: tests/job-customer.test.mjs (run with node --import tsx --test), including atomic save failures, tenant isolation, member selection without customer-admin rights, archived customer behavior, stale versions and snapshot preservation.
 
 Deployed and verified on staging revision marine-ops-staging-00008-dcn. Browser tests created a new linked job and linked an existing unlinked job, then reopened the latter to confirm persisted association. API verification confirmed both appear on the customer record with correct name/email/mobile-phone snapshots. Synthetic Picker QA customer and test jobs remain clearly marked. Existing Service Desk smoke checks and frontend/PostgreSQL CI passed.
+
+## Customer directory presentation
+
+Customer directory names and record headings use Last Name, First Name, with single-name/business records shown without an extra comma. Existing server-side ordering is already last name, first name. Customer details, each address, notes, source reference, units, service jobs, quotes and storage/slip assignments are independently collapsible using keyboard-accessible disclosure controls. Only Customer details opens initially; opening another customer resets that default. Collapsing preserves unsaved values and Save customer remains visible.
+
+Verified November 23, 2026 in staging revision `marine-ops-staging-00026-2sm`. The synthetic customer renders surname first in the directory and detail heading. Only Customer details starts open; every section can be toggled, including the first. Keyboard Enter toggles addresses, unsaved field values survive collapsing/reopening, and revisiting the record restores the initial open states. Linked Service Desk jobs remain accessible on expansion. No customer data was saved during these checks. Frontend/startup and PostgreSQL CI passed.
