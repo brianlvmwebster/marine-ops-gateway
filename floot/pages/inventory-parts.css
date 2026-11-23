@@ -1,0 +1,16 @@
+.parts-page {max-width:1400px;margin:auto;padding:24px;background:#f7f9fb;color:#172b40;min-height:100vh;}
+.parts-page input,.parts-page select,.parts-page button {background:#fff;color:#172b40;border-color:#718298;}
+.parts-page input::placeholder {color:#526477;opacity:1;}
+.parts-page a {color:#165684;}
+.parts-table thead {background:#e8eef4;}
+.parts-filters {display:flex;gap:12px;align-items:end;flex-wrap:wrap;margin:18px 0;}
+.parts-filters label {display:flex;flex-direction:column;gap:6px;}
+.parts-filters input {min-width:280px;}
+.parts-table {overflow-x:auto;}
+.parts-table table {width:100%;border-collapse:collapse;}
+.parts-table th,.parts-table td {text-align:left;padding:12px;border-bottom:1px solid #ccd5df;vertical-align:top;}
+.parts-table small {display:block;opacity:.8;margin-top:5px;}
+.parts-notice {padding:12px;border-left:4px solid #b68a27;background:#fff7db;color:#293846;}
+.parts-details {display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:18px;}
+.parts-details dt {font-weight:600;}.parts-details dd {margin:4px 0;overflow-wrap:anywhere;}
+.parts-page summary {cursor:pointer;padding:16px 0;font-weight:600;}

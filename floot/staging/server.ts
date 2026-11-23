@@ -1,3 +1,4 @@
+import {partsHandler,partsStore} from '../platform/parts';
 import {unitsHandler,unitsStore} from '../platform/units';
 import {stagingDockAsset} from './dock-assets';
 import {dockQuotesHandler,dockQuoteStore} from '../platform/dock-quotes';
@@ -24,6 +25,8 @@ app.get('/readyz',async c=>{await platformDatabase()`select 1 from platform_comp
 app.get('/login',c=>c.html(loginPage));
 app.post('/staging/login',c=>stagingLogin(c.req.raw));
 const customers=customersHandler(customersStore(platformDatabase()),async request=>(await getServerUserSession(request)).user.id);
+const parts=partsHandler(partsStore(platformDatabase()),async request=>(await getServerUserSession(request)).user.id);
+app.all('/_api/parts',c=>parts(c.req.raw));app.all('/_api/parts/*',c=>parts(c.req.raw));
 const units=unitsHandler(unitsStore(platformDatabase()),async request=>(await getServerUserSession(request)).user.id);
 app.all('/_api/units',c=>units(c.req.raw));app.all('/_api/units/*',c=>units(c.req.raw));
 app.all('/_api/customers',c=>customers(c.req.raw));app.all('/_api/customers/*',c=>customers(c.req.raw));

@@ -17,6 +17,7 @@ try {
   await connection.unsafe(await readFile(new URL('../migrations/009-dock-quotes.sql',import.meta.url),'utf8'));
   await connection.unsafe(await readFile(new URL('../migrations/010-customer-units.sql',import.meta.url),'utf8'));
   await connection.unsafe(await readFile(new URL('../migrations/011-service-job-units.sql',import.meta.url),'utf8'));
+  await connection.unsafe(await readFile(new URL('../migrations/012-parts-inventory.sql',import.meta.url),'utf8'));
   await connection`insert into platform_operators(user_id) select id from users where email='owner@staging.example.invalid' on conflict do nothing`;
   await connection`insert into service_access_roles(user_id,role) select 'staging:'||id,'service_admin' from users where email='owner@staging.example.invalid' on conflict do nothing`;
   await connection`insert into native_gateway_links(id,contents) values(1,'[{"id":"service-desk","title":"Service Desk","url":"/dashboard/","description":"Synthetic staging jobs only","image":"","newTab":false,"slug":"service-management"}]') on conflict do nothing`;
