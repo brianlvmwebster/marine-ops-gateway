@@ -18,9 +18,9 @@ test('parts preserve snapshots, supplier keys, quantities and access boundaries'
  const schema='test_parts_'+Date.now(),setup=postgres(process.env.TEST_DATABASE_URL,{onnotice:()=>{}});await setup.unsafe(`create schema ${schema}`);await setup.end();
  const db=postgres(process.env.TEST_DATABASE_URL,{connection:{search_path:schema},onnotice:()=>{}});
  try{
- await db`create table users(id integer primary key,email text,display_name text)`;await db`create table native_gateway_members(auth_user_id integer,role text,enabled boolean)`;
+ await db`create table users(id integer primary key,email text,display_name text)`;await db`create table native_gateway_members(auth_user_id integer,role text,enabled boolean)`;await db`create table service_jobs(id uuid primary key,job_number integer,data jsonb)`;
  await db`insert into users values(1,'owner@example.invalid','Owner'),(2,'member@example.invalid','Member'),(3,'other@example.invalid','Other')`;await db`insert into native_gateway_members values(1,'admin',true),(2,'user',true)`;
- const c=await db.reserve();try{for(const n of ['007-platform-foundation','012-parts-inventory','013-part-stock-movements'])await c.unsafe(await readFile(new URL('../migrations/'+n+'.sql',import.meta.url),'utf8'));}finally{c.release();}
+ const c=await db.reserve();try{for(const n of ['007-platform-foundation','012-parts-inventory','013-part-stock-movements','014-service-job-parts'])await c.unsafe(await readFile(new URL('../migrations/'+n+'.sql',import.meta.url),'utf8'));}finally{c.release();}
  const s=partsStore(db);assert.deepEqual(await s.import(1,LAKEVIEW_ID,batch,[row]),{inserted:1,skipped:0});assert.deepEqual(await s.import(1,LAKEVIEW_ID,batch,[row]),{inserted:0,skipped:1});
  await s.import(1,LAKEVIEW_ID,batch,[{...row,row:4,data:{...data,supplier_code:'QA2'}}]);
  const list=await s.list(2,LAKEVIEW_ID,'001-QA','inactive','negative',0);assert.equal(list.total,2);assert.notEqual(list.rows[0].id,list.rows[1].id);

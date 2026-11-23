@@ -1,0 +1,7 @@
+.job-parts {background:#f7f9fb;color:#172b40;padding:18px;border:1px solid #8294a5;border-radius:8px;margin:18px 0;}
+.job-parts p {margin:10px 0;}.job-parts label {display:inline-flex;flex-direction:column;gap:6px;margin:8px;}
+.job-parts input,.job-parts textarea,.job-parts button {background:#fff;color:#172b40;border:1px solid #718298;padding:8px;border-radius:5px;font:inherit;max-width:100%;}
+.job-parts input::placeholder {color:#526477;}.job-parts button {cursor:pointer;margin:5px;}.job-parts button:disabled {opacity:.5;cursor:default;}
+.job-parts textarea {min-height:80px;}.job-parts fieldset {padding:12px;}.job-parts-table {overflow-x:auto;}
+.job-parts table {width:100%;border-collapse:collapse;}.job-parts th,.job-parts td {text-align:left;vertical-align:top;padding:10px;border-bottom:1px solid #ccd5df;}.job-parts th {background:#e8eef4;}.job-parts small {display:block;}
+.job-parts [role=alert] {color:#9b2424;}.job-parts :focus-visible {outline:3px solid #3693d9;outline-offset:2px;}
