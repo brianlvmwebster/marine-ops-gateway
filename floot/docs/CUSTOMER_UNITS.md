@@ -11,3 +11,9 @@ Migration 010 adds unit storage. scripts/prepare-lightspeed-units.py uses xlrd t
 Expected initial import: 10,312 units, 9,981 linked to existing Lakeview customers and 331 unassigned, with 25 zero-customer rows excluded. There are 1,406 source rows flagged for repeated VIN or identical contents. Needs review includes both unassigned units and unacknowledged duplicate flags, so its total is not just the unmatched count.
 
 tests/platform-units.test.mjs covers authentication, CSRF, field validation, real PostgreSQL import idempotency, distinct repeated rows, immutable source snapshots, permissions, cross-company isolation, assignment, archived customers, version conflicts and entitlement revocation. CI uses disposable PostgreSQL. Production cutover remains separate.
+
+## Staging verification — November 22, 2026
+
+Deployed on marine-ops-staging-00011-mlx. Imported 10,312 units: 9,981 linked and 331 unassigned. The preparation step excluded 25 zero-customer rows. A repeat import inserted zero and skipped all 10,312. Reconciled every source row, editable imported field, immutable source snapshot, duplicate flag and customer relationship, with 10,312 distinct unit IDs. Needs review initially contains 1,697 units (overlapping unassigned and duplicate-source flags). An IPv6 timeout interrupted the first verification attempt; the successful full retry used IPv4. The runner now retries transient fetch failures, safely keyed by file/row.
+
+Browser checks created a clearly synthetic unit, assigned Picker QA Synthetic through customer search, reopened it from that customer's units section, edited notes, archived it and retrieved it through All units. Its UUID and customer association persisted at revision 3. This one synthetic unit remains archived, outside the real import. Service Desk and Dock Builder regression checks and frontend/PostgreSQL CI passed. Production Floot, main branches and Outlook integration remain unchanged.
