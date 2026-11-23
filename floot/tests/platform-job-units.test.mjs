@@ -4,7 +4,7 @@ import {randomUUID} from 'node:crypto';
 import {readFile} from 'node:fs/promises';
 import postgres from 'postgres';
 import {serviceJobSaveStore,linkedJobInput} from '../platform/service-job-save.ts';
-import {unitsStore} from '../platform/units.ts';
+import {unitsStore,unitsHandler} from '../platform/units.ts';
 import {customersStore} from '../platform/customers.ts';
 import {LAKEVIEW_ID} from '../platform/policy.ts';
 import {unitJobVessel} from '../helpers/unitJobVessel.ts';
@@ -43,8 +43,24 @@ test('job unit linking is atomic, owner checked, immutable and preserves histori
  const manual=await save(2,{data:job,customerId:b.id});await save(2,{id:manual.id,version:1,data:job,unitId:ub.id});assert.equal((await us.job(2,LAKEVIEW_ID,manual.id)).unit.id,ub.id);
  const other=randomUUID(),foreign=randomUUID();await db`insert into platform_companies(id,slug,name) values(${other},'other','Other')`;await db`insert into customer_units(id,company_id,make) values(${foreign},${other},'Foreign')`;
  await assert.rejects(save(2,{data:job,customerId:a.id,unitId:foreign}),{status:404});
+ const history=await us.history(2,LAKEVIEW_ID,ua.id,0);assert.equal(history.total,1);assert.equal(history.rows[0].id,created.id);assert.equal(history.rows[0].service_date,job.serviceDate);assert.deepEqual(history.rows[0].services,job.services);
+ assert.equal((await us.history(2,LAKEVIEW_ID,unassigned.id,0)).total,0);
+ await assert.rejects(us.history(3,LAKEVIEW_ID,ua.id,0),{status:403});
+ await assert.rejects(us.history(2,LAKEVIEW_ID,foreign,0),{status:404});
+ await assert.rejects(us.history(2,LAKEVIEW_ID,randomUUID(),0),{status:404});
+ // Historical owner changes and archival do not hide linked jobs; include every workflow status.
+ for(let n=0;n<51;n++){const id=randomUUID();await db`insert into service_jobs(id,data) values(${id},${db.json({...job,status:n%2?'Completed':'Cancelled',serviceDate:n===0?'':'2027-01-01'})})`;await db`insert into customer_unit_service_jobs(job_id,company_id,unit_id) values(${id},${LAKEVIEW_ID},${ua.id})`;}
+ const first=await us.history(2,LAKEVIEW_ID,ua.id,0),second=await us.history(2,LAKEVIEW_ID,ua.id,1);
+ assert.equal(first.total,52);assert.equal(first.rows.length,50);assert.equal(second.rows.length,2);assert.equal(new Set([...first.rows,...second.rows].map(j=>j.id)).size,52);assert.equal(second.rows[1].service_date,'');assert.ok(first.rows.some(j=>j.status==='Completed'));assert.ok(first.rows.some(j=>j.status==='Cancelled'));
+ const handler=unitsHandler(us,async()=>2),url='https://example.invalid/_api/units/history?companyId='+LAKEVIEW_ID+'&id='+ua.id;
+ assert.equal((await handler(new Request(url+'&page=-1'))).status,400);assert.equal((await handler(new Request(url.replace(ua.id,'invalid')))).status,400);
+ assert.equal((await handler(new Request(url))).status,200);
+ assert.equal((await unitsHandler(us,async()=>{throw Error('no session');})(new Request(url))).status,401);
+ await db`update platform_entitlements set status='disabled' where company_id=${LAKEVIEW_ID} and tool_key='service-desk'`;
+ await assert.rejects(us.history(2,LAKEVIEW_ID,ua.id,0),{status:403});
+ await db`update platform_entitlements set status='enabled' where company_id=${LAKEVIEW_ID} and tool_key='service-desk'`;
  await db`update platform_entitlements set status='disabled' where company_id=${LAKEVIEW_ID} and tool_key='customers'`;
- await assert.rejects(save(2,{data:job,unitId:ub.id}),{status:403});await assert.rejects(us.job(2,LAKEVIEW_ID,created.id),{status:403});
+ await assert.rejects(save(2,{data:job,unitId:ub.id}),{status:403});await assert.rejects(us.job(2,LAKEVIEW_ID,created.id),{status:403});await assert.rejects(us.history(2,LAKEVIEW_ID,ua.id,0),{status:403});
  await save(2,{id:created.id,version:3,data:job});assert.equal(Number((await db`select count(*) from customer_unit_service_jobs where job_id=${created.id}`)[0].count),1);
  await db`update service_jobs set data=jsonb_set(data,'{status}','"Completed"') where id=${created.id}`;await assert.rejects(save(2,{id:created.id,version:4,data:job}),{status:400});
  }finally{await db.end();const clean=postgres(process.env.TEST_DATABASE_URL,{onnotice:()=>{}});await clean.unsafe(`drop schema ${schema} cascade`);await clean.end();}

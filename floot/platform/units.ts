@@ -9,6 +9,10 @@ export const unitImportRow=z.object({row:z.number().int().positive(),customer_nu
 export function unitsStore(sql:any){const platform=platformStore(sql);
  async function access(actor:number,company:string,write=false){const a=await platform.toolAccess(actor,company,'customers');if(write)requireManager(a);return a;}
  return{
+ async history(actor:number,company:string,id:string,page:number){await access(actor,company);await platform.toolAccess(actor,company,'service-desk');if(company!==LAKEVIEW_ID)throw new PlatformError(403,'Service Desk is Lakeview-only.');
+ const [unit]=await sql`select id from customer_units where company_id=${company} and id=${id}`;if(!unit)throw new PlatformError(404,'Unit not found.');
+ const rows=await sql`select j.id,j.job_number,j.data->>'serviceDate' as service_date,j.data->>'status' as status,j.data->'services' as services from customer_unit_service_jobs l join service_jobs j on j.id=l.job_id where l.company_id=${company} and l.unit_id=${id} order by nullif(j.data->>'serviceDate','') desc nulls last,j.job_number desc,j.id limit 50 offset ${page*50}`;
+ const [count]=await sql`select count(*)::integer as total from customer_unit_service_jobs where company_id=${company} and unit_id=${id}`;return {rows,total:count.total};},
  async job(actor:number,company:string,jobId:string){await access(actor,company);await platform.toolAccess(actor,company,'service-desk');if(company!==LAKEVIEW_ID)throw new PlatformError(403,'Service Desk is Lakeview-only.');const [unit]=await sql`select u.* from customer_units u join customer_unit_service_jobs l on l.unit_id=u.id and l.company_id=u.company_id where l.company_id=${company} and l.job_id=${jobId}`;return {unit:unit||null};},
  async list(actor:number,company:string,q:string,filter:string,page:number,customerId:string|null){const a=await access(actor,company);const pattern='%'+q.replace(/[\\%_]/g,'\\$&')+'%';
  const where=sql`u.company_id=${company} and (${customerId}::uuid is null or u.customer_id=${customerId}::uuid) and (${filter}='all' or (${filter}='active' and u.status='active') or (${filter}='archived' and u.status='archived') or (${filter}='review' and (u.customer_id is null or (not u.reviewed and u.review_flags<>'[]'::jsonb)))) and concat_ws(' ',u.name,u.make,u.model,u.vin,u.source_customer_number,c.first_name,c.last_name) ilike ${pattern}`;
@@ -40,6 +44,7 @@ export function unitsStore(sql:any){const platform=platformStore(sql);
 export function unitsHandler(store:ReturnType<typeof unitsStore>,auth:(r:Request)=>Promise<number>){return async(r:Request)=>{try{
  let actor:number;try{actor=await auth(r);}catch{throw new PlatformError(401,'Sign in to continue.');}if(!Number.isSafeInteger(actor)||actor<=0)throw new PlatformError(401,'Sign in to continue.');
  const u=new URL(r.url),company=uuid.parse(u.searchParams.get('companyId'));
+ if(r.method==='GET'&&u.pathname==='/_api/units/history')return Response.json(await store.history(actor,company,uuid.parse(u.searchParams.get('id')),z.coerce.number().int().min(0).max(100000).parse(u.searchParams.get('page')||0)));
  if(r.method==='GET'&&u.pathname==='/_api/units/job')return Response.json(await store.job(actor,company,uuid.parse(u.searchParams.get('jobId'))));
  if(r.method==='GET'&&u.pathname==='/_api/units')return Response.json(await store.list(actor,company,z.string().max(200).parse(u.searchParams.get('q')||''),z.enum(['active','archived','all','review']).parse(u.searchParams.get('filter')||'active'),z.coerce.number().int().min(0).max(100000).parse(u.searchParams.get('page')||0),u.searchParams.has('customerId')?uuid.parse(u.searchParams.get('customerId')):null));
  if(r.method==='POST'){requireSameOrigin(r);const body=await readBody(r);
