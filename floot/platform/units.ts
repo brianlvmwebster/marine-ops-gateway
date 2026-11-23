@@ -1,3 +1,5 @@
+import {jobModel} from '../helpers/jobModel';
+import {normalizeJobStage} from '../helpers/jobStage';
 import {randomUUID} from 'node:crypto';
 import {z} from 'zod';
 import {platformStore} from './store';
@@ -9,6 +11,10 @@ export const unitImportRow=z.object({row:z.number().int().positive(),customer_nu
 export function unitsStore(sql:any){const platform=platformStore(sql);
  async function access(actor:number,company:string,write=false){const a=await platform.toolAccess(actor,company,'customers');if(write)requireManager(a);return a;}
  return{
+ async serviceJob(actor:number,company:string,id:string,jobId:string){await access(actor,company);await platform.toolAccess(actor,company,'service-desk');if(company!==LAKEVIEW_ID)throw new PlatformError(403,'Service Desk is Lakeview-only.');
+ const [j]=await sql`select j.* from customer_unit_service_jobs l join customer_units u on u.id=l.unit_id and u.company_id=l.company_id join service_jobs j on j.id=l.job_id where l.company_id=${company} and l.unit_id=${id} and l.job_id=${jobId}`;
+ if(!j)throw new PlatformError(404,'Linked service job not found.');
+ return {job:{id:j.id,jobNumber:String(j.job_number),version:j.version,data:normalizeJobStage(jobModel.parse(j.data)),calendarEligible:j.calendar_eligible,eventId:j.event_id,syncedVersion:j.synced_version,syncError:j.sync_error,remoteEtag:j.remote_etag,updatedAt:j.updated_at}};},
  async jobContext(actor:number,company:string,id:string){await access(actor,company);await platform.toolAccess(actor,company,'service-desk');if(company!==LAKEVIEW_ID)throw new PlatformError(403,'Service Desk is Lakeview-only.');
  const [unit]=await sql`select * from customer_units where company_id=${company} and id=${id}`;if(!unit)throw new PlatformError(404,'Unit not found.');
  if(unit.status!=='active')throw new PlatformError(409,'This unit is archived. Make it available before creating a job.');
@@ -50,6 +56,7 @@ export function unitsStore(sql:any){const platform=platformStore(sql);
 export function unitsHandler(store:ReturnType<typeof unitsStore>,auth:(r:Request)=>Promise<number>){return async(r:Request)=>{try{
  let actor:number;try{actor=await auth(r);}catch{throw new PlatformError(401,'Sign in to continue.');}if(!Number.isSafeInteger(actor)||actor<=0)throw new PlatformError(401,'Sign in to continue.');
  const u=new URL(r.url),company=uuid.parse(u.searchParams.get('companyId'));
+ if(r.method==='GET'&&u.pathname==='/_api/units/service-job')return Response.json(await store.serviceJob(actor,company,uuid.parse(u.searchParams.get('id')),uuid.parse(u.searchParams.get('jobId'))));
  if(r.method==='GET'&&u.pathname==='/_api/units/job-context')return Response.json(await store.jobContext(actor,company,uuid.parse(u.searchParams.get('id'))));
  if(r.method==='GET'&&u.pathname==='/_api/units/history')return Response.json(await store.history(actor,company,uuid.parse(u.searchParams.get('id')),z.coerce.number().int().min(0).max(100000).parse(u.searchParams.get('page')||0)));
  if(r.method==='GET'&&u.pathname==='/_api/units/job')return Response.json(await store.job(actor,company,uuid.parse(u.searchParams.get('jobId'))));

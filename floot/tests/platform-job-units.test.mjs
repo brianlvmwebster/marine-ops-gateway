@@ -47,6 +47,8 @@ test('job unit linking is atomic, owner checked, immutable and preserves histori
  const manual=await save(2,{data:job,customerId:b.id});await save(2,{id:manual.id,version:1,data:job,unitId:ub.id});assert.equal((await us.job(2,LAKEVIEW_ID,manual.id)).unit.id,ub.id);
  const other=randomUUID(),foreign=randomUUID();await db`insert into platform_companies(id,slug,name) values(${other},'other','Other')`;await db`insert into customer_units(id,company_id,make) values(${foreign},${other},'Foreign')`;
  await assert.rejects(save(2,{data:job,customerId:a.id,unitId:foreign}),{status:404});
+ const detail=await us.serviceJob(2,LAKEVIEW_ID,ua.id,created.id);assert.equal(detail.job.id,created.id);assert.equal(detail.job.version,3);assert.equal(detail.job.data.hullId,vessel.vin);assert.equal(typeof detail.job.jobNumber,'string');
+ await assert.rejects(us.serviceJob(2,LAKEVIEW_ID,ub.id,created.id),{status:404});await assert.rejects(us.serviceJob(3,LAKEVIEW_ID,ua.id,created.id),{status:403});await assert.rejects(us.serviceJob(2,LAKEVIEW_ID,foreign,created.id),{status:404});
  const history=await us.history(2,LAKEVIEW_ID,ua.id,0);assert.equal(history.total,1);assert.equal(history.rows[0].id,created.id);assert.equal(history.rows[0].service_date,job.serviceDate);assert.deepEqual(history.rows[0].services,job.services);
  assert.equal((await us.history(2,LAKEVIEW_ID,unassigned.id,0)).total,0);
  await assert.rejects(us.history(3,LAKEVIEW_ID,ua.id,0),{status:403});
@@ -58,10 +60,10 @@ test('job unit linking is atomic, owner checked, immutable and preserves histori
  assert.equal(first.total,52);assert.equal(first.rows.length,50);assert.equal(second.rows.length,2);assert.equal(new Set([...first.rows,...second.rows].map(j=>j.id)).size,52);assert.equal(second.rows[1].service_date,'');assert.ok(first.rows.some(j=>j.status==='Completed'));assert.ok(first.rows.some(j=>j.status==='Cancelled'));
  const handler=unitsHandler(us,async()=>2),url='https://example.invalid/_api/units/history?companyId='+LAKEVIEW_ID+'&id='+ua.id;
  assert.equal((await handler(new Request(url+'&page=-1'))).status,400);assert.equal((await handler(new Request(url.replace(ua.id,'invalid')))).status,400);
- assert.equal((await handler(new Request(url))).status,200);assert.equal((await handler(new Request(url.replace('/history','/job-context').replace(ua.id,ub.id)))).status,200);
+ assert.equal((await handler(new Request(url))).status,200);assert.equal((await handler(new Request(url.replace('/history','/service-job')+'&jobId='+created.id))).status,200);assert.equal((await handler(new Request(url.replace('/history','/service-job')+'&jobId=invalid'))).status,400);assert.equal((await handler(new Request(url.replace('/history','/job-context').replace(ua.id,ub.id)))).status,200);
  assert.equal((await unitsHandler(us,async()=>{throw Error('no session');})(new Request(url))).status,401);
  await db`update platform_entitlements set status='disabled' where company_id=${LAKEVIEW_ID} and tool_key='service-desk'`;
- await assert.rejects(us.history(2,LAKEVIEW_ID,ua.id,0),{status:403});await assert.rejects(us.jobContext(2,LAKEVIEW_ID,ub.id),{status:403});
+ await assert.rejects(us.history(2,LAKEVIEW_ID,ua.id,0),{status:403});await assert.rejects(us.jobContext(2,LAKEVIEW_ID,ub.id),{status:403});await assert.rejects(us.serviceJob(2,LAKEVIEW_ID,ua.id,created.id),{status:403});
  await db`update platform_entitlements set status='enabled' where company_id=${LAKEVIEW_ID} and tool_key='service-desk'`;
  await db`update platform_entitlements set status='disabled' where company_id=${LAKEVIEW_ID} and tool_key='customers'`;
  await assert.rejects(save(2,{data:job,unitId:ub.id}),{status:403});await assert.rejects(us.job(2,LAKEVIEW_ID,created.id),{status:403});await assert.rejects(us.history(2,LAKEVIEW_ID,ua.id,0),{status:403});

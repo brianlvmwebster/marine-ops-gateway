@@ -1,8 +1,10 @@
 import React, {useEffect, useState} from 'react';
 import {JobEditor,type UnitJobContext} from './JobEditor';
+import {UnitServiceJob} from './UnitServiceJob';
 
 type ServiceEntry = {id:string;job_number:number;service_date:string|null;status:string|null;services:string[]|null};
 export function UnitServiceHistory({company,unitId}:{company:string;unitId:string}) {
+  const [viewJob,setViewJob]=useState<string|null>(null);
   const [page,setPage]=useState(0),[retry,setRetry]=useState(0);
   const [result,setResult]=useState<{rows:ServiceEntry[];total:number}|null>(null),[error,setError]=useState('');
   const [initialUnit,setInitialUnit]=useState<UnitJobContext|null>(null),[starting,setStarting]=useState(false),[startError,setStartError]=useState(''),[savedMessage,setSavedMessage]=useState('');
@@ -23,6 +25,7 @@ export function UnitServiceHistory({company,unitId}:{company:string;unitId:strin
     void load();return()=>controller.abort();
   },[company,unitId,page,retry]);
   return <section aria-label="Unit service history">
+    {viewJob&&<UnitServiceJob key={viewJob} company={company} unitId={unitId} jobId={viewJob} onClose={()=>setViewJob(null)} onChanged={()=>setRetry(n=>n+1)}/>}
     <h3>Service history</h3>
     <button type="button" disabled={starting||!!initialUnit} onClick={startJob}>{starting?'Loading job details...':'New Service Job'}</button>
     <p>Uses the saved unit and assigned customer details. Save any unit edits first.</p>
@@ -33,7 +36,7 @@ export function UnitServiceHistory({company,unitId}:{company:string;unitId:strin
       <p role="status">{result.total} linked {result.total===1?'job':'jobs'}</p>
       {!result.rows.length?<p>No linked Service Desk jobs for this unit.</p>:<div className="customer-table"><table>
         <thead><tr><th>Job</th><th>Service date</th><th>Status</th><th>Requested work</th></tr></thead>
-        <tbody>{result.rows.map(job=><tr key={job.id}><td><a href={'/dashboard/jobs/'+job.id+'/print'} target="_blank" rel="noopener noreferrer">Open job #{job.job_number} (service sheet, new tab)</a></td><td>{job.service_date||'Unscheduled'}</td><td>{job.status||'Not specified'}</td><td>{job.services?.join(' · ')||'Not specified'}</td></tr>)}</tbody>
+        <tbody>{result.rows.map(job=><tr key={job.id}><td><button type="button" onClick={()=>setViewJob(job.id)}>Open job #{job.job_number}</button></td><td>{job.service_date||'Unscheduled'}</td><td>{job.status||'Not specified'}</td><td>{job.services?.join(' · ')||'Not specified'}</td></tr>)}</tbody>
       </table></div>}
       {result.total>50&&<div><button type="button" disabled={page===0} onClick={()=>setPage(n=>n-1)}>Previous service jobs</button><span> Page {page+1} of {Math.ceil(result.total/50)} </span><button type="button" disabled={(page+1)*50>=result.total} onClick={()=>setPage(n=>n+1)}>Next service jobs</button></div>}
     </>}
