@@ -1,6 +1,6 @@
 import React, {useEffect, useState} from 'react';
 import {JobEditor,type UnitJobContext} from './JobEditor';
-import {UnitServiceJob} from './UnitServiceJob';
+import {LinkedServiceJob} from './LinkedServiceJob';
 
 type ServiceEntry = {id:string;job_number:number;service_date:string|null;status:string|null;services:string[]|null};
 export function UnitServiceHistory({company,unitId}:{company:string;unitId:string}) {
@@ -25,7 +25,7 @@ export function UnitServiceHistory({company,unitId}:{company:string;unitId:strin
     void load();return()=>controller.abort();
   },[company,unitId,page,retry]);
   return <section aria-label="Unit service history">
-    {viewJob&&<UnitServiceJob key={viewJob} company={company} unitId={unitId} jobId={viewJob} onClose={()=>setViewJob(null)} onChanged={()=>setRetry(n=>n+1)}/>}
+    {viewJob&&<LinkedServiceJob key={viewJob} company={company} source="units" recordId={unitId} jobId={viewJob} onClose={()=>setViewJob(null)} onChanged={()=>setRetry(n=>n+1)}/>}
     <h3>Service history</h3>
     <button type="button" disabled={starting||!!initialUnit} onClick={startJob}>{starting?'Loading job details...':'New Service Job'}</button>
     <p>Uses the saved unit and assigned customer details. Save any unit edits first.</p>
