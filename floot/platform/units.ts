@@ -1,7 +1,7 @@
 import {randomUUID} from 'node:crypto';
 import {z} from 'zod';
 import {platformStore} from './store';
-import {PlatformError,requireManager,requireSameOrigin} from './policy';
+import {LAKEVIEW_ID,PlatformError,requireManager,requireSameOrigin} from './policy';
 import {readBody} from './customers';
 const text=z.string().trim().max(500),uuid=z.uuid();
 export const unitFields=z.object({make:text,model:text,vin:text,length:text,name:text,year:text,unit_type:text,notes:z.string().max(5000),status:z.enum(['active','archived']),reviewed:z.boolean()}).strict().refine(v=>!!(v.make||v.model||v.vin||v.name),'Enter a unit description.');
@@ -9,6 +9,7 @@ export const unitImportRow=z.object({row:z.number().int().positive(),customer_nu
 export function unitsStore(sql:any){const platform=platformStore(sql);
  async function access(actor:number,company:string,write=false){const a=await platform.toolAccess(actor,company,'customers');if(write)requireManager(a);return a;}
  return{
+ async job(actor:number,company:string,jobId:string){await access(actor,company);await platform.toolAccess(actor,company,'service-desk');if(company!==LAKEVIEW_ID)throw new PlatformError(403,'Service Desk is Lakeview-only.');const [unit]=await sql`select u.* from customer_units u join customer_unit_service_jobs l on l.unit_id=u.id and l.company_id=u.company_id where l.company_id=${company} and l.job_id=${jobId}`;return {unit:unit||null};},
  async list(actor:number,company:string,q:string,filter:string,page:number,customerId:string|null){const a=await access(actor,company);const pattern='%'+q.replace(/[\\%_]/g,'\\$&')+'%';
  const where=sql`u.company_id=${company} and (${customerId}::uuid is null or u.customer_id=${customerId}::uuid) and (${filter}='all' or (${filter}='active' and u.status='active') or (${filter}='archived' and u.status='archived') or (${filter}='review' and (u.customer_id is null or (not u.reviewed and u.review_flags<>'[]'::jsonb)))) and concat_ws(' ',u.name,u.make,u.model,u.vin,u.source_customer_number,c.first_name,c.last_name) ilike ${pattern}`;
  const rows=await sql`select u.*,concat_ws(' ',c.first_name,c.last_name) as customer_name from customer_units u left join customers c on c.id=u.customer_id and c.company_id=u.company_id where ${where} order by u.created_at desc,u.id limit 50 offset ${page*50}`;
@@ -39,6 +40,7 @@ export function unitsStore(sql:any){const platform=platformStore(sql);
 export function unitsHandler(store:ReturnType<typeof unitsStore>,auth:(r:Request)=>Promise<number>){return async(r:Request)=>{try{
  let actor:number;try{actor=await auth(r);}catch{throw new PlatformError(401,'Sign in to continue.');}if(!Number.isSafeInteger(actor)||actor<=0)throw new PlatformError(401,'Sign in to continue.');
  const u=new URL(r.url),company=uuid.parse(u.searchParams.get('companyId'));
+ if(r.method==='GET'&&u.pathname==='/_api/units/job')return Response.json(await store.job(actor,company,uuid.parse(u.searchParams.get('jobId'))));
  if(r.method==='GET'&&u.pathname==='/_api/units')return Response.json(await store.list(actor,company,z.string().max(200).parse(u.searchParams.get('q')||''),z.enum(['active','archived','all','review']).parse(u.searchParams.get('filter')||'active'),z.coerce.number().int().min(0).max(100000).parse(u.searchParams.get('page')||0),u.searchParams.has('customerId')?uuid.parse(u.searchParams.get('customerId')):null));
  if(r.method==='POST'){requireSameOrigin(r);const body=await readBody(r);
  if(u.pathname==='/_api/units/save'){const v=z.object({id:uuid.optional(),version:z.number().int().nonnegative(),customerId:uuid.nullable(),data:unitFields}).strict().parse(body);return Response.json(await store.save(actor,company,v.id,v.version,v.customerId,v.data));}
