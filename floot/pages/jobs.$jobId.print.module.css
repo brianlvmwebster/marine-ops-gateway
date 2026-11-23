@@ -43,3 +43,10 @@
 .paper header>div:first-child{flex-direction:column;align-items:flex-start;gap:5px}
 .serviceName{font-size:12px;line-height:1.3}
 .checklist .serviceName{font-size:10px}
+/* Repeat column labels on multi-page job sheets and keep each part together. */
+.partsTable{width:100%;border-collapse:collapse;table-layout:fixed;text-align:left}
+.partsTable th,.partsTable td{padding:6px 8px;border-bottom:1px solid #ccd5dd;vertical-align:top;overflow-wrap:anywhere}
+.partsTable th:first-child{width:30%}.partsTable th:last-child{width:18%}
+.partsTable th:last-child,.partsTable td:last-child{text-align:right}
+.partsTable small{display:block;color:#526372}
+@media print{.partsTable thead{display:table-header-group}.partsTable tr{break-inside:avoid}}
