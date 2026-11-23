@@ -1,0 +1,15 @@
+import assert from 'node:assert/strict';
+import {randomUUID} from 'node:crypto';
+const origin=process.env.STAGING_URL;assert.equal(origin,'https://marine-ops-staging-7esxar6tqa-ue.a.run.app');
+const company='00000000-0000-4000-8000-000000000001';
+const login=await fetch(origin+'/staging/login',{method:'POST',redirect:'manual',headers:{Origin:origin,'Content-Type':'application/x-www-form-urlencoded'},body:new URLSearchParams({password:process.env.STAGING_LOGIN_SECRET})});assert.equal(login.status,303);
+const headers={Cookie:login.headers.get('set-cookie').split(';')[0],Origin:origin,'Content-Type':'application/json'};
+async function api(path,data,status=200){const r=await fetch(origin+'/_api/parts'+path+(path.includes('?')?'&':'?')+'companyId='+company,{headers,...(data?{method:'POST',body:JSON.stringify(data)}:{})});const v=await r.json();assert.equal(r.status,status,v.error);return v;}
+try{
+ if(process.argv.includes('--seed')){const data={supplier_code:'QA-STOCK',part_number:'SYNTHETIC-STOCK-QA',description:'Synthetic receiving and adjustment verification only',active:true,supplier_name:'Synthetic staging supplier',category:'QA',manufacturer:'',manufacturer_part_number:'',upc:'',bins:['TEST','',''],on_hand:'10',available:'8',active_price:'0',retail_price:'0',sale_price:'0',replacement_cost:'0',inventory_value:'0',reorder_point:'0',minimum:'0',maximum:'0',comments:'Test-only stock record; no real parts.'};await api('/import',{batch:'b'.repeat(64),rows:[{row:1,data,source:Array(127).fill('')}]});console.log('Synthetic stock fixture ready.');}
+ const found=await api('?q=SYNTHETIC-STOCK-QA');assert.equal(found.total,1);const {part}=await api('/detail?id='+found.rows[0].id);
+ if(process.argv.includes('--verify-browser')){assert.equal(Number(part.data.on_hand),11.25);assert.equal(Number(part.data.available),9.25);assert.equal(part.opening_data.on_hand,'10');assert.equal(part.opening_data.available,'8');const history=await api('/history?id='+part.id);assert.equal(history.total,2);assert.equal(history.rows[0].kind,'adjust');assert.equal(history.rows[0].reason,'Synthetic count correction QA');assert.equal(history.rows[1].kind,'receive');assert.equal(history.rows[1].reason,'Synthetic receipt QA');for(const m of history.rows){assert.equal(m.actor_user_id,1);assert.equal(m.actor_name,'Lakeview Test Owner');assert.ok(m.created_at);}
+ const bad={id:part.id,requestId:randomUUID(),version:1,kind:'adjust',quantity:'1',reason:'Must reject stale change',reference:''};await api('/stock',bad,409);await api('/stock',{...bad,version:part.version,quantity:'0'},400);await api('/stock',{...bad,version:part.version,reason:''},400);assert.equal((await api('/history?id='+part.id)).total,2);
+ assert.equal((await fetch(origin+'/_api/parts/history?companyId='+company+'&id='+part.id)).status,401);
+ console.log('PASS: receipt and adjustment balances, immutable opening values, actor/reason history, stale changes, invalid quantities/reasons and anonymous access.');}
+}finally{await fetch(origin+'/_api/auth/logout',{method:'POST',headers,body:'{}'});}
