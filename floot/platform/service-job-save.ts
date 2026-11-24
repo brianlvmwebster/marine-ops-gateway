@@ -11,7 +11,7 @@ export function serviceJobSaveStore(sql:any){return async(actor:number,input:unk
  await platformStore(sql).toolAccess(actor,LAKEVIEW_ID,'service-desk');
  if(p.customerId||p.unitId)await platformStore(sql).toolAccess(actor,LAKEVIEW_ID,'customers');
  if(!p.id&&p.data.sourceSubmissionId)throw new PlatformError(400,'Imported records must be created by the sheet importer.');
- if(p.data.serviceDate&&p.data.time)serviceTime.toUtc(p.data.serviceDate,p.data.time);
+ if(p.data.serviceDate)serviceTime.toUtc(p.data.serviceDate,p.data.time||'12:00');
  return sql.begin(async(tx:any)=>{
   const existing=p.id?(await tx`select * from service_jobs where id=${p.id} for update`)[0]:null;
   if(p.id&&!existing)throw new PlatformError(404,'Job not found.');
@@ -38,6 +38,7 @@ export function serviceJobSaveStore(sql:any){return async(actor:number,input:unk
    }
   }
   const calendarEligible=p.calendarEligible??existing?.calendar_eligible??false;
+  if(calendarEligible&&p.data.scheduleMode==='day')throw new PlatformError(400,'Day-based jobs stay on the job board. Use a timed appointment for Outlook.');
   if(calendarEligible&&(!p.data.serviceDate||!p.data.time||p.data.duration<15))throw new PlatformError(400,'Set a valid appointment before including this job in Outlook.');
   const [job]=existing?await tx`update service_jobs set data=${tx.json(p.data)},calendar_eligible=${calendarEligible},version=version+1,updated_at=now() where id=${p.id} returning id,version`:
    await tx`insert into service_jobs(data,calendar_eligible) values(${tx.json(p.data)},${calendarEligible}) returning id,version`;

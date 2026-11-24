@@ -3,7 +3,7 @@ import {jobStatuses} from './workflowModel';
 const text=z.string().max(10000).default('');
 const base=z.object({
  ro:text,firstName:z.string().max(200),lastName:z.string().max(200),phone:z.string().max(200),email:z.string().max(300),year:z.string().max(100),make:z.string().max(300),model:z.string().max(300),engine:z.string().max(1000),hullId:text,
- serviceDate:z.string(),time:z.string(),duration:z.number().int().min(0).max(1440),
+ scheduleMode:z.enum(['day','timed']).default('timed'),serviceDate:z.string(),time:z.string(),duration:z.number().int().min(0).max(1440),
  appointment:z.enum(['Unconfirmed','Confirmed','Cancelled']),cancelledBy:z.string().max(100).default(''),
  pickup:text,trailer:text,trailerLocation:text,lake:text,pickupAddress:text,returnType:text,returnAddress:text,pickupPlaceId:z.string().max(300).optional(),returnPlaceId:z.string().max(300).optional(),
  services:z.array(z.string().min(1).max(500)).max(100),removeItems:z.array(z.string().max(500)).max(100),
@@ -23,8 +23,8 @@ export const jobModel=base.superRefine((d,ctx)=>{
  if(!z.email().safeParse(d.email).success)issue('email','Enter a valid email');
  if(!/^\d{4}$/.test(d.year))issue('year','Enter a four-digit year');
  if(!d.serviceDate)issue('serviceDate','Choose a service date');
- if(!d.time)issue('time','Enter a start time');
- if(d.duration<15)issue('duration','Duration must be at least 15 minutes');
+ if(d.scheduleMode==='timed'&&!d.time)issue('time','Enter a start time for a timed appointment');
+ if((d.scheduleMode==='timed'||d.duration>0)&&d.duration<15)issue('duration','Duration must be at least 15 minutes, or blank for a day-based job');
  if(!d.pickup)issue('pickup','Choose pickup / drop-off');
  if(!d.trailer)issue('trailer','Choose a trailer');
  if(!d.returnType)issue('returnType','Choose return / storage');
@@ -32,4 +32,4 @@ export const jobModel=base.superRefine((d,ctx)=>{
 });
 export type JobData=z.infer<typeof jobModel>;
 export type Job={id:string;jobNumber:string;version:number;data:JobData;calendarEligible?:boolean;eventId:string|null;syncedVersion:number;syncError:string|null;remoteEtag:string|null;updatedAt:Date};
-export const emptyJob:JobData={ro:'',firstName:'',lastName:'',phone:'',email:'',year:'',make:'',model:'',engine:'',hullId:'',serviceDate:'',time:'09:00',duration:120,appointment:'Unconfirmed',cancelledBy:'',pickup:'Customer Drop-off (Land)',trailer:'Customer Trailer',trailerLocation:'Not applicable',lake:'',pickupAddress:'',returnType:'Customer Pickup',returnAddress:'',services:[],removeItems:[],notes:'',technician:'Unassigned',priority:'Normal',status:'New',checklist:[]};
+export const emptyJob:JobData={scheduleMode:'timed',ro:'',firstName:'',lastName:'',phone:'',email:'',year:'',make:'',model:'',engine:'',hullId:'',serviceDate:'',time:'09:00',duration:120,appointment:'Unconfirmed',cancelledBy:'',pickup:'Customer Drop-off (Land)',trailer:'Customer Trailer',trailerLocation:'Not applicable',lake:'',pickupAddress:'',returnType:'Customer Pickup',returnAddress:'',services:[],removeItems:[],notes:'',technician:'Unassigned',priority:'Normal',status:'New',checklist:[]};

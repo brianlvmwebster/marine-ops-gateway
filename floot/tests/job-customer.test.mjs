@@ -38,6 +38,16 @@ test('job/customer save is atomic, tenant checked, versioned and preserves snaps
   await db`update platform_entitlements set status='disabled' where company_id=${LAKEVIEW_ID} and tool_key='customers'`;
   await assert.rejects(save(2,{data:job,customerId:second.id}),{status:403});
   await save(2,{id:created.id,version:2,data:job});assert.equal(Number((await db`select count(*) from customer_service_jobs where job_id=${created.id}`)[0].count),1);
+  const dayData={...job,scheduleMode:'day',time:'',duration:0};
+  const day=await save(1,{data:dayData,calendarEligible:false});
+  const stored=(await db`select data,calendar_eligible from service_jobs where id=${day.id}`)[0];
+  assert.equal(stored.data.scheduleMode,'day');assert.equal(stored.data.time,'');assert.equal(stored.data.duration,0);assert.equal(stored.calendar_eligible,false);
+  await assert.rejects(save(1,{data:dayData,calendarEligible:true}),{status:400});
+  await assert.rejects(save(1,{data:{...dayData,serviceDate:'2026-02-30'},calendarEligible:false}));
+  await assert.rejects(save(1,{data:{...dayData,scheduleMode:'timed'},calendarEligible:false}));
+  const timed=await save(1,{id:day.id,version:day.version,data:{...dayData,scheduleMode:'timed',time:'10:00',duration:60},calendarEligible:false});
+  assert.equal((await db`select data from service_jobs where id=${day.id}`)[0].data.time,'10:00');
+  await save(1,{id:day.id,version:timed.version,data:dayData,calendarEligible:false});
   await db`update service_jobs set data=jsonb_set(data,'{status}','"Completed"') where id=${created.id}`;
   await assert.rejects(save(2,{id:created.id,version:3,data:job}),{status:400});
  }finally{await db.end();const clean=postgres(process.env.TEST_DATABASE_URL,{onnotice:()=>{}});await clean.unsafe(`drop schema ${schema} cascade`);await clean.end();}
