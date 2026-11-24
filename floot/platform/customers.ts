@@ -27,7 +27,7 @@ export function customersStore(sql:any){
   async list(actor:number,company:string,q:string,status:string,page:number){
    const a=await access(actor,company);const pattern='%'+q.replace(/[\\%_]/g,'\\$&')+'%';
    const where=sql`company_id=${company} and (${status}='all' or status=${status}) and (concat_ws(' ',first_name,last_name,source_number,email,home_phone,work_phone,mobile_phone) ilike ${pattern})`;
-   const rows=await sql`select id,first_name,last_name,email,home_phone,mobile_phone,source_number,status,version from customers where ${where} order by last_name,first_name,id limit 50 offset ${page*50}`;
+   const rows=await sql`select id,first_name,last_name,email,home_phone,mobile_phone,source_number,status,version,addresses from customers where ${where} order by last_name,first_name,id limit 50 offset ${page*50}`;
    const [count]=await sql`select count(*)::integer as total from customers where ${where}`;
    return {rows,total:count.total,canManage:['owner','admin'].includes(a.role)};
   },

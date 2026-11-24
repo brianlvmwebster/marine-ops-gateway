@@ -4,7 +4,7 @@ import {readFile} from 'node:fs/promises';
 import postgres from 'postgres';
 import {customersStore,customersHandler,customerFields} from '../platform/customers.ts';
 import {LAKEVIEW_ID} from '../platform/policy.ts';
-const data={first_name:'Synthetic',last_name:'Customer',email:'shared@example.invalid',home_phone:'',work_phone:'',mobile_phone:'',addresses:[],notes:'',status:'active'};
+const data={first_name:'Synthetic',last_name:'Customer',email:'shared@example.invalid',home_phone:'',work_phone:'',mobile_phone:'',addresses:[{label:'primary',line1:'123 Synthetic Lane',line2:'',city:'Test Town',state:'MA',postal_code:'00000',county:'',country:'US'}],notes:'',status:'active'};
 test('customer HTTP denies unauthenticated, cross-origin and invalid requests',async()=>{
  const url='https://staging.example/_api/customers/save?companyId='+LAKEVIEW_ID;
  assert.equal((await customersHandler({},async()=>{throw Error();})(new Request(url))).status,401);
@@ -27,6 +27,7 @@ test('customer database: tenant isolation, roles, import idempotency, source fla
   const store=customersStore(db),row={source_number:'000123',source_active:'False',source_record:{Active:'False'},data};
   assert.deepEqual(await store.import(1,LAKEVIEW_ID,[row]),{inserted:1,skipped:0});
   const list=await store.list(2,LAKEVIEW_ID,'000123','active',0);assert.equal(list.total,1);assert.equal(list.canManage,false);
+  assert.deepEqual(list.rows[0].addresses,data.addresses);
   const id=list.rows[0].id;
   assert.equal((await store.detail(1,LAKEVIEW_ID,id)).customer.source_active,'False');
   await assert.rejects(store.list(3,LAKEVIEW_ID,'','all',0),{status:403});

@@ -8,3 +8,12 @@
 .customer-section-body{padding:0 1rem 1rem}
 .customer-section-body>.customer-units{border-top:0;margin-top:0;padding-top:0}
 .customer-section-body>.customer-units>h2{display:none}
+
+.customers-page .customer-quick-search{position:relative;display:inline-block;width:360px;max-width:100%;vertical-align:top}
+.customers-page .customer-quick-search label{display:flex;margin-right:0}
+.customers-page .customer-quick-search input{width:100%;box-sizing:border-box}
+.customer-quick-results{position:absolute;top:100%;left:0;right:0;z-index:30;background:var(--card,var(--background));color:var(--foreground);border:1px solid var(--border,#788590);box-shadow:0 4px 12px #0002;max-height:320px;overflow-y:auto}
+.customer-quick-results a{display:flex;flex-direction:column;gap:3px;padding:8px 10px;color:var(--foreground);text-decoration:none;border-bottom:1px solid var(--border,#78859055);font-size:13px}
+.customer-quick-results a:hover,.customer-quick-results a:focus{background:var(--surface,#edf2f5);outline:2px solid var(--primary,#155c91);outline-offset:-2px}
+.customer-quick-results span{font-size:12px;color:var(--muted-foreground,#526170);overflow-wrap:anywhere}
+.customer-quick-results [role=status]:not(:empty){padding:8px 10px;font-size:12px}
