@@ -1,23 +1,23 @@
-# Company Home Dashboard
+# Gateway and Company Dashboard
 
-The standalone staging root `/` is now the company Home Dashboard. Staging sign-in redirects there; the existing Microsoft sign-in default already returns to `/`. Production Floot login and routing are not cut over by this change.
+The November 23 organization correction supersedes the prior root-dashboard layout.
 
-The shared company navigation includes Customers, Units, Service, Sales / Dock Builder, Inventory, Mapping, company administration and other tools. Existing Service Desk dashboard widgets, job queues, scheduling, drag rescheduling, printing and service administration remain available in the Home Dashboard and at `/dashboard`.
+Microsoft SSO returns to the company gateway at `/`. Standalone staging password login also returns to `/`. The gateway presents a grid of enabled tool buttons, including Company Dashboard at `/dashboard` and Dock Builder. Mapping is visibly unavailable until its standalone migration is complete. Platform administration remains at `/platform` and is not an operational tool in the company dashboard.
 
-Company selection is validated against active memberships and active companies, then retained in session storage and passed explicitly in navigation URLs. Operators do not gain company data access merely by being platform operators. Service, Dock Builder and inventory remain subject to their existing rollout and backend authorization checks. Unsupported company IDs show an access error rather than falling back to another company's records.
+Company Dashboard opens the existing customizable Overview, preserving saved widgets and column preferences. One sidebar contains Overview, Job queue, Schedule, shared Customers, Units, Sales / Dock Builder, Inventory, company administration, and Back to gateway. Customer, inventory, company-administration and Dock Builder pages use that same sidebar. The extra company navigation bar is removed. Point of Sale is not introduced or advertised as available.
 
-Customers remain the existing company-scoped directory and API. Service/customer-unit links and Dock Builder quote/customer links retain the same IDs; no customer copy or migration is performed. Customers and Units are reachable from the same navigation throughout the company workspace. Mapping, layouts and dock scheduling still await standalone backend migration; the Mapping staging page states this limitation and retains shared customer navigation.
+The company context provider still validates active membership and entitlements, passes company IDs in links and preserves the selected company. Customer data and IDs remain centralized; service jobs and Dock Builder quotes keep their existing links. No data migration or duplicate customer store is introduced. Operator-only company enable/suspend and entitlement controls remain separate from company member administration.
 
-## Administration separation
+The retained production Floot application and Microsoft integration are not cut over by this staging change. Outlook stays paused and main branches remain stable.
 
-- `/company/admin`: company member management for company owners/administrators; no entitlement or company-status controls.
-- `/platform`: platform operator administration, outside company navigation, for company creation, enable/suspend and tool entitlements. Its overview endpoint enforces operator access on the server.
-- Company status updates use optimistic versions, transactional row locks, same-origin checks and audit events. Existing company/tool access checks enforce suspended-company denial.
+## Staging verification
 
-The old gateway tool launcher is replaced in staging by an available-tools page at `/tools`. Existing production gateway code remains retained for the authorized future cutover. No new sales workflow is fabricated: current sales functionality is Dock Builder and its saved customer quotes.
+Verified the correction on November 23, 2026, revision `marine-ops-staging-00036-ghf`, serving 100% of traffic, application source `51aeb34`. Frontend and platform CI passed.
 
-## Verification
+- Staging login redirects to `/`, now the gateway grid; Company Dashboard opens `/dashboard`.
+- Browser verified gateway entry/return, one sidebar and no old company top navigation, shared Customers, Inventory, Schedule and company administration without platform controls.
+- Customizable Overview's widget chooser opens; changing columns from one to two persisted after reload and was restored to one. Selected dashboard sections update the URL and Overview survives reload.
+- A 390px viewport kept readable navigation labels and no horizontal document overflow. Desktop viewport was restored. Sidebar account text contrast was corrected after inspection.
+- The API verifier passed login destination, shared customer access, active entitlements, operator controls, stale updates and cross-company denial. No real customer or job records were changed. One browser reload stalled without a server error and succeeded on retry.
 
-The database CI suite covers operator-only overview/status changes, stale-version rejection, membership boundaries, company suspension and existing tool access enforcement. `staging/verify-company-home.mjs` checks the root login redirect, enabled tools, shared customer access, operator controls and cross-company customer denial using a synthetic QA company. The QA company is left suspended and without memberships or enabled tools.
-
-Verified November 23, 2026 on revision `marine-ops-staging-00034-csc`, serving 100% of staging traffic, application source `03fda9e`. Frontend and PostgreSQL CI passed after correcting selector markup. Staging API verification passed login redirect, tool entitlements, shared customers, operator controls, optimistic-version rejection and cross-company denial. Browser verification confirmed the root Home Dashboard, retained day board, customer directory, Dock Builder customer picker, inventory, Mapping customer navigation, company member administration without platform controls, and a separate platform page without company navigation or membership forms. Outlook remained paused. No real customer/job records were modified.
+Staging uses its isolated test login; Microsoft SSO itself is not exercised here. Production Microsoft sign-in defaults to the root gateway and is unchanged pending authorized cutover.

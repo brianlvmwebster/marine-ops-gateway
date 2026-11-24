@@ -2,7 +2,8 @@ import React,{createContext,useContext,useEffect,useState} from 'react';
 import {Link,useLocation} from 'react-router-dom';
 import {useAuth} from '../helpers/useAuth';
 import './CompanyWorkspace.css';
-import AccountMenu from './GatewayAccountMenu';
+import {CompanySidebar} from './CompanySidebar';
+import styles from './ServiceDashboard.module.css';
 
 type Tool={key:string;name:string;path:string;available:boolean;status:string;rollout_company_id:string|null};
 type Company={id:string;name:string;status:string;membership_status:string};
@@ -37,5 +38,7 @@ export function CompanyWorkspace({children}:{children:React.ReactNode}){
  if(!workspace)return <p role="status">Loading company workspace…</p>;
  const {company,tools,role}=workspace,has=(key:string)=>tools.some(t=>t.key===key);
  const required=location.pathname.startsWith('/customers')?'customers':location.pathname.startsWith('/inventory')?'parts-inventory':location.pathname.startsWith('/dock-builder')?'dock-builder':location.pathname.startsWith('/dashboard')?'service-desk':null;
- return <Context.Provider value={workspace}><header className="company-workspace-nav"><div><strong>{company.name}</strong>{workspace.companies.length>1&&<label>Company<select value={company.id} onChange={e=>{window.location.href=companyUrl('/',e.target.value);}}>{workspace.companies.map(c=><option key={c.id} value={c.id}>{c.name}</option>)}</select></label>}</div><nav aria-label="Company tools"><Link to={companyUrl('/',company.id)}>Home Dashboard</Link>{has('customers')&&<><Link to={companyUrl('/customers',company.id)}>Customers</Link><Link to={companyUrl('/customers?view=units',company.id)}>Units</Link></>}{has('service-desk')&&<Link to={companyUrl('/dashboard',company.id)}>Service</Link>}{has('dock-builder')&&<Link to={companyUrl('/dock-builder',company.id)}>Sales / Dock Builder</Link>}{has('parts-inventory')&&<Link to={companyUrl('/inventory/parts',company.id)}>Inventory</Link>}<Link to={companyUrl('/maps',company.id)}>Mapping</Link>{['owner','admin'].includes(role)&&<Link to={companyUrl('/company/admin',company.id)}>Company administration</Link>}<Link to={companyUrl('/tools',company.id)}>Other tools</Link></nav><AccountMenu email={authState.type==='authenticated'?authState.user.email:undefined}/></header>{required&&!has(required)?<main><h1>Tool unavailable</h1><p>This tool is not enabled for your company.</p></main>:children}</Context.Provider>;
+ const page=required&&!has(required)?<main><h1>Tool unavailable</h1><p>This tool is not enabled for your company.</p></main>:children;
+ const insideDashboard=['/customers','/inventory/parts','/company/admin','/dock-builder','/maps'].includes(location.pathname);
+ return <Context.Provider value={workspace}>{insideDashboard?<div className={styles.app+' company-dashboard-shell'}><CompanySidebar/><main className={styles.main}>{page}</main></div>:page}</Context.Provider>;
 }

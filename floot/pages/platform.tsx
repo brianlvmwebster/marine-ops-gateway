@@ -17,7 +17,7 @@ export default function Platform({administration=false}:{administration?:boolean
   const [error,setError]=useState('');
   const [revision,setRevision]=useState(0);
   useEffect(()=>{const controller=new AbortController();setOverview(null);setError('');api(administration?'':'/operator',undefined,controller.signal).then(value=>{if(administration)value.companies=value.companies.filter((c:any)=>c.status==='active'&&c.membership_status==='active');setOverview(value);setCompanyId(id=>id||value.companies.find((c:Company)=>c.id===new URLSearchParams(location.search).get('companyId'))?.id||value.companies[0]?.id||'');}).catch(e=>{if(!controller.signal.aborted)setError(e.message);});return()=>controller.abort();},[revision,administration]);
-  return <main className="platform-page"><nav><a href="/">MarineOps home</a> · <a href="/login">Sign in</a></nav><h1>{administration?'Company administration':'Platform administration'}</h1>
+  return <main className="platform-page">{!administration&&<nav><a href="/">Gateway</a> · <a href="/login">Sign in</a></nav>}<h1>{administration?'Company administration':'Platform administration'}</h1>
     <p>{administration?'Manage company members and their roles.':'Enable or suspend companies and control their available capabilities.'}</p>{error && <p role="alert">{error}</p>}
     {!overview && !error && <p role="status">Loading companies…</p>}
     {overview && <><label>Company <select value={companyId} onChange={e=>setCompanyId(e.target.value)}><option value="" disabled>Select a company</option>{overview.companies.map(c=><option key={c.id} value={c.id}>{c.name}</option>)}</select></label>
