@@ -5,3 +5,7 @@
 :global(.dark) .brand img { content: url("/_cdn/static/89538bcd-5069-42bf-bc71-d48d7f013223-marine-ops-dark.svg"); }
 :global(.dark) .subtitle { color: #c2dae8; }
 @media (max-width:620px) { .brand img { width: 220px; } }
+
+:global(html[data-workspace-theme]) .brand img{width:210px}
+:global(html[data-workspace-theme]) .subtitle{color:var(--muted-foreground);font-size:11px}
+:global(html[data-workspace-mode=dark]) .brand img{content:url('/_cdn/static/89538bcd-5069-42bf-bc71-d48d7f013223-marine-ops-dark.svg')}

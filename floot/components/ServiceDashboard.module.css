@@ -134,3 +134,33 @@
 .calendarJob>div{padding:8px 4px 0}
 .calendarJob .event{margin-bottom:0}
 @media(max-width:700px){.heading>div:last-child{flex-wrap:wrap}}
+
+/* Dense standalone workspace; preserve semantic event/category colors. */
+:global(html[data-workspace-theme]) .app{background:var(--background);font-size:13px}
+:global(html[data-workspace-theme]) .side{background:var(--card);color:var(--foreground);border-bottom:1px solid var(--border);padding:8px 18px;box-shadow:none}
+:global(html[data-workspace-theme]) .brand{font-size:17px;color:var(--foreground)}
+:global(html[data-workspace-theme]) .brandLogo{width:150px;background:#fff;padding:4px}
+:global(html[data-workspace-theme]) .brand .currentUser{color:var(--muted-foreground);font-size:11px}
+:global(html[data-workspace-theme]) .nav{color:var(--foreground)!important;font-size:12px!important;padding:7px 10px!important;min-height:32px!important}
+:global(html[data-workspace-theme]) .active{background:var(--primary)!important;color:var(--primary-foreground)!important;border:0!important;box-shadow:none;font-size:12px!important;padding:7px 10px!important;min-height:32px!important}
+:global(html[data-workspace-theme]) .nav:hover{background:var(--surface)!important;color:var(--foreground)!important}
+:global(html[data-workspace-theme]) .body{padding:16px 20px}
+:global(html[data-workspace-theme]) .heading{padding:12px 14px;background:var(--card);margin-bottom:12px;box-shadow:none}
+:global(html[data-workspace-theme]) .heading h1{font-size:23px}
+:global(html[data-workspace-theme]) .panel h2{font-size:17px}
+:global(html[data-workspace-theme]) .panelHead,:global(html[data-workspace-theme]) .queuePanel>.panelHead{padding:12px 14px}
+:global(html[data-workspace-theme]) .metrics{gap:8px;margin-bottom:12px}
+:global(html[data-workspace-theme]) .metric{padding:7px 10px;box-shadow:none}
+:global(html[data-workspace-theme]) .metric strong{font-size:21px}
+:global(html[data-workspace-theme]) .table :is(th,td){padding:8px 12px}
+:global(html[data-workspace-theme]) .table th{font-size:11px}
+:global(html[data-workspace-theme]) .table td{font-size:13px}
+:global(html[data-workspace-theme]) .dayToday{background:var(--surface)}
+:global(html[data-workspace-theme]) .footerNote{background:var(--card);color:var(--muted-foreground);border-top:1px solid var(--border);padding:8px 12px;margin-top:14px;font-size:11px}
+:global(html[data-workspace-theme]) .connection{padding:10px 14px;margin-bottom:12px}
+:global(html[data-workspace-theme]) .week .event{background:var(--surface)!important;color:var(--foreground)!important}
+:global(html[data-workspace-theme]) .week .event .pickupCategory,:global(html[data-workspace-theme]) .roadDetails b{color:var(--foreground)!important}
+@media(max-width:700px){:global(html[data-workspace-theme]) .body{padding:10px}:global(html[data-workspace-theme]) .brandLogo{width:96px}}
+
+:global(html[data-workspace-theme]) .brandLogo{background:#102b43}
+:global(html[data-workspace-theme]) .brand small{color:var(--muted-foreground)}

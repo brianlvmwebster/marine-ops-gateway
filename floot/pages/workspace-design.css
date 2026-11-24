@@ -1,0 +1,55 @@
+/* Standalone workspace design. A single attribute enables it; legacy production stays untouched. */
+html[data-workspace-theme]{color-scheme:light;--surface-foreground:var(--foreground);--card-foreground:var(--foreground);--popup:var(--card);--popup-foreground:var(--foreground);--secondary:var(--surface);--secondary-foreground:var(--foreground);--accent:var(--surface);--accent-foreground:var(--foreground);--muted:var(--surface);--sidebar:var(--card);--sidebar-foreground:var(--foreground);--info:var(--primary);--info-hover:var(--primary);--info-active:var(--primary);--font-family-display:var(--font-family-base);--radius-sm:0px;--radius:0px;--radius-md:0px;--radius-lg:0px;--radius-full:0px;--shadow:none;--shadow-md:none;--shadow-lg:0 8px 30px #0003;--shadow-focus:0 0 0 2px var(--primary);--spacing-3:.625rem;--spacing-4:.75rem;--spacing-6:1rem;--spacing-8:1.5rem;background:var(--background)}
+html[data-workspace-mode=dark]{color-scheme:dark;--error:#ffaaaa;--success:#8cdbb6;--warning:#f3ce8d}
+html[data-workspace-theme] body{background:var(--background);color:var(--foreground);font-size:13px;line-height:1.5}
+html[data-workspace-theme] *,html[data-workspace-theme] *::before,html[data-workspace-theme] *::after{border-radius:0!important}
+html[data-workspace-theme] :focus-visible{outline:2px solid var(--primary);outline-offset:3px}
+html[data-workspace-theme] input::placeholder,html[data-workspace-theme] textarea::placeholder{color:var(--muted-foreground);opacity:1}
+.workspace-appearance{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:8px 20px;background:var(--card);border-bottom:1px solid var(--border);color:var(--foreground)}
+.workspace-wordmark{font-size:12px;font-weight:750;letter-spacing:.08em;text-decoration:none}.workspace-wordmark span{font-weight:450;color:var(--muted-foreground);margin-left:10px}
+.workspace-appearance-actions{display:flex;align-items:center;gap:9px;font-size:12px}.workspace-environment{font-size:10px;letter-spacing:.08em;color:var(--muted-foreground);border:1px solid var(--border);padding:2px 5px}
+.workspace-appearance select{font:inherit;min-height:30px;padding:4px 28px 4px 8px;background:var(--surface);color:var(--foreground);border:1px solid var(--border)}
+html[data-workspace-theme] .staging-banner{padding:5px 12px!important;font-size:11px;line-height:1.4;border-bottom:1px solid #b6a263}
+html[data-workspace-theme] .platform-page,html[data-workspace-theme] .parts-page{--background:var(--card);--foreground:inherit;background:var(--card);color:inherit;max-width:1440px;padding:18px 24px;font-size:13px;min-height:calc(100vh - 76px)}
+html[data-workspace-theme] .customers-page{--foreground:inherit;--background:var(--card)}
+html[data-workspace-theme] .platform-page h1,html[data-workspace-theme] .parts-page h1{font-size:23px;letter-spacing:-.03em;line-height:1.25;margin:12px 0}
+html[data-workspace-theme] .platform-page h2,html[data-workspace-theme] .parts-page h2{font-size:17px;margin:16px 0 8px}
+html[data-workspace-theme] .platform-page h3{font-size:14px;margin:12px 0 6px}
+html[data-workspace-theme] .platform-page p{margin:6px 0;color:inherit}
+html[data-workspace-theme] .platform-page label{gap:3px;margin:5px 12px 5px 0;font-size:12px}
+html[data-workspace-theme] :is(.platform-page,.parts-page,.job-parts) :is(input,select,textarea,button){font:inherit;color:inherit;background:var(--surface);border:1px solid var(--border);padding:5px 8px;min-height:30px}
+html[data-workspace-theme] :is(.platform-page,.parts-page,.job-parts) button{margin:4px;cursor:pointer}
+html[data-workspace-theme] :is(.platform-page,.parts-page,.job-parts) button:hover:not(:disabled){background:var(--secondary);border-color:var(--primary)}
+html[data-workspace-theme] :is(.platform-page,.parts-page,.job-parts) button:disabled{opacity:.5;cursor:not-allowed}
+html[data-workspace-theme] :is(.platform-page,.parts-page) a{color:var(--primary)}
+html[data-workspace-theme] .platform-page :is(article,fieldset){padding:12px;margin:10px 0;border-color:var(--border)}
+html[data-workspace-theme] .platform-page .customer-edit-fields{border:0;padding:0}
+html[data-workspace-theme] .customer-section{margin:6px 0;background:var(--card);border-color:var(--border)}
+html[data-workspace-theme] .customer-section>summary{padding:9px 12px;color:inherit;font-size:13px}
+html[data-workspace-theme] .customer-section[open]>summary{background:var(--surface);border-color:var(--border)}
+html[data-workspace-theme] .customer-section-body{padding:4px 12px 10px}
+html[data-workspace-theme] :is(.customer-table,.parts-table,.job-parts) :is(th,td){padding:7px 10px;border-color:var(--border);font-size:13px;line-height:1.4}
+html[data-workspace-theme] :is(.customer-table,.parts-table,.job-parts) th{background:var(--surface);font-size:11px;letter-spacing:.04em;font-weight:650}
+html[data-workspace-theme] :is(.customer-table,.parts-table) td button{background:transparent;color:var(--primary);border:0;padding:2px 0;margin:0;min-height:26px;text-decoration:underline;text-underline-offset:3px}
+html[data-workspace-theme] :is(.customer-table,.parts-table) tbody tr:hover{background:var(--surface)}
+html[data-workspace-theme] .parts-filters{gap:10px;margin:12px 0}.parts-details{font-variant-numeric:tabular-nums}
+html[data-workspace-theme] .parts-details{gap:12px}
+html[data-workspace-theme] .parts-notice{padding:8px 12px}
+html[data-workspace-theme] .job-parts{background:var(--surface);color:var(--foreground);border-color:var(--border);padding:12px;margin:12px 0}
+html[data-workspace-theme] .job-parts th{background:var(--card)}
+html[data-workspace-theme] .platform-page [role=alert],html[data-workspace-theme] .job-parts [role=alert]{color:var(--error)}
+@media(max-width:600px){.workspace-appearance{padding:8px 12px;gap:8px;flex-wrap:wrap}.workspace-wordmark span{display:none}html[data-workspace-theme] .platform-page,html[data-workspace-theme] .parts-page{padding:12px}.workspace-environment{display:none}}
+@media(pointer:coarse){html[data-workspace-theme] :is(button,input,select,summary){min-height:40px}}
+@media print{.workspace-appearance,.staging-banner{display:none!important}html[data-workspace-theme]{color-scheme:light;--background:#fff!important;--card:#fff!important;--surface:#fff!important;--foreground:#172632!important;--muted-foreground:#506170!important;--border:#bcc8d2!important;--primary:#155c91!important}html[data-workspace-theme] body{background:#fff;color:#172632}}
+
+/* Shared controls use smaller typography without reducing keyboard focus visibility. */
+html[data-workspace-theme] [role=dialog]{font-size:13px;line-height:1.5}
+html[data-workspace-theme] [role=dialog] h2{font-size:19px}
+html[data-workspace-theme] [role=dialog] h3{font-size:14px}
+
+html[data-workspace-theme]{font-size:14px}
+@media(max-width:600px){html[data-workspace-theme] :is(input,select,textarea){font-size:16px!important}}
+
+html[data-workspace-mode=dark]{--error-foreground:#301010;--success-foreground:#102d21;--warning-foreground:#30230b}
+
+html[data-workspace-theme] .parts-page .parts-notice{background:var(--surface);color:var(--foreground);border-left-color:var(--primary)}

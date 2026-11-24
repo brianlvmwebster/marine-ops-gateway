@@ -11,3 +11,19 @@
 .resizing{outline:2px solid var(--info);outline-offset:2px}
 @media(max-width:1150px){.grid{--visible-dashboard-columns:min(var(--dashboard-columns,3),2)}}
 @media(max-width:720px){.grid{--visible-dashboard-columns:1}.grid,.libraryGrid{grid-template-columns:1fr}.heading{flex-wrap:wrap;padding:14px}.heading h1{font-size:23px}.actions{justify-content:flex-start;gap:6px}.actions>button{font-size:11px!important}}
+
+:global(html[data-workspace-theme]) .heading{padding:12px 14px;margin-bottom:12px;gap:10px}
+:global(html[data-workspace-theme]) .heading :is(h1,h2){font-size:23px}
+:global(html[data-workspace-theme]) .grid{gap:10px}
+:global(html[data-workspace-theme]) .widget{box-shadow:none;border-top-width:2px}
+:global(html[data-workspace-theme]) .widget header{padding:10px 12px}
+:global(html[data-workspace-theme]) .widget h3{font-size:15px}
+:global(html[data-workspace-theme]) .count{font-size:19px;color:var(--primary)}
+:global(html[data-workspace-theme]) .jobs{padding:8px;gap:7px}
+:global(html[data-workspace-theme]) .job{padding:9px;background:var(--surface);border-color:var(--border)}
+:global(html[data-workspace-theme]) .job .customer{font-size:13px!important}
+:global(html[data-workspace-theme]) .jobDate{font-size:16px}
+:global(html[data-workspace-theme]) .job .location,:global(html[data-workspace-theme]) .location b{color:var(--foreground)}
+:global(html[data-workspace-theme]) .tags span{background:var(--card);border-color:var(--border);font-size:11px}
+:global(html[data-workspace-theme]) .jobStatus{background:var(--card);color:var(--primary);font-size:11px;border:1px solid var(--border)}
+:global(html[data-workspace-theme]) .widget header p,:global(html[data-workspace-theme]) .job p{font-size:12px}

@@ -7,6 +7,9 @@ import {
 
 
 
+import {initializeWorkspaceAppearance} from './helpers/workspaceAppearance';
+if(import.meta.env.VITE_APP_ENV==='staging')initializeWorkspaceAppearance();
+
 const container = document.getElementById("root") as HTMLDivElement;
 createRoot(container).render(<HelmetProvider><App /></HelmetProvider>);
     

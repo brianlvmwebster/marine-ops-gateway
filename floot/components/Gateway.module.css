@@ -54,3 +54,24 @@
  .gateway :global(.gateway-home .hero){flex-direction:column;align-items:flex-start;gap:28px}
  .gateway :global(.gateway-home .hero-subscriber-logo){flex:none;width:150px;max-width:100%;align-self:flex-end}
 }
+
+:global(html[data-workspace-theme]) .gateway{background:var(--background);color:var(--foreground);font-family:var(--font-family-base)}
+:global(html[data-workspace-theme]) .gateway :global(header){background:var(--card);border-color:var(--border);color:var(--foreground);box-shadow:none;height:auto;min-height:64px;padding:12px 24px}
+:global(html[data-workspace-theme]) .gateway :global(main){max-width:1440px;padding:20px 24px;margin:auto}
+:global(html[data-workspace-theme]) .gateway :global(.hero){background:var(--card);border:1px solid var(--border);padding:20px 24px;box-shadow:none;min-height:0;color:var(--foreground)}
+:global(html[data-workspace-theme]) .gateway :global(.hero h1){font-size:28px;color:var(--foreground);letter-spacing:-.03em}
+:global(html[data-workspace-theme]) .gateway :global(.hero-copy>p:not(.eyebrow)){color:var(--muted-foreground);font-size:13px}
+:global(html[data-workspace-theme]) .gateway :global(.radar){display:none}
+:global(html[data-workspace-theme]) .gateway :global(.destination){background:var(--card);border-color:var(--border);box-shadow:none;transform:none!important;padding:10px}
+:global(html[data-workspace-theme]) .gateway :global(.destination-copy h3){font-size:15px;color:var(--foreground)}
+:global(html[data-workspace-theme]) .gateway :global(.destination-copy p){font-size:12px;color:var(--muted-foreground)}
+:global(html[data-workspace-theme]) .gateway :global(.button-image){background:#fff;border-color:var(--border);height:90px}
+:global(html[data-workspace-theme]) .gateway :global(.section-heading h2){font-size:18px;color:var(--foreground)}
+:global(html[data-workspace-theme]) .gateway :global(.section-heading p),:global(html[data-workspace-theme]) .gateway :global(.eyebrow),:global(html[data-workspace-theme]) .gateway :global(.account-menu>span){color:var(--muted-foreground)}
+:global(html[data-workspace-theme]) .gateway :global(input),:global(html[data-workspace-theme]) .gateway :global(select),:global(html[data-workspace-theme]) .gateway :global(.search){background:var(--surface);color:var(--foreground);border-color:var(--border);font-size:13px}
+:global(html[data-workspace-theme]) .gateway :global(nav a),:global(html[data-workspace-theme]) .gateway :global(.brand){color:var(--foreground)}
+:global(html[data-workspace-theme]) .gateway :global(footer){color:var(--muted-foreground);border-color:var(--border)}
+:global(html[data-workspace-theme]) .gateway :global(.editor),:global(html[data-workspace-theme]) .gateway :global(.link-row),:global(html[data-workspace-theme]) .gateway :global(.members-table),:global(html[data-workspace-theme]) .gateway :global(.member-add),:global(html[data-workspace-theme]) .gateway :global(.login-card){background:var(--card);color:var(--foreground);border-color:var(--border);box-shadow:none}
+
+:global(html[data-workspace-theme]) .gateway :global(h1),:global(html[data-workspace-theme]) .gateway :global(h2),:global(html[data-workspace-theme]) .gateway :global(h3){font-family:var(--font-family-base)}
+:global(html[data-workspace-mode=dark]) .gateway :global(.hero-subscriber-logo){background:#fff;padding:8px}
