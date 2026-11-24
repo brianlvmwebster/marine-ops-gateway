@@ -22,6 +22,18 @@ export function platformStore(sql: any) {
       values(${actor},${companyId},${action},${tx.json(detail)})`;
   }
   return {
+    async operatorOverview(userId:number) {
+      await operator(sql,userId);
+      return this.overview(userId);
+    },
+    async setCompanyStatus(actor:number,companyId:string,input:{status:string;version:number}) {
+      return sql.begin(async(tx:any)=>{
+        await operator(tx,actor);await lockCompany(tx,companyId);
+        const [row]=await tx`update platform_companies set status=${input.status},version=version+1 where id=${companyId} and version=${input.version} returning id,status,version`;
+        if(!row)throw new PlatformError(409,'Company changed. Reload and try again.');
+        await audit(tx,actor,companyId,'company.status_updated',{status:input.status});return row;
+      });
+    },
     async overview(userId: number) {
       const operators = await sql`select user_id from platform_operators where user_id=${userId}`;
       const companies = await sql`select c.*, m.role, m.status as membership_status

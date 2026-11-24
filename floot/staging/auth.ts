@@ -26,7 +26,7 @@ export async function stagingLogin(request:Request) {
   if(!match)return new Response('Invalid staging password.',{status:401});
   const id=randomBytes(32).toString('hex'),now=Date.now();
   await tx`insert into sessions(id,user_id,expires_at) values(${id},${user[0].id},now()+interval '8 hours')`;
-  const response=new Response(null,{status:303,headers:{Location:'/platform','Cache-Control':'no-store'}});
+  const response=new Response(null,{status:303,headers:{Location:'/','Cache-Control':'no-store'}});
   await setServerSession(response,{id,createdAt:now,lastAccessed:now});return response;
  });
 }

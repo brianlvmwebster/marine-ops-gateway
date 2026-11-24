@@ -22,6 +22,7 @@ export function platformHandler(store: Store, authenticate: (request: Request)=>
       try {userId=await authenticate(request);}catch{throw new PlatformError(401,'Sign in to continue.');}
       if (!Number.isSafeInteger(userId) || userId<=0) throw new PlatformError(401,'Sign in to continue.');
       const url=new URL(request.url),path=url.pathname.replace(/\/$/,'');
+      if(request.method==='GET' && path==='/_api/platform/operator') return json(await store.operatorOverview(userId));
       if(request.method==='GET' && path==='/_api/platform') return json(await store.overview(userId));
       if(request.method==='GET' && path==='/_api/platform/company') return json(await store.company(userId,companyId.parse(url.searchParams.get('companyId'))));
       if(request.method==='POST') {
@@ -29,6 +30,7 @@ export function platformHandler(store: Store, authenticate: (request: Request)=>
         const data=await body(request);
         if(path==='/_api/platform/companies') return json(await store.createCompany(userId,company.parse(data)),201);
         const id=companyId.parse(url.searchParams.get('companyId'));
+        if(path==='/_api/platform/company-status') return json(await store.setCompanyStatus(userId,id,z.object({status:z.enum(['active','suspended']),version:z.number().int().positive()}).strict().parse(data)));
         if(path==='/_api/platform/memberships') return json(await store.setMembership(userId,id,member.parse(data)));
         if(path==='/_api/platform/entitlements') return json(await store.setEntitlement(userId,id,entitlement.parse(data)));
       }

@@ -28,6 +28,12 @@ test('PostgreSQL foundation: isolation, revocation, roles, concurrency and audit
       await assert.rejects(store.createCompany(1,{slug:'blocked',name:'Blocked'}),{status:403});
       await db`insert into platform_operators(user_id) values(4)`;
       const other=await store.createCompany(4,{slug:'other',name:'Other'});
+      await assert.rejects(store.operatorOverview(1),{status:403});
+      assert.equal((await store.operatorOverview(4)).operator,true);
+      await assert.rejects(store.setCompanyStatus(1,other.id,{status:'suspended',version:1}),{status:403});
+      await store.setCompanyStatus(4,other.id,{status:'suspended',version:1});
+      await assert.rejects(store.setCompanyStatus(4,other.id,{status:'active',version:1}),{status:409});
+      await store.setCompanyStatus(4,other.id,{status:'active',version:2});
       await assert.rejects(store.company(1,other.id),{status:403});
       await assert.rejects(store.toolAccess(4,LAKEVIEW_ID,'service-desk'),{status:403});
       await assert.rejects(store.setEntitlement(4,other.id,{toolKey:'service-desk',status:'enabled',version:0}),{status:409});
