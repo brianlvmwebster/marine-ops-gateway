@@ -40,7 +40,7 @@ describe("save reviewed boat and advance",()=>{
   fireEvent.keyDown(ui.getByLabelText("Last Name"),{key:"Enter",repeat:true});
   fireEvent.keyDown(ui.getByLabelText("First Name"),{key:"Enter",shiftKey:true});
   fireEvent.keyDown(ui.getByLabelText("Notes"),{key:"Enter"});
-  fireEvent.keyDown(ui.getByLabelText("Boat description"),{key:"Enter"});
+  fireEvent.keyDown(ui.getByLabelText("Boat",{exact:true}),{key:"Enter"});
   expect(payloads.length).toBe(0);
   fireEvent.keyDown(ui.getByLabelText("First Name"),{key:"Enter"});
   fireEvent.click(advance);

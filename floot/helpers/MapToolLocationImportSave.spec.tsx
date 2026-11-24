@@ -1,3 +1,4 @@
+import {defaultColumns} from "./MapToolMappingColumns";
 import React from "react";
 import {render,fireEvent,waitFor,cleanup} from "@testing-library/react";
 import {QueryClient,QueryClientProvider} from "@tanstack/react-query";
@@ -39,7 +40,7 @@ describe("location import save flow",()=>{
    expect(consoleErrors.calls.allArgs().some(args=>args.some(a=>String(a).includes("same key")))).toBeFalse();
    expect(requests.length).toBe(1);
    expect(requests[0].url).toBe("/_api/mapping/maps");
-   expect(requests[0].body).toEqual({action:"save",id:map.id,revision:3,name:"Test",spaces:[{...space,lastName:"Imported",boatDescription:"Blue"}]});
+   expect(requests[0].body).toEqual({action:"save",id:map.id,revision:3,name:"Test",columns:defaultColumns,spaces:[{...space,lastName:"Imported",boatDescription:"Blue"}]});
    expect((client.getQueryData(["storage-maps"]) as any).maps[0].revision).toBe(4);
   }finally{cleanup();client.clear();}
  });

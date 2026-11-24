@@ -1,6 +1,7 @@
 import {z} from "zod";
 const point=z.object({x:z.number().min(0).max(1),y:z.number().min(0).max(1)});
 const space=z.object({
+ customFields:z.record(z.string().uuid(),z.string().max(2000)).refine(v=>Object.keys(v).length<=100,"Too many custom values").optional(),
  id:z.string().uuid(),label:z.string().trim().min(1).max(60),
  points:z.array(point).max(16),marker:point.optional(),
  firstName:z.string().max(100),lastName:z.string().max(100),boatDescription:z.string().max(500),

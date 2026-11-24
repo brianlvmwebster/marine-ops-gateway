@@ -38,8 +38,8 @@ describe("linked unit list and image dots",()=>{
    fireEvent.click(rows.getByRole("button",{name:"Edit unit U-1"}));
    expect((screen.getByLabelText("Last Name") as HTMLInputElement).value).toBe("Webster");
    fireEvent.change(screen.getByLabelText("Last Name"),{target:{value:"Updated"}});
-   fireEvent.change(screen.getByLabelText("Boat description"),{target:{value:"Edited boat"}});
-   fireEvent.change(screen.getByLabelText("Trailer details (if applicable)"),{target:{value:"Edited trailer"}});
+   fireEvent.change(screen.getByLabelText("Boat",{exact:true}),{target:{value:"Edited boat"}});
+   fireEvent.change(screen.getByLabelText("Trailer",{exact:true}),{target:{value:"Edited trailer"}});
    expect((rows.getByLabelText("Last Name for U-1") as HTMLInputElement).value).toBe("Updated");expect((rows.getByLabelText("Boat for U-1") as HTMLInputElement).value).toBe("Edited boat");expect((rows.getByLabelText("Trailer for U-1") as HTMLInputElement).value).toBe("Edited trailer");
    fireEvent.change(rows.getByLabelText("Search unit list"),{target:{value:"Edited trailer"}});
    expect(rows.queryByRole("button",{name:"Edit unit U-2"})).toBeNull();

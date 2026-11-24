@@ -1,3 +1,4 @@
+import {mappingHandler,mappingStore} from '../platform/mapping';
 import {jobPartsHandler,jobPartsStore} from '../platform/job-parts';
 import {partsHandler,partsStore} from '../platform/parts';
 import {unitsHandler,unitsStore} from '../platform/units';
@@ -25,6 +26,8 @@ app.get('/staging/health',c=>c.json({status:'ok',environment:'staging',externalW
 app.get('/readyz',async c=>{await platformDatabase()`select 1 from platform_companies limit 1`;return c.json({ready:true});});
 app.get('/login',c=>c.html(loginPage));
 app.post('/staging/login',c=>stagingLogin(c.req.raw));
+const mapping=mappingHandler(mappingStore(platformDatabase()),async request=>(await getServerUserSession(request)).user.id);
+app.all('/_api/mapping/*',c=>mapping(c.req.raw));
 const customers=customersHandler(customersStore(platformDatabase()),async request=>(await getServerUserSession(request)).user.id);
 const jobParts=jobPartsHandler(jobPartsStore(platformDatabase()),async request=>(await getServerUserSession(request)).user.id);
 app.all('/_api/job-parts',c=>jobParts(c.req.raw));
