@@ -22,6 +22,15 @@ try{
  await api('jobs/save',{data:base,calendarEligible:true},400);
  const jobs=(await api('jobs')).jobs.filter(job=>ids.includes(job.id));assert.equal(jobs.length,3);
  for(const job of jobs){assert.equal(job.calendarEligible,false);if(job.data.scheduleMode==='day'){assert.equal(job.data.time,'');assert.equal(job.data.duration,0);}else{assert.equal(job.data.time,'10:00');assert.equal(job.data.duration,60);}}
+ for(const original of jobs){
+  const next=new Date(today+'T12:00:00Z');next.setUTCDate(next.getUTCDate()+2);const newDay=next.toISOString().slice(0,10);
+  const moved=await api('jobs/save',{id:original.id,version:original.version,calendarEligible:original.calendarEligible,data:{...original.data,serviceDate:newDay}});
+  await api('jobs/save',{id:original.id,version:original.version,data:{...original.data,serviceDate:today}},409);
+  const persisted=(await api('jobs')).jobs.find(job=>job.id===original.id);
+  assert.deepEqual(persisted.data,{...original.data,serviceDate:newDay});
+  assert.equal(persisted.calendarEligible,original.calendarEligible);
+  await api('jobs/save',{id:original.id,version:moved.version,calendarEligible:original.calendarEligible,data:original.data});
+ }
  assert.equal((await api('calendar/status')).syncEnabled,false);
  console.log(JSON.stringify({verified:true,today,jobs:jobs.map(job=>({id:job.id,number:job.jobNumber,ro:job.data.ro,mode:job.data.scheduleMode}))}));
 }finally{await fetch(origin+'/staging/logout',{method:'POST',headers,redirect:'manual'});}
