@@ -24,6 +24,7 @@ const app=new Hono();
 app.use('*',async(c,next)=>{await next();c.header('Cache-Control','no-store');c.header('X-Content-Type-Options','nosniff');c.header('Referrer-Policy','same-origin');c.header('X-Frame-Options',c.req.path==='/_api/dock_builder/asset'?'SAMEORIGIN':'DENY');});
 app.get('/staging/health',c=>c.json({status:'ok',environment:'staging',externalWrites:false}));
 app.get('/readyz',async c=>{await platformDatabase()`select 1 from platform_companies limit 1`;return c.json({ready:true});});
+app.get('/maps',c=>c.redirect('/mapping'+new URL(c.req.url).search,308));
 app.get('/login',c=>c.html(loginPage));
 app.post('/staging/login',c=>stagingLogin(c.req.raw));
 const mapping=mappingHandler(mappingStore(platformDatabase()),async request=>(await getServerUserSession(request)).user.id);

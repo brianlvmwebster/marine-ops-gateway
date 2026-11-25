@@ -37,8 +37,8 @@ export function CompanyWorkspace({children}:{children:React.ReactNode}){
  if(error)return <main className="company-workspace-error"><h1>Company access</h1><p role="alert">{error}</p><a href="/">Choose your company</a> · <a href="/platform">Platform administration</a></main>;
  if(!workspace)return <p role="status">Loading company workspace…</p>;
  const {company,tools,role}=workspace,has=(key:string)=>tools.some(t=>t.key===key);
- const required=location.pathname.startsWith('/maps')?'mapping':location.pathname.startsWith('/customers')?'customers':location.pathname.startsWith('/inventory')?'parts-inventory':location.pathname.startsWith('/dock-builder')?'dock-builder':location.pathname.startsWith('/dashboard')?'service-desk':null;
+ const required=['/maps','/mapping'].includes(location.pathname)?'mapping':location.pathname.startsWith('/customers')?'customers':location.pathname.startsWith('/inventory')?'parts-inventory':location.pathname.startsWith('/dock-builder')?'dock-builder':location.pathname.startsWith('/dashboard')?'service-desk':null;
  const page=required&&!has(required)?<main><h1>Tool unavailable</h1><p>This tool is not enabled for your company.</p></main>:children;
- const insideDashboard=['/customers','/inventory/parts','/company/admin','/dock-builder','/maps'].includes(location.pathname);
+ const insideDashboard=['/customers','/inventory/parts','/company/admin','/dock-builder','/maps','/mapping'].includes(location.pathname);
  return <Context.Provider value={workspace}>{insideDashboard?<div className={styles.app+' company-dashboard-shell'}><CompanySidebar/><main className={styles.main}>{page}</main></div>:page}</Context.Provider>;
 }

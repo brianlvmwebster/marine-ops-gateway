@@ -21,7 +21,7 @@ CREATE TABLE IF NOT EXISTS mapping_maps (
 );
 CREATE INDEX IF NOT EXISTS mapping_maps_owner ON mapping_maps(company_id,owner_id,sort_order,created_at);
 INSERT INTO platform_tools(key,name,path,available,rollout_company_id) VALUES
- ('mapping','Mapping & Storage','/maps',true,'00000000-0000-4000-8000-000000000001') ON CONFLICT DO NOTHING;
+ ('mapping','Mapping & Storage','/mapping',true,'00000000-0000-4000-8000-000000000001') ON CONFLICT DO NOTHING;
 INSERT INTO platform_entitlements(company_id,tool_key,status) VALUES
  ('00000000-0000-4000-8000-000000000001','mapping','enabled') ON CONFLICT DO NOTHING;
 COMMIT;
