@@ -17,5 +17,7 @@ export default defineConfig(() => ({
   ],
   build: {
     assetsDir: "_assets",
+    target:"esnext",
+    rollupOptions:{input:{main:"index.html",scheduler:"scheduler.html"}},
   },
 }));

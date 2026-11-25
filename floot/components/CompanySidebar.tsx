@@ -13,6 +13,7 @@ export function CompanySidebar({tab,onTab}:{tab?:string;onTab?:(tab:string)=>voi
  return <aside className={s.side} aria-label="Company Dashboard navigation"><div className={s.brand}><div>Company Dashboard<small>{company.name}</small></div></div><nav aria-label="Dashboard sections">
  {has('service-desk')&&['Overview','Job queue','Schedule'].map(name=>onTab?<Button key={name} variant="ghost" className={tab===name?s.active:s.nav} onClick={()=>onTab(name)}>{name}</Button>:link(name,'/dashboard?tab='+encodeURIComponent(name)))}
  {has('customers')&&<>{link('Customers','/customers')}{link('Units','/customers?view=units')}</>}
+ {has('dock-scheduler')&&link('Dock Crew Scheduler','/dockscheduler')}
  {has('mapping')&&link('Mapping & Storage','/mapping')}
  {has('dock-builder')&&link('Sales / Dock Builder','/dock-builder')}
  {has('parts-inventory')&&link('Inventory','/inventory/parts')}

@@ -15,6 +15,7 @@ COPY --from=build --chown=node:node /app/platform ./platform
 COPY --from=build --chown=node:node /app/helpers ./helpers
 COPY --from=build --chown=node:node /app/endpoints ./endpoints
 COPY --from=build --chown=node:node /app/migrations ./migrations
+COPY --from=build --chown=node:node /app/scheduler ./scheduler
 USER node
 EXPOSE 8080
 CMD ["node","--import","tsx","staging/server.ts"]

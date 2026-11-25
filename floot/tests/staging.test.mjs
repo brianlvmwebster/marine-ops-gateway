@@ -19,6 +19,7 @@ test('standalone server starts without Floot; denied routes and anonymous APIs f
   for(let i=0;i<80;i++){try{const r=await fetch('http://127.0.0.1:18087/staging/health');if(r.ok){ready=true;break;}}catch{}await new Promise(resolve=>setTimeout(resolve,100));}
   assert.ok(ready,output);
   const alias=await fetch('http://127.0.0.1:18087/maps?companyId=test',{redirect:'manual'});assert.equal(alias.status,308);assert.equal(alias.headers.get('location'),'/mapping?companyId=test');
+  assert.equal((await fetch('http://127.0.0.1:18087/_api/dock/records')).status,401);
   const login=await fetch('http://127.0.0.1:18087/login');
   assert.equal(login.headers.get('referrer-policy'),'same-origin','Native form login must retain its same-origin Origin header');
   assert.equal((await fetch('http://127.0.0.1:18087/staging/login',{method:'POST',headers:{Origin:'null'},body:'password=test'})).status,403);

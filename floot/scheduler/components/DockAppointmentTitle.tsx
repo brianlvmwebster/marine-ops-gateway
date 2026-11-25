@@ -1,0 +1,1 @@
+import React from 'react';import {Text} from '@mantine/core';export function DockAppointmentTitle(){return <Text size="sm" c="dimmed">Existing Outlook references are retained for history. Outlook changes are disabled in staging.</Text>;}

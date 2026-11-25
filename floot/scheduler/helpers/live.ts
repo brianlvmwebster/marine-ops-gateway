@@ -1,0 +1,3 @@
+import {useEffect,useRef} from 'react';
+export function useRealtimeChannel(_channel:string,onChange:()=>void){const callback=useRef(onChange);callback.current=onChange;useEffect(()=>{const events=new EventSource('/_api/dock/events');events.addEventListener('change',()=>callback.current());events.onopen=()=>callback.current();return()=>events.close();},[]);}
+export function useRealtimeReconnect(onChange:()=>void){const callback=useRef(onChange);callback.current=onChange;useEffect(()=>{const focus=()=>callback.current();window.addEventListener('focus',focus);return()=>window.removeEventListener('focus',focus);},[]);}

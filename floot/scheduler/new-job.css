@@ -1,0 +1,13 @@
+html, body, #root { height: auto; min-height: 100%; overflow: auto; }
+body { background: var(--mantine-color-gray-0); }
+.entry-header { background: var(--mantine-color-body); border-bottom: 1px solid var(--mantine-color-default-border); padding: 18px 0; }
+.entry-columns { display: grid; grid-template-columns: minmax(0, 1.25fr) minmax(330px, 1fr); gap: 24px; align-items: start; }
+.entry-fieldset { border: 0; margin: 0; padding: 0; min-width: 0; }
+.time-slots { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+.time-slots button { white-space: normal; height: auto; min-height: 34px; padding-block: 7px; }
+[data-mantine-color-scheme='dark'] body { background: #181b1e; }
+@media (max-width: 800px) {
+  .entry-columns { grid-template-columns: minmax(0, 1fr); gap: 16px; }
+  .entry-header { padding-block: 12px; }
+  .entry-header .header-logo { width: 84px; height: 56px; }
+}
