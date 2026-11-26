@@ -1,1 +1,18 @@
-import React from 'react';import{useLocation}from'react-router-dom';import{NativeGatewayGuard}from'../components/NativeGatewayGuard';export default function DockScheduler(){const location=useLocation();const params=new URLSearchParams(location.search);if(location.pathname.endsWith('/add-job'))params.set('view','form');return <NativeGatewayGuard><iframe title="Dock Crew Scheduler" src={'/scheduler.html?'+params} style={{width:'100%',height:'calc(100vh - 90px)',border:0}} allow="geolocation 'self'"/></NativeGatewayGuard>;}
+import React from 'react';
+import { useLocation } from 'react-router-dom';
+import { GatewayToolWorkspace } from '../components/GatewayToolWorkspace';
+import { NativeGatewayGuard } from '../components/NativeGatewayGuard';
+
+export default function DockScheduler() {
+  const location = useLocation();
+  const params = new URLSearchParams(location.search);
+  if (location.pathname.endsWith('/add-job')) params.set('view', 'form');
+  return <NativeGatewayGuard>
+    <GatewayToolWorkspace>
+      <main aria-label="Dock Crew Scheduler">
+        <iframe className="gateway-scheduler-frame" title="Dock Crew Scheduler" src={'/scheduler.html?' + params}
+          allow="geolocation 'self'" />
+      </main>
+    </GatewayToolWorkspace>
+  </NativeGatewayGuard>;
+}

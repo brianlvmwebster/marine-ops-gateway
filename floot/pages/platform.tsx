@@ -1,4 +1,5 @@
 import React, {useEffect, useState} from 'react';
+import {isGatewayOnlyTool} from '../helpers/gatewayToolDestinations';
 import './platform.css';
 
 type Company = {id:string; name:string; status:string;version:number};
@@ -38,7 +39,7 @@ function CompanyPanel({companyId,administration}:{companyId:string;administratio
   async function save(path:string,data:unknown){setBusy(true);setError('');try{await api(path+'?companyId='+companyId,data);setRevision(n=>n+1);}catch(e){setError((e as Error).message);}finally{setBusy(false);}}
   return <section aria-busy={busy}><p role="alert">{error}</p><button type="button" disabled={busy} onClick={()=>{setError('');setRevision(n=>n+1);}}>Refresh</button>{!detail ? <p role="status">{error?'Unable to load company.':'Loading company…'}</p> : <>
     <h2>{detail.company.name}</h2><p>Company status: {detail.company.status}</p>{!administration&&<button disabled={busy} onClick={()=>save('/company-status',{status:detail.company.status==='active'?'suspended':'active',version:detail.company.version})}>{detail.company.status==='active'?'Suspend company':'Enable company'}</button>}<h3>Tools</h3>
-    {detail.tools.map(tool=>{const ready=tool.available&&(!tool.rollout_company_id||tool.rollout_company_id===companyId);return <article key={tool.key}><h4>{tool.name}</h4><p>{ready?tool.status:'Not available for this company yet'}</p>
+    {detail.tools.filter(tool=>!administration||!isGatewayOnlyTool(tool.key)).map(tool=>{const ready=tool.available&&(!tool.rollout_company_id||tool.rollout_company_id===companyId);return <article key={tool.key}><h4>{tool.name}</h4><p>{ready?tool.status:'Not available for this company yet'}</p>
       {administration&&ready&&tool.status==='enabled'&&detail.activeMember&&<a href={tool.path+(['customers','parts-inventory'].includes(tool.key)?'?companyId='+companyId:'')}>Open {tool.name}</a>}
       {!administration&&detail.operator&&<button disabled={busy||(!administration&&ready&&tool.status!=='enabled')} onClick={()=>save('/entitlements',{toolKey:tool.key,status:tool.status==='enabled'?'disabled':'enabled',version:tool.version})}>{tool.status==='enabled'?'Disable':'Enable'} {tool.name}</button>}</article>;})}
     {administration&&detail.canManage && <><h3>Members</h3><p>Add people who have already registered. Owners manage administrators; only platform operators enable tools.</p>

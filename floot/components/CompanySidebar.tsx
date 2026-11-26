@@ -32,8 +32,6 @@ export function CompanySidebar({ tab, onTab }: { tab?: string; onTab?: (tab: str
       ...(has('dock-builder') ? [destination('Sales / Dock Builder', '/dock-builder')] : []),
     ] },
     { label: 'Operations', links: [
-      ...(has('dock-scheduler') ? [destination('Dock Crew Scheduler', '/dockscheduler', location.pathname.startsWith('/dockscheduler'))] : []),
-      ...(has('mapping') ? [destination('Mapping & Storage', '/mapping', ['/mapping', '/maps'].includes(location.pathname))] : []),
       ...(has('parts-inventory') ? [destination('Inventory', '/inventory/parts')] : []),
     ] },
   ].filter(group => group.links.length);

@@ -1,0 +1,16 @@
+.gateway-tool-workspace{min-width:0}
+.gateway-tool-bar,.gateway-tool-lookups{display:flex;align-items:center;flex-wrap:wrap;gap:var(--mo-gap)}
+.gateway-tool-bar{justify-content:space-between;gap:8px var(--mo-gap);padding:8px var(--mo-gutter);border-bottom:1px solid var(--border);background:var(--card)}
+.gateway-tool-bar a{white-space:normal}
+.gateway-lookup-dialog{width:32rem}
+.gateway-lookup-form{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:5px var(--mo-gap)}
+.gateway-lookup-field{grid-column:1/-1;font-weight:600}
+.gateway-lookup-results{list-style:none;padding:0;margin:0}
+.gateway-lookup-results li{border-top:1px solid var(--border);padding:10px 0;overflow-wrap:anywhere}
+.gateway-lookup-results p{margin:3px 0 0;color:var(--muted-foreground)}
+.gateway-lookup-dialog [role="alert"]{color:var(--error)}
+.gateway-scheduler-frame{display:block;width:100%;height:calc(100dvh - 9rem);min-height:640px;border:0}
+@media (max-width:520px){
+ .gateway-lookup-form{grid-template-columns:minmax(0,1fr)}
+ .gateway-tool-bar{justify-content:flex-start}
+}

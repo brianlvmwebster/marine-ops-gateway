@@ -1,5 +1,5 @@
 import React,{createContext,useContext,useEffect,useState} from 'react';
-import {Link,useLocation} from 'react-router-dom';
+import {useLocation} from 'react-router-dom';
 import {useAuth} from '../helpers/useAuth';
 import './CompanyWorkspace.css';
 import {CompanySidebar} from './CompanySidebar';
@@ -36,9 +36,9 @@ export function CompanyWorkspace({children}:{children:React.ReactNode}){
  if(standalone||authState.type!=='authenticated')return <>{children}</>;
  if(error)return <main className="company-workspace-error"><h1>Company access</h1><p role="alert">{error}</p><a href="/">Choose your company</a> · <a href="/platform">Platform administration</a></main>;
  if(!workspace)return <p role="status">Loading company workspace…</p>;
- const {company,tools,role}=workspace,has=(key:string)=>tools.some(t=>t.key===key);
+ const {tools}=workspace,has=(key:string)=>tools.some(t=>t.key===key);
  const required=location.pathname.startsWith('/dockscheduler')?'dock-scheduler':['/maps','/mapping'].includes(location.pathname)?'mapping':location.pathname.startsWith('/customers')?'customers':location.pathname.startsWith('/inventory')?'parts-inventory':location.pathname.startsWith('/dock-builder')?'dock-builder':location.pathname.startsWith('/dashboard')?'service-desk':null;
  const page=required&&!has(required)?<main><h1>Tool unavailable</h1><p>This tool is not enabled for your company.</p></main>:children;
- const insideDashboard=['/customers','/inventory/parts','/company/admin','/dock-builder','/maps','/mapping','/dockscheduler','/dockscheduler/add-job'].includes(location.pathname);
+ const insideDashboard=['/customers','/inventory/parts','/company/admin','/dock-builder'].includes(location.pathname);
  return <Context.Provider value={workspace}>{insideDashboard?<div className={styles.app+' company-dashboard-shell'}><CompanySidebar/><div className={styles.main+' company-content'}>{page}</div></div>:page}</Context.Provider>;
 }

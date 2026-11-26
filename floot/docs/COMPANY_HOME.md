@@ -2,11 +2,11 @@
 
 The November 23 organization correction supersedes the prior root-dashboard layout.
 
-Microsoft SSO returns to the company gateway at `/`. Standalone staging password login also returns to `/`. The gateway presents a grid of enabled tool buttons, including Company Dashboard at `/dashboard` and Dock Builder. Mapping is visibly unavailable until its standalone migration is complete. Platform administration remains at `/platform` and is not an operational tool in the company dashboard.
+Microsoft SSO returns to the company gateway at `/`. Standalone staging password login also returns to `/`. The gateway presents a grid of enabled tools, including Company Dashboard at `/dashboard`, Dock Builder, Dock Crew Scheduler at `/dockscheduler`, and Mapping Tool at `/mapping`. Dock Crew Scheduler and Mapping Tool open as standalone workspaces with a return link to the gateway. Company Dashboard navigation and its Company settings omit both tools. Platform administration at `/platform` still manages company entitlements.
 
 Company Dashboard opens the existing customizable Overview, preserving saved widgets and column preferences. One sidebar contains Overview, Job queue, Schedule, shared Customers, Units, Sales / Dock Builder, Inventory, company administration, and Back to gateway. Customer, inventory, company-administration and Dock Builder pages use that same sidebar. The extra company navigation bar is removed. Point of Sale is not introduced or advertised as available.
 
-The company context provider still validates active membership and entitlements, passes company IDs in links and preserves the selected company. Customer data and IDs remain centralized; service jobs and Dock Builder quotes keep their existing links. No data migration or duplicate customer store is introduced. Operator-only company enable/suspend and entitlement controls remain separate from company member administration.
+The company context provider validates active membership and entitlements, passes company IDs in links and preserves the selected company. Dock Crew Scheduler and Mapping Tool show in-place, read-only Customers and Parts Inventory lookups from the same company records used by the dashboard. The lookups honor the same entitlements and session checks. Service jobs and Dock Builder quotes keep their existing links. Operator-only company enable/suspend and entitlement controls remain separate from company member administration.
 
 The retained production Floot application and Microsoft integration are not cut over by this staging change. Outlook stays paused and main branches remain stable.
 

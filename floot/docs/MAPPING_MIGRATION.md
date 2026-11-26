@@ -2,6 +2,8 @@
 
 Source: LVM Mapping Utility, Floot project `5c9bc5b8-9385-4cf3-b124-8efa4f313954`, checkpoint `c0965e17-6083-4fe7-928a-6c78931e6887`. Source reconciled against the published November 24 release. The existing older MapTool integration is updated with configurable Text/Number/Boolean columns, custom Boolean labels, spreadsheet template export/import, and review/editing.
 
+Open Mapping Tool directly from the signed-in Marine Ops gateway. Its standalone toolbar looks up the same company Customers and Parts Inventory records used by the dashboard when the corresponding tools are enabled.
+
 The standalone staging server now has a separate `platform/mapping.ts` backend. It imports no Floot services. Requests require a registered session, active Lakeview membership and the enabled `mapping` entitlement. Every map and image is scoped to both company and owner; another member cannot access a map by knowing its ID. Company navigation enforces the selected company's entitlement as well. Mutations require exact Origin; payload sizes, image bytes/type/dimensions, data types and optimistic revisions are checked. Completed source images cannot be replaced. Uploads, saves and organization changes are audited.
 
 Apply `015-mapping.sql` with `node --import tsx staging/migrate-mapping.ts` in the isolated staging runtime. This creates new standalone tables, retaining the older imported Floot tables unchanged. It does not import maps or alter service/customer records. The regular staging migration also includes this migration. Manual markers, boundaries, layout folders, custom fields, XLSX templates, imports and explicit Save map are supported.
