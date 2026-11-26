@@ -2,6 +2,8 @@
 
 The owner has superseded the Floot-first editing workflow and requested a full exit from Floot. GitHub is the editing source. Reconcile the latest Floot source before migration work, then implement standalone replacements here. Floot remains live only until a verified replacement and cutover are authorized; do not delete it or publish new Floot changes as a routine step. Keep development branches for work, main stable, both repositories synchronized, and Outlook sync paused. See docs/FLOOT_EXIT.md. The historical workflow below applies only where consistent with this direction.
 
+For each update-import comparison, record the run in [docs/IMPORT_AUDIT.md](docs/IMPORT_AUDIT.md), including checks that find no changes or end without applying them. Record the outcome on the same entry and keep private records out of the log.
+
 # Dashboard development workflow
 
 ## Platform and repository roles
