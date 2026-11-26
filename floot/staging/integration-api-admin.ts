@@ -9,7 +9,12 @@ const db = platformDatabase();
 
 try {
   if (action === 'migrate' && args.length === 0) {
-    await db.unsafe(await readFile(new URL('../migrations/018-integration-api.sql', import.meta.url), 'utf8'));
+    const connection = await db.reserve();
+    try {
+      await connection.unsafe(await readFile(new URL('../migrations/018-integration-api.sql', import.meta.url), 'utf8'));
+    } finally {
+      connection.release();
+    }
     console.log('Integration API schema ready.');
   } else if (action === 'register') {
     const [id, company, name, scope, hash, days] = z.tuple([
@@ -34,7 +39,8 @@ try {
   }
 } catch (error) {
   // Operational logs must never contain the submitted verifier or database query values.
-  console.error('Integration API administration failed.', error instanceof z.ZodError ? 'Invalid arguments.' : '');
+  const code = error instanceof z.ZodError ? 'INVALID_ARGUMENTS' : (error as { code?: unknown })?.code;
+  console.error('Integration API administration failed.', typeof code === 'string' && /^[A-Z0-9_]{1,32}$/.test(code) ? code : '');
   process.exitCode = 1;
 } finally {
   await db.end();
