@@ -1,55 +1,326 @@
-/* Standalone workspace design. A single attribute enables it; legacy production stays untouched. */
-html[data-workspace-theme]{color-scheme:light;--surface-foreground:var(--foreground);--card-foreground:var(--foreground);--popup:var(--card);--popup-foreground:var(--foreground);--secondary:var(--surface);--secondary-foreground:var(--foreground);--accent:var(--surface);--accent-foreground:var(--foreground);--muted:var(--surface);--sidebar:var(--card);--sidebar-foreground:var(--foreground);--info:var(--primary);--info-hover:var(--primary);--info-active:var(--primary);--font-family-display:var(--font-family-base);--radius-sm:0px;--radius:0px;--radius-md:0px;--radius-lg:0px;--radius-full:0px;--shadow:none;--shadow-md:none;--shadow-lg:0 8px 30px #0003;--shadow-focus:0 0 0 2px var(--primary);--spacing-3:.625rem;--spacing-4:.75rem;--spacing-6:1rem;--spacing-8:1.5rem;background:var(--background)}
-html[data-workspace-mode=dark]{color-scheme:dark;--error:#ffaaaa;--success:#8cdbb6;--warning:#f3ce8d}
-html[data-workspace-theme] body{background:var(--background);color:var(--foreground);font-size:13px;line-height:1.5}
-html[data-workspace-theme] *,html[data-workspace-theme] *::before,html[data-workspace-theme] *::after{border-radius:0!important}
-html[data-workspace-theme] :focus-visible{outline:2px solid var(--primary);outline-offset:3px}
-html[data-workspace-theme] input::placeholder,html[data-workspace-theme] textarea::placeholder{color:var(--muted-foreground);opacity:1}
-.workspace-appearance{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:8px 20px;background:var(--card);border-bottom:1px solid var(--border);color:var(--foreground)}
-.workspace-wordmark{font-size:12px;font-weight:750;letter-spacing:.08em;text-decoration:none}.workspace-wordmark span{font-weight:450;color:var(--muted-foreground);margin-left:10px}
-.workspace-appearance-actions{display:flex;align-items:center;gap:9px;font-size:12px}.workspace-environment{font-size:10px;letter-spacing:.08em;color:var(--muted-foreground);border:1px solid var(--border);padding:2px 5px}
-.workspace-appearance select{font:inherit;min-height:30px;padding:4px 28px 4px 8px;background:var(--surface);color:var(--foreground);border:1px solid var(--border)}
-html[data-workspace-theme] .staging-banner{padding:5px 12px!important;font-size:11px;line-height:1.4;border-bottom:1px solid #b6a263}
-html[data-workspace-theme] .platform-page,html[data-workspace-theme] .parts-page{--background:var(--card);--foreground:inherit;background:var(--card);color:inherit;max-width:1440px;padding:18px 24px;font-size:13px;min-height:calc(100vh - 76px)}
-html[data-workspace-theme] .customers-page{--foreground:inherit;--background:var(--card)}
-html[data-workspace-theme] .platform-page h1,html[data-workspace-theme] .parts-page h1{font-size:23px;letter-spacing:-.03em;line-height:1.25;margin:12px 0}
-html[data-workspace-theme] .platform-page h2,html[data-workspace-theme] .parts-page h2{font-size:17px;margin:16px 0 8px}
-html[data-workspace-theme] .platform-page h3{font-size:14px;margin:12px 0 6px}
-html[data-workspace-theme] .platform-page p{margin:6px 0;color:inherit}
-html[data-workspace-theme] .platform-page label{gap:3px;margin:5px 12px 5px 0;font-size:12px}
-html[data-workspace-theme] :is(.platform-page,.parts-page,.job-parts) :is(input,select,textarea,button){font:inherit;color:inherit;background:var(--surface);border:1px solid var(--border);padding:5px 8px;min-height:30px}
-html[data-workspace-theme] :is(.platform-page,.parts-page,.job-parts) button{margin:4px;cursor:pointer}
-html[data-workspace-theme] :is(.platform-page,.parts-page,.job-parts) button:hover:not(:disabled){background:var(--secondary);border-color:var(--primary)}
-html[data-workspace-theme] :is(.platform-page,.parts-page,.job-parts) button:disabled{opacity:.5;cursor:not-allowed}
-html[data-workspace-theme] :is(.platform-page,.parts-page) a{color:var(--primary)}
-html[data-workspace-theme] .platform-page :is(article,fieldset){padding:12px;margin:10px 0;border-color:var(--border)}
-html[data-workspace-theme] .platform-page .customer-edit-fields{border:0;padding:0}
-html[data-workspace-theme] .customer-section{margin:6px 0;background:var(--card);border-color:var(--border)}
-html[data-workspace-theme] .customer-section>summary{padding:9px 12px;color:inherit;font-size:13px}
-html[data-workspace-theme] .customer-section[open]>summary{background:var(--surface);border-color:var(--border)}
-html[data-workspace-theme] .customer-section-body{padding:4px 12px 10px}
-html[data-workspace-theme] :is(.customer-table,.parts-table,.job-parts) :is(th,td){padding:7px 10px;border-color:var(--border);font-size:13px;line-height:1.4}
-html[data-workspace-theme] :is(.customer-table,.parts-table,.job-parts) th{background:var(--surface);font-size:11px;letter-spacing:.04em;font-weight:650}
-html[data-workspace-theme] :is(.customer-table,.parts-table) td button{background:transparent;color:var(--primary);border:0;padding:2px 0;margin:0;min-height:26px;text-decoration:underline;text-underline-offset:3px}
-html[data-workspace-theme] :is(.customer-table,.parts-table) tbody tr:hover{background:var(--surface)}
-html[data-workspace-theme] .parts-filters{gap:10px;margin:12px 0}.parts-details{font-variant-numeric:tabular-nums}
-html[data-workspace-theme] .parts-details{gap:12px}
-html[data-workspace-theme] .parts-notice{padding:8px 12px}
-html[data-workspace-theme] .job-parts{background:var(--surface);color:var(--foreground);border-color:var(--border);padding:12px;margin:12px 0}
-html[data-workspace-theme] .job-parts th{background:var(--card)}
-html[data-workspace-theme] .platform-page [role=alert],html[data-workspace-theme] .job-parts [role=alert]{color:var(--error)}
-@media(max-width:600px){.workspace-appearance{padding:8px 12px;gap:8px;flex-wrap:wrap}.workspace-wordmark span{display:none}html[data-workspace-theme] .platform-page,html[data-workspace-theme] .parts-page{padding:12px}.workspace-environment{display:none}}
-@media(pointer:coarse){html[data-workspace-theme] :is(button,input,select,summary){min-height:40px}}
-@media print{.workspace-appearance,.staging-banner{display:none!important}html[data-workspace-theme]{color-scheme:light;--background:#fff!important;--card:#fff!important;--surface:#fff!important;--foreground:#172632!important;--muted-foreground:#506170!important;--border:#bcc8d2!important;--primary:#155c91!important}html[data-workspace-theme] body{background:#fff;color:#172632}}
+/* Shared staging controls and independent navigation layouts. */
+html[data-workspace-theme] {
+  color-scheme: light;
+  font-size: 16px;
+  --mo-gap: 12px;
+  --mo-section-gap: 20px;
+  --mo-gutter: clamp(16px, 3vw, 32px);
+  --mo-control-height: 42px;
+  --mo-control-small: 34px;
+  --mo-control-large: 48px;
+  --mo-menu-radius: var(--radius-md);
+  --mo-tab-radius: var(--radius-full);
+  --mo-dialog-radius: var(--radius-lg);
+  --mo-field-border: color-mix(in srgb, var(--foreground) 42%, var(--card));
+  --mo-field: var(--card);
+  --mo-hover: color-mix(in srgb, var(--primary) 9%, var(--card));
+  --mo-active: color-mix(in srgb, var(--primary) 13%, var(--card));
+  --mo-lift: 0 2px 8px color-mix(in srgb, var(--foreground) 7%, transparent);
+  --mo-edge: none;
+  --radius-sm: 6px;
+  --radius: 10px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --radius-full: 999px;
+  --surface-foreground: var(--foreground);
+  --card-foreground: var(--foreground);
+  --popup: var(--card);
+  --popup-foreground: var(--foreground);
+  --secondary: var(--surface);
+  --secondary-foreground: var(--foreground);
+  --accent: var(--mo-active);
+  --accent-foreground: var(--foreground);
+  --muted: var(--surface);
+  --sidebar: var(--card);
+  --sidebar-foreground: var(--foreground);
+  --info: var(--primary);
+  --info-hover: var(--primary);
+  --info-active: var(--primary);
+  --shadow: var(--mo-lift);
+  --shadow-md: 0 8px 24px #0002;
+  --shadow-lg: 0 12px 36px #0003;
+  --shadow-focus: 0 0 0 2px var(--primary);
+  --font-family-display: var(--font-family-base);
+  background: var(--background);
+}
+html[data-workspace-layout="top"] {
+  --mo-gap: 10px;
+  --mo-section-gap: 16px;
+  --mo-control-height: 38px;
+  --mo-control-small: 32px;
+  --mo-control-large: 44px;
+  --mo-tab-radius: var(--radius);
+  --mo-field: var(--surface);
+  --radius-sm: 3px;
+  --radius: 5px;
+  --radius-md: 7px;
+  --radius-lg: 9px;
+  --mo-lift: 0 2px 5px #0001;
+  --mo-edge: inset 0 1px color-mix(in srgb, white 30%, transparent), inset 0 -1px #0001;
+}
+html[data-workspace-mode="dark"] {
+  color-scheme: dark;
+  --error: #ffaaaa;
+  --success: #8cdbb6;
+  --warning: #f3ce8d;
+  --error-foreground: #301010;
+  --success-foreground: #102d21;
+  --warning-foreground: #30230b;
+  --mo-lift: 0 3px 10px #0003;
+}
+html[data-workspace-theme][data-workspace-mode="dark"][data-workspace-layout="top"] { --mo-edge: inset 0 1px #fff2, inset 0 -1px #0004; }
+html[data-workspace-theme] body {
+  background: var(--background);
+  color: var(--foreground);
+  font-size: 14px;
+  line-height: 1.5;
+}
+html[data-workspace-theme] :focus-visible { outline: 2px solid var(--primary); outline-offset: 3px; }
+html[data-workspace-theme] :is(input, textarea)::placeholder { color: var(--muted-foreground); opacity: 1; }
+html[data-workspace-theme] :is(input[type="checkbox"], input[type="radio"]) { accent-color: var(--primary); }
+html[data-workspace-theme] .staging-banner {
+  padding: 5px 12px !important;
+  font-size: 11px;
+  line-height: 1.4;
+  border-bottom: 1px solid #b6a263;
+}
 
-/* Shared controls use smaller typography without reducing keyboard focus visibility. */
-html[data-workspace-theme] [role=dialog]{font-size:13px;line-height:1.5}
-html[data-workspace-theme] [role=dialog] h2{font-size:19px}
-html[data-workspace-theme] [role=dialog] h3{font-size:14px}
+.workspace-appearance {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 8px var(--mo-section-gap);
+  padding: 10px var(--mo-gutter);
+  background: var(--card);
+  border-bottom: 1px solid var(--border);
+}
+.workspace-wordmark {
+  color: var(--foreground);
+  font-size: 14px;
+  font-weight: 760;
+  letter-spacing: .05em;
+  text-decoration: none;
+}
+.workspace-wordmark span {
+  color: var(--muted-foreground);
+  font-size: 11px;
+  font-weight: 550;
+  margin-inline-start: 8px;
+}
+.workspace-appearance-actions, .workspace-appearance-actions label {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--mo-gap);
+}
+.workspace-appearance-actions label { gap: 6px; font-weight: 600; font-size: 13px; }
+.workspace-environment {
+  font-size: 11px;
+  color: var(--muted-foreground);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 3px 7px;
+}
 
-html[data-workspace-theme]{font-size:14px}
-@media(max-width:600px){html[data-workspace-theme] :is(input,select,textarea){font-size:16px!important}}
+/* Native form controls on workspace pages pair with the component-library controls. */
+html[data-workspace-theme] :is(.platform-page, .import-administration, .company-gateway, .workspace-appearance) :is(
+  input:not([type="checkbox"], [type="radio"], [type="range"], [type="hidden"]), select, textarea
+) {
+  box-sizing: border-box;
+  min-inline-size: 0;
+  max-inline-size: 100%;
+  min-block-size: var(--mo-control-height);
+  padding: 7px 11px;
+  border: 1px solid var(--mo-field-border);
+  border-radius: var(--radius);
+  background: var(--mo-field);
+  color: var(--foreground);
+  font: inherit;
+}
+html[data-workspace-theme] :is(.platform-page, .import-administration) input[type="file"] {
+  width: 100%;
+  padding: 4px;
+  color: var(--foreground);
+}
+html[data-workspace-theme] input[type="file"]::file-selector-button {
+  min-height: calc(var(--mo-control-height) - 10px);
+  margin-inline-end: 8px;
+  padding: 0 10px;
+  font: inherit;
+  font-weight: 600;
+  color: var(--foreground);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+}
+html[data-workspace-theme] :is(.platform-page, .import-administration) textarea {
+  min-height: 96px;
+  width: 100%;
+  resize: vertical;
+}
+html[data-workspace-theme] :is(.platform-page, .import-administration) button,
+html[data-workspace-theme] :is(.workspace-button, .account-menu button) {
+  box-sizing: border-box;
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+  gap: 6px;
+  min-block-size: var(--mo-control-height);
+  max-inline-size: 100%;
+  margin: 0;
+  padding: 7px 12px;
+  border: 1px solid var(--mo-field-border);
+  border-radius: var(--radius);
+  background: var(--mo-field);
+  color: var(--foreground);
+  font: inherit;
+  font-weight: 600;
+  box-shadow: var(--mo-edge);
+  cursor: pointer;
+}
+html[data-workspace-theme] :is(.platform-page, .import-administration) button:hover:enabled,
+html[data-workspace-theme] :is(.workspace-button, .account-menu button):hover:enabled {
+  background: var(--mo-hover);
+  border-color: var(--primary);
+}
+html[data-workspace-theme] :is(.platform-page, .import-administration) :is(button[type="submit"], button.workspace-primary),
+html[data-workspace-theme] :is(.platform-page, .import-administration) :is(button[type="submit"], button.workspace-primary):hover:enabled {
+  background: var(--primary);
+  border-color: var(--primary);
+  color: var(--primary-foreground);
+}
+html[data-workspace-theme] :is(.platform-page, .import-administration) button[aria-pressed="true"] {
+  background: var(--mo-active);
+  border-color: var(--primary);
+  color: var(--foreground);
+}
+html[data-workspace-theme] :is(.platform-page, .import-administration, .account-menu) button:disabled {
+  opacity: .56;
+  cursor: not-allowed;
+}
+html[data-workspace-theme] :is(.platform-page,.import-administration,.job-parts) [role="alert"] { color: var(--error); }
 
-html[data-workspace-mode=dark]{--error-foreground:#301010;--success-foreground:#102d21;--warning-foreground:#30230b}
+html[data-workspace-theme] :is(.workspace-controls, .workspace-actions) {
+  display: flex;
+  align-items: end;
+  flex-wrap: wrap;
+  gap: var(--mo-gap);
+}
+html[data-workspace-theme] .workspace-controls > .workspace-grow { flex: 3 1 15rem; min-width: 0; }
+html[data-workspace-theme] .workspace-controls > label { flex: 1 1 9rem; }
+html[data-workspace-theme] .workspace-controls > button { flex: 0 0 auto; }
+html[data-workspace-theme] .workspace-actions { align-items: center; margin-block: var(--mo-gap); }
+html[data-workspace-theme] .workspace-field-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 13rem), 1fr));
+  align-items: end;
+  gap: var(--mo-gap);
+}
+.workspace-field-grid > :is(p, .workspace-full) { grid-column: 1 / -1; }
+.workspace-field-grid > button { justify-self: start; }
+html[data-workspace-theme] :is(.platform-page, .import-administration) label:has(> :is(input, select, textarea)) {
+  margin: 0;
+  display: grid;
+  gap: 5px;
+  min-width: 0;
+  align-content: start;
+  font-size: 13px;
+  font-weight: 600;
+}
+html[data-workspace-theme] .platform-page > label { width: min(100%, 16rem); margin-block: var(--mo-gap); }
+html[data-workspace-theme] :is(.workspace-controls,.workspace-field-grid) > label > :is(input,select,textarea) { width: 100%; }
+html[data-workspace-theme] .platform-page {
+  box-sizing: border-box;
+  max-width: 90rem;
+  min-width: 0;
+  min-height: 0;
+  margin: 0 auto;
+  padding: var(--mo-gutter);
+  background: transparent;
+  color: var(--foreground);
+}
+html[data-workspace-theme] :is(.platform-page, .import-administration) h1 {
+  margin: 0 0 6px;
+  font-size: clamp(1.65rem, 3vw, 2.15rem);
+  letter-spacing: -.035em;
+  line-height: 1.2;
+}
+html[data-workspace-theme] .platform-page h2 { font-size: 1.18rem; margin: var(--mo-section-gap) 0 8px; }
+html[data-workspace-theme] .platform-page h3 { font-size: 1rem; margin: var(--mo-section-gap) 0 8px; }
+html[data-workspace-theme] .platform-page a { color: var(--primary); text-underline-offset: 3px; }
+html[data-workspace-theme] .platform-page :is(article, fieldset:not(.customer-edit-fields)) {
+  min-width: 0;
+  margin: var(--mo-gap) 0;
+  padding: var(--mo-section-gap);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  background: var(--card);
+}
+html[data-workspace-theme] .customers-page :is(input, select) { min-width: 0; }
+html[data-workspace-theme] .customers-page .customer-quick-search { width: auto; max-width: none; }
+html[data-workspace-theme] .customer-quick-results { border-radius: var(--radius-md); }
+html[data-workspace-theme] .customer-section {
+  margin: var(--mo-gap) 0;
+  background: var(--card);
+  border-color: var(--border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--mo-lift);
+}
+html[data-workspace-theme] .customer-section > summary { padding: 12px var(--mo-section-gap); color: var(--foreground); }
+html[data-workspace-theme] .customer-section[open] > summary { border-color: var(--border); }
+html[data-workspace-theme] .customer-section-body { padding: var(--mo-section-gap); }
+html[data-workspace-theme] :is(.customer-table,.parts-table) {
+  max-width: 100%;
+  overflow-x: auto;
+  overscroll-behavior-inline: contain;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  margin-block: var(--mo-gap);
+}
+html[data-workspace-theme] :is(.customer-table,.parts-table,.job-parts) :is(th,td) {
+  padding: 10px 12px;
+  border-color: var(--border);
+  font-size: 13px;
+  line-height: 1.4;
+}
+html[data-workspace-theme] :is(.customer-table,.parts-table,.job-parts) th { background: var(--surface); font-size: 12px; }
+html[data-workspace-theme] :is(.customer-table,.parts-table) td button {
+  background: transparent;
+  color: var(--primary);
+  border: 0;
+  padding: 2px 0;
+  min-height: 26px;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  box-shadow: none;
+}
+html[data-workspace-theme] :is(.customer-table,.parts-table) tbody tr:hover { background: var(--mo-hover); }
+html[data-workspace-theme] .parts-filters { gap: var(--mo-gap); margin-block: var(--mo-section-gap); }
+html[data-workspace-theme] .parts-filters input { min-width: 0; }
+html[data-workspace-theme] .parts-details { font-variant-numeric: tabular-nums; gap: var(--mo-gap); }
+html[data-workspace-theme] :is(.parts-notice, .job-parts) { background: var(--surface); color: var(--foreground); border-color: var(--border); }
+html[data-workspace-theme] .parts-notice { border-inline-start-color: var(--primary); border-radius: var(--radius); padding: 10px 12px; }
+html[data-workspace-theme] .job-parts { border-radius: var(--radius-md); }
+html[data-workspace-theme] [role="dialog"] { font-size: 14px; }
 
-html[data-workspace-theme] .parts-page .parts-notice{background:var(--surface);color:var(--foreground);border-left-color:var(--primary)}
+@media (max-width: 720px) {
+  html[data-workspace-theme] { --mo-control-height: 44px; --mo-control-small: 44px; }
+  .workspace-appearance { align-items: start; }
+  .workspace-appearance-actions label { flex: 1 1 auto; }
+  .workspace-wordmark span, .workspace-environment { display: none; }
+  html[data-workspace-theme] :is(.platform-page, .import-administration) :is(input, select, textarea) { font-size: 16px; }
+}
+@media (pointer: coarse) {
+  html[data-workspace-theme] { --mo-control-height: 44px; --mo-control-small: 44px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  html[data-workspace-theme] { --animation-duration-fast: 0ms; --animation-duration-normal: 0ms; }
+}
+@media print {
+  .workspace-appearance, .staging-banner { display: none !important; }
+  html[data-workspace-theme] { color-scheme: light; --background: #fff !important; --card: #fff !important; --surface: #fff !important; --foreground: #172632 !important; --muted-foreground: #506170 !important; --border: #bcc8d2 !important; --primary: #155c91 !important; }
+  html[data-workspace-theme] body { background: #fff; color: #172632; }
+}

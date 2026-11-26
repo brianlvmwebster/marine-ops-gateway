@@ -35,18 +35,18 @@
 
   /* Sizes */
   .sm {
-    height: 2rem;
+    height: var(--mo-control-small, 2rem);
     padding: 0 10px;
     font-size: 0.8125rem;
   }
 
   .md {
-    height: 2.25rem;
+    height: var(--mo-control-height, 2.25rem);
     padding: 0 14px;
   }
 
   .lg {
-    height: 2.75rem;
+    height: var(--mo-control-large, 2.75rem);
     padding: 0 18px;
     font-size: 0.9375rem;
     border-radius: var(--radius-md);
@@ -54,20 +54,20 @@
 
   .icon,
   .icon-md {
-    width: 2.25rem;
-    height: 2.25rem;
+    width: var(--mo-control-height, 2.25rem);
+    height: var(--mo-control-height, 2.25rem);
     padding: 0;
   }
 
   .icon-sm {
-    width: 2rem;
-    height: 2rem;
+    width: var(--mo-control-small, 2rem);
+    height: var(--mo-control-small, 2rem);
     padding: 0;
   }
 
   .icon-lg {
-    width: 2.75rem;
-    height: 2.75rem;
+    width: var(--mo-control-large, 2.75rem);
+    height: var(--mo-control-large, 2.75rem);
     padding: 0;
     border-radius: var(--radius-md);
   }
@@ -113,7 +113,7 @@
     background-color: var(--primary);
     color: var(--primary-foreground);
     border-color: var(--primary);
-    box-shadow: 0 1px 2px rgb(0 0 0 / 0.14);
+    box-shadow: var(--mo-edge, 0 1px 2px rgb(0 0 0 / 0.14));
     --spinner-color: var(--primary-foreground);
   }
 

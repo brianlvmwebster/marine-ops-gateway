@@ -83,6 +83,13 @@
 .stats{padding:4px 0 6px;gap:16px;border-top:1px solid var(--border)}.stats>div{display:flex;align-items:baseline;gap:5px}.stats strong{font:600 12px var(--font-family-base);font-variant-numeric:tabular-nums}.stats span{font-size:11px}
 .workspace{gap:6px;grid-template-columns:minmax(0,1fr) 235px}.workspace.detailsClosed{grid-template-columns:minmax(0,1fr) 32px}.mapPanel,.details{border-radius:3px;box-shadow:none}.panelHeader{padding:5px 8px;background:var(--muted)}.panelHeader h2,.detailsHeader h2{font:600 12px var(--font-family-base)}.panelHeader span{font-size:11px}
 .toolbar{padding:4px;gap:3px;background:var(--card)}.toolbar button{height:27px;font-size:11px;padding:3px 6px}.toolbar button svg{width:13px;height:13px}.mapFooter{padding:4px 7px;font-size:10px;border-top:1px solid var(--border)}
+
+:global(html[data-workspace-theme]) :is(.header,.toolbar){gap:var(--mo-gap);align-items:center;flex-wrap:wrap}
+:global(html[data-workspace-theme]) :is(.header,.toolbar) button{
+ min-height:var(--mo-control-height);height:auto;padding:6px 10px;border-radius:var(--radius)
+}
+:global(html[data-workspace-theme]) .header h1{white-space:normal;overflow-wrap:anywhere}
+:global(html[data-workspace-theme]) .mapPicker{min-width:0;max-width:100%}
 .details{padding:7px}.detailsHeader{padding-bottom:5px;border-bottom:1px solid var(--border)}.detailsCollapsed{padding:2px;height:32px}.detailsCollapsed .detailsHeader{padding:0;border:0}.details label{font-size:11px}.details p{font-size:12px}.locationRow{padding:6px!important}.locationSection{padding-top:7px;margin-top:7px}
 @media(max-width:900px){.header h1{flex-basis:165px}.workspaceLogo{width:165px;height:55px}.workspace{grid-template-columns:minmax(0,1fr) 220px}}
 @media(max-width:650px){.sidebar,.sidebarCollapsed{width:100%;padding:5px 7px;border-right:0;border-bottom:1px solid var(--border)}.main{padding:5px}.header{display:flex;flex-direction:row;flex-wrap:wrap;gap:4px;align-items:center}.header h1{flex:0 0 165px;width:auto;margin-right:auto}.header>.mapPicker{flex:1 1 150px;min-width:140px;max-width:none;width:auto}.header>button{flex:1 1 auto;height:32px}.stats{display:flex;flex-wrap:wrap;gap:6px 12px;padding:5px 0}.stats>div{display:flex;gap:4px}.workspace,.workspace.detailsClosed{display:flex;flex-direction:column}.toolbar button{min-height:30px}.mapPanel{height:70dvh}.details{max-height:50dvh}}

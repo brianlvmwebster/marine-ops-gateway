@@ -181,7 +181,7 @@ function WorkbookUpdate({ company, area, onRun }: { company: string; area: Impor
       {!!review.result.run.summary.omitted && <p>The findings exceed the preview limit. Check a smaller export before applying changes.</p>}
       {review.result.run.status === 'pending' && <>
         <p>{isParts ? 'Changes marked Review only and parts missing from the file are left in place.' : 'Conflicting records and customers missing from the file are left in place.'}</p>
-        <button type="button" disabled={busy !== null} onClick={apply}>
+        <button type="button" className="workspace-primary" disabled={busy !== null} onClick={apply}>
           {busy === 'apply' ? 'Applying…' : `Apply ${label} changes`}
         </button>
       </>}
@@ -202,7 +202,7 @@ function RecentImports({ company, tools }: { company: string; tools: string[] })
   }, [company, revision]);
   return <>
     {error && <p role="alert">{error}</p>}
-    {areaKeys.map(area => <section key={area} className="import-panel" aria-labelledby={`import-${area}`}>
+    <div className="import-sections">{areaKeys.map(area => <section key={area} className="import-panel" aria-labelledby={`import-${area}`}>
       <h2 id={`import-${area}`}>{datasets[area]}</h2>
       {(area === 'customers' || area === 'parts') && tools.includes(updateAreas[area].tools)
         ? <WorkbookUpdate company={company} area={area} onRun={() => setRevision(value => value + 1)} />
@@ -212,7 +212,7 @@ function RecentImports({ company, tools }: { company: string; tools: string[] })
         <Link to={companyUrl('/company/admin?history=' + area, company)}>View full {datasets[area]} history</Link>
       </div>
       {history ? <RunList runs={history.runs.filter(run => run.dataset === area)} /> : !error && <p role="status">Loading run history…</p>}
-    </section>)}
+    </section>)}</div>
   </>;
 }
 

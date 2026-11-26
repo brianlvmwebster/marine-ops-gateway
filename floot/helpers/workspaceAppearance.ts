@@ -24,6 +24,23 @@ export const workspaceThemeGroups = [
 
 export type WorkspaceThemeId=typeof workspaceThemes[number]['id'];
 export const workspaceThemeKey='marineops.appearance.v1';
+export const workspaceLayoutKey='marineops.layout.v1';
+export const workspaceLayouts=[
+ {id:'sidebar',name:'Sidebar'},
+ {id:'top',name:'Top navigation'},
+] as const;
+export type WorkspaceLayoutId=typeof workspaceLayouts[number]['id'];
+
+export function resolveWorkspaceLayout(value:string|null){
+ return workspaceLayouts.find(layout=>layout.id===value)||workspaceLayouts[0];
+}
+
+export function applyWorkspaceLayout(value:string|null){
+ const layout=resolveWorkspaceLayout(value).id;
+ document.documentElement.dataset.workspaceLayout=layout;
+ return layout;
+}
+
 export function resolveWorkspaceTheme(value:string|null){return workspaceThemes.find(t=>t.id===value)||workspaceThemes[0];}
 export function applyWorkspaceTheme(value:string|null){
  const t=resolveWorkspaceTheme(value),root=document.documentElement;
@@ -32,4 +49,9 @@ export function applyWorkspaceTheme(value:string|null){
  for(const [key,v] of Object.entries(vars))root.style.setProperty('--'+key,v);
  return t.id;
 }
-export function initializeWorkspaceAppearance(){let saved=null;try{saved=localStorage.getItem(workspaceThemeKey);}catch{}return applyWorkspaceTheme(saved);}
+export function initializeWorkspaceAppearance(){
+ let theme=null,layout=null;
+ try{theme=localStorage.getItem(workspaceThemeKey);layout=localStorage.getItem(workspaceLayoutKey);}catch{}
+ applyWorkspaceLayout(layout);
+ return applyWorkspaceTheme(theme);
+}

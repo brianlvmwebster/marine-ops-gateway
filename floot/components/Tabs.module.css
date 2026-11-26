@@ -31,7 +31,8 @@
     background-color: transparent;
     padding: 6px 12px;
     border: none;
-    border-radius: 999px;
+    border-radius: var(--mo-tab-radius, 999px);
+    min-height: var(--mo-control-small, auto);
     cursor: pointer;
     white-space: nowrap;
     transition:

@@ -40,5 +40,5 @@ export function CompanyWorkspace({children}:{children:React.ReactNode}){
  const required=location.pathname.startsWith('/dockscheduler')?'dock-scheduler':['/maps','/mapping'].includes(location.pathname)?'mapping':location.pathname.startsWith('/customers')?'customers':location.pathname.startsWith('/inventory')?'parts-inventory':location.pathname.startsWith('/dock-builder')?'dock-builder':location.pathname.startsWith('/dashboard')?'service-desk':null;
  const page=required&&!has(required)?<main><h1>Tool unavailable</h1><p>This tool is not enabled for your company.</p></main>:children;
  const insideDashboard=['/customers','/inventory/parts','/company/admin','/dock-builder','/maps','/mapping','/dockscheduler','/dockscheduler/add-job'].includes(location.pathname);
- return <Context.Provider value={workspace}>{insideDashboard?<div className={styles.app+' company-dashboard-shell'}><CompanySidebar/><main className={styles.main}>{page}</main></div>:page}</Context.Provider>;
+ return <Context.Provider value={workspace}>{insideDashboard?<div className={styles.app+' company-dashboard-shell'}><CompanySidebar/><div className={styles.main+' company-content'}>{page}</div></div>:page}</Context.Provider>;
 }

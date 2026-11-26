@@ -112,10 +112,10 @@
 .queuePanel>.panelHead,.queuePanel>.tableWrap,.queuePanel>.empty{grid-column:1/-1}
 .queuePanel>.panelHead{padding:15px 18px}
 .queuePanel>.panelHead p{display:none}
-.queuePanel>.toolbar{grid-column:1;padding:12px 16px}
-.queuePanel>.filters{grid-column:2;max-width:360px;align-items:center;padding:12px 16px 12px 0;gap:8px}
+.queuePanel .queueControls>.toolbar{grid-column:1;padding:12px 16px}
+.queuePanel .queueControls>.filters{grid-column:2;max-width:360px;align-items:center;padding:12px 16px 12px 0;gap:8px}
 .queuePanel .filter{width:130px!important}
-@media(max-width:700px){.queuePanel{grid-template-columns:1fr}.queuePanel>.toolbar,.queuePanel>.filters{grid-column:1}.queuePanel>.filters{padding:0 14px 12px;max-width:none}.brandLogo{width:200px}.metric{flex-wrap:wrap;padding:9px 12px}.metric span{width:100%}.metric strong{font-size:24px}.heading h1{font-size:25px}}
+@media(max-width:700px){.queuePanel{grid-template-columns:1fr}.queuePanel .queueControls>.toolbar,.queuePanel .queueControls>.filters{grid-column:1}.queuePanel .queueControls>.filters{padding:0 14px 12px;max-width:none}.brandLogo{width:200px}.metric{flex-wrap:wrap;padding:9px 12px}.metric span{width:100%}.metric strong{font-size:24px}.heading h1{font-size:25px}}
 
 @media(max-width:700px){
  .side{gap:7px}
@@ -164,3 +164,30 @@
 
 :global(html[data-workspace-theme]) .brandLogo{background:#102b43}
 :global(html[data-workspace-theme]) .brand small{color:var(--muted-foreground)}
+
+.queueControls{display:contents}
+:global(html[data-workspace-theme]) .body{padding:var(--mo-gutter)}
+:global(html[data-workspace-theme]) :is(.panel,.heading,.metric,.utilities .utilityTabs){border-radius:var(--radius-lg)}
+:global(html[data-workspace-theme]) .heading{padding:var(--mo-section-gap);margin-bottom:var(--mo-section-gap)}
+:global(html[data-workspace-theme]) .heading h1{font-size:clamp(1.65rem,3vw,2.15rem);letter-spacing:-.035em}
+:global(html[data-workspace-theme]) .panelHead{gap:var(--mo-gap);flex-wrap:wrap}
+:global(html[data-workspace-theme]) .queueControls{
+ display:flex;grid-column:1/-1;flex-wrap:wrap;align-items:center;gap:var(--mo-gap);
+ padding:var(--mo-gap) var(--mo-section-gap);
+}
+:global(html[data-workspace-theme]) .queueControls .toolbar{
+ flex:1 1 15rem;min-width:0;margin:0;padding:0;border:0;background:transparent;
+}
+:global(html[data-workspace-theme]) .queueControls .filters{
+ flex:1 1 auto;max-width:none;min-width:0;margin:0;padding:0;gap:var(--mo-gap);
+}
+:global(html[data-workspace-theme]) .queueControls .filter{flex:1 1 8rem;width:auto!important;min-width:0}
+:global(html[data-workspace-theme]) .queueControls button{min-height:var(--mo-control-height)}
+:global(html[data-workspace-theme]) .sortControls{gap:var(--mo-gap);padding-inline:var(--mo-section-gap)}
+:global(html[data-workspace-theme]) .sortControls .filter{max-width:100%;min-width:0}
+:global(html[data-workspace-theme]) :is(.tableWrap,.week){max-width:100%;overscroll-behavior-inline:contain}
+:global(html[data-workspace-theme]) :is(.calendarOptions,.calendarFilters,.scheduleActions){gap:var(--mo-gap);flex-wrap:wrap}
+@media(max-width:720px){
+ :global(html[data-workspace-theme]) .queueControls :is(.toolbar,.filters){flex-basis:100%}
+ :global(html[data-workspace-theme]) .heading{align-items:start;flex-wrap:wrap}
+}

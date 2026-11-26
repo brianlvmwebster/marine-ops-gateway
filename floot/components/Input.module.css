@@ -7,8 +7,8 @@
     font-size: 1rem;
     line-height: 1.5;
     color: var(--foreground);
-    background-color: color-mix(in srgb, var(--foreground) 5%, var(--card));
-    border: 1px solid transparent;
+    background-color: var(--mo-field, color-mix(in srgb, var(--foreground) 5%, var(--card)));
+    border: 1px solid var(--mo-field-border, transparent);
     border-radius: var(--radius);
     padding: 0 var(--spacing-3);
     width: 100%;
@@ -19,7 +19,7 @@
     outline: none;
     /* 36px, the same as a medium Button, so they line up in a row. The text
        stays 16px: iOS zooms into fields with smaller text. */
-    height: 2.25rem;
+    height: var(--mo-control-height, 2.25rem);
     box-shadow: none;
   }
 

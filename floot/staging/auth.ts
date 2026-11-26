@@ -30,4 +30,17 @@ export async function stagingLogin(request:Request) {
   await setServerSession(response,{id,createdAt:now,lastAccessed:now});return response;
  });
 }
-export const loginPage=`<!doctype html><html lang="en"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>MarineOps staging sign-in</title><style>body{font:18px system-ui;max-width:600px;margin:8vh auto;padding:24px;background:#102331;color:#fff}input,button{font:inherit;padding:12px;margin:12px 0;display:block}input{max-width:90%}a{color:#90d4ff}</style><main><h1>MarineOps staging</h1><p>Isolated Lakeview test workspace. Imported Lakeview data and test service jobs. Imports, Outlook, email and external integrations are disabled.</p><form method="post" action="/staging/login"><label>Staging password<input type="password" name="password" required autocomplete="current-password" maxlength="256"></label><button>Sign in as Lakeview Test Owner</button></form><p>Retrieve the staging password from Google Secret Manager. This is separate from your Google and Microsoft passwords.</p></main></html>`;
+export const loginPage=`<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Marine Ops staging sign-in</title>
+<style>
+*,*::before,*::after{box-sizing:border-box}
+body{min-height:100dvh;margin:0;display:grid;place-items:center;padding:clamp(16px,4vw,40px);background:#edf2f5;color:#172d40;font:16px/1.5 system-ui,sans-serif}
+main{display:grid;gap:16px;width:min(100%,420px);background:#fff;border:1px solid #c6d2db;border-radius:16px;padding:clamp(18px,5vw,36px);box-shadow:0 12px 40px #142d4116}
+h1,p{margin:0}h1{font-size:clamp(1.65rem,5vw,2.1rem);line-height:1.2;letter-spacing:-.04em}
+form,label{display:grid;gap:12px}label{gap:6px;font-weight:650}
+input,button{width:100%;min-width:0;min-height:44px;font:inherit;padding:9px 12px;border-radius:10px;border:1px solid #617991}
+button{border-color:#12578a;background:#12578a;color:#fff;font-weight:650;cursor:pointer}
+button:hover{background:#0e4670}input:focus-visible,button:focus-visible{outline:2px solid #12578a;outline-offset:3px}
+small{color:#455e72;font-size:13px}
+</style></head><body><main><h1>Marine Ops staging</h1><p>Sign in to the Lakeview test workspace.</p>
+<form method="post" action="/staging/login"><label>Staging password<input type="password" name="password" required autocomplete="current-password" maxlength="256"></label><button type="submit">Sign in</button></form>
+<small>Use the staging password from Google Secret Manager.</small></main></body></html>`;

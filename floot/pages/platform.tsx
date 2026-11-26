@@ -28,8 +28,8 @@ export default function Platform({administration=false}:{administration?:boolean
 }
 function CreateCompany({onCreated}:{onCreated:()=>void}) {
   const [busy,setBusy]=useState(false),[message,setMessage]=useState('');
-  return <form onSubmit={async e=>{e.preventDefault();const form=e.currentTarget;const data=new FormData(form);setBusy(true);setMessage('');try{await api('/companies',{name:data.get('name'),slug:data.get('slug')});form.reset();setMessage('Company created. Select it to configure its capabilities.');onCreated();}catch(e){setMessage((e as Error).message);}finally{setBusy(false);}}}>
-    <label>Company name<input name="name" required maxLength={120}/></label><label>Company address<input name="slug" required maxLength={60} pattern="[a-z0-9]+(-[a-z0-9]+)*" placeholder="example-marina"/></label><button disabled={busy}>Create company</button><p role="status">{message}</p>
+  return <form className="workspace-field-grid" onSubmit={async e=>{e.preventDefault();const form=e.currentTarget;const data=new FormData(form);setBusy(true);setMessage('');try{await api('/companies',{name:data.get('name'),slug:data.get('slug')});form.reset();setMessage('Company created. Select it to configure its capabilities.');onCreated();}catch(e){setMessage((e as Error).message);}finally{setBusy(false);}}}>
+    <label>Company name<input name="name" required maxLength={120}/></label><label>Company address<input name="slug" required maxLength={60} pattern="[a-z0-9]+(-[a-z0-9]+)*" placeholder="example-marina"/></label><button type="submit" disabled={busy}>Create company</button><p role="status">{message}</p>
   </form>;
 }
 function CompanyPanel({companyId,administration}:{companyId:string;administration:boolean}) {
@@ -47,9 +47,9 @@ function CompanyPanel({companyId,administration}:{companyId:string;administratio
   </>}</section>;
 }
 function MemberForm({member,busy,canOwn,save}:{member?:Member;busy:boolean;canOwn:boolean;save:(path:string,data:unknown)=>Promise<void>}) {
-  return <form onSubmit={e=>{e.preventDefault();const data=new FormData(e.currentTarget);void save('/memberships',{email:data.get('email'),role:data.get('role'),status:data.get('status'),version:member?.version||0});}}><fieldset disabled={busy||(!canOwn&&member?.role==='owner')}>
+  return <form onSubmit={e=>{e.preventDefault();const data=new FormData(e.currentTarget);void save('/memberships',{email:data.get('email'),role:data.get('role'),status:data.get('status'),version:member?.version||0});}}><fieldset className="workspace-field-grid" disabled={busy||(!canOwn&&member?.role==='owner')}>
     <legend>{member?.email||'New member'}</legend><label>Email<input name="email" type="email" required maxLength={254} defaultValue={member?.email||''} readOnly={!!member}/></label>
     <label>Role<select name="role" defaultValue={member?.role||'member'}><option value="member">Member</option><option value="admin">Administrator</option>{(canOwn||member?.role==='owner')&&<option value="owner">Owner</option>}</select></label>
-    <label>Status<select name="status" defaultValue={member?.status||'active'}><option value="active">Active</option><option value="suspended">Suspended</option></select></label><button>Save member</button>
+    <label>Status<select name="status" defaultValue={member?.status||'active'}><option value="active">Active</option><option value="suspended">Suspended</option></select></label><button type="submit">Save member</button>
   </fieldset></form>;
 }
