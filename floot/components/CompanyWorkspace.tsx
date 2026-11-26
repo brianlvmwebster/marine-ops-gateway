@@ -3,6 +3,7 @@ import {useLocation} from 'react-router-dom';
 import {useAuth} from '../helpers/useAuth';
 import './CompanyWorkspace.css';
 import {CompanySidebar} from './CompanySidebar';
+import {repairOrdersPath} from '../helpers/repairOrders';
 import styles from './ServiceDashboard.module.css';
 
 type Tool={key:string;name:string;path:string;available:boolean;status:string;rollout_company_id:string|null};
@@ -37,8 +38,9 @@ export function CompanyWorkspace({children}:{children:React.ReactNode}){
  if(error)return <main className="company-workspace-error"><h1>Company access</h1><p role="alert">{error}</p><a href="/">Choose your company</a> · <a href="/platform">Platform administration</a></main>;
  if(!workspace)return <p role="status">Loading company workspace…</p>;
  const {tools}=workspace,has=(key:string)=>tools.some(t=>t.key===key);
- const required=location.pathname.startsWith('/dockscheduler')?'dock-scheduler':['/maps','/mapping'].includes(location.pathname)?'mapping':location.pathname.startsWith('/customers')?'customers':location.pathname.startsWith('/inventory')?'parts-inventory':location.pathname.startsWith('/dock-builder')?'dock-builder':location.pathname.startsWith('/dashboard')?'service-desk':null;
+ const repairOrders=location.pathname===repairOrdersPath||location.pathname.startsWith(repairOrdersPath+'/');
+ const required=repairOrders?'service-desk':location.pathname.startsWith('/dockscheduler')?'dock-scheduler':['/maps','/mapping'].includes(location.pathname)?'mapping':location.pathname.startsWith('/customers')?'customers':location.pathname.startsWith('/inventory')?'parts-inventory':location.pathname.startsWith('/dock-builder')?'dock-builder':location.pathname.startsWith('/dashboard')?'service-desk':null;
  const page=required&&!has(required)?<main><h1>Tool unavailable</h1><p>This tool is not enabled for your company.</p></main>:children;
- const insideDashboard=['/customers','/inventory/parts','/company/admin'].includes(location.pathname);
+ const insideDashboard=repairOrders||['/customers','/inventory/parts','/company/admin'].includes(location.pathname);
  return <Context.Provider value={workspace}>{insideDashboard?<div className={styles.app+' company-dashboard-shell'}><CompanySidebar/><div className={styles.main+' company-content'}>{page}</div></div>:page}</Context.Provider>;
 }

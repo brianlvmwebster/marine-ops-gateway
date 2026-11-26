@@ -1,0 +1,31 @@
+.page{max-width:75rem;margin-inline:auto;padding:clamp(1rem,3vw,2.5rem);display:grid;gap:1.25rem;color:var(--foreground)}
+.page h1,.page h2,.page p{margin:0}
+.page a:not([class]){text-decoration:underline;text-underline-offset:.2em}
+.page [role=alert]{color:var(--destructive)}
+.header,.actions{display:flex;align-items:center;justify-content:space-between;gap:.75rem;flex-wrap:wrap}
+.actions{justify-content:flex-start}
+.filters{display:flex;gap:.75rem;align-items:end;flex-wrap:wrap}
+.search{flex:1 1 17rem}
+.page label{display:grid;gap:.35rem;min-width:0;font-weight:600}
+.page label:has(+div){display:block;margin-bottom:.35rem}
+.page input,.page select,.page textarea{box-sizing:border-box;min-width:0;width:100%;font:inherit;font-weight:400;padding:.5rem .65rem;border:1px solid var(--border);border-radius:.4rem;background:var(--background);color:var(--foreground)}
+.page textarea{resize:vertical}
+.details{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,11rem),1fr));gap:.75rem;margin:0}
+.details div{padding:.75rem;border:1px solid var(--border);border-radius:.5rem;background:var(--card)}
+.details dt{color:var(--muted-foreground);font-size:.875rem}
+.details dd{margin:.2rem 0 0;overflow-wrap:anywhere}
+.page small{display:block;color:var(--muted-foreground)}
+.table{overflow-x:auto;border:1px solid var(--border);border-radius:.5rem;background:var(--card)}
+.table table{border-collapse:collapse;width:100%;text-align:left}
+.table th,.table td{padding:.65rem .8rem;border-bottom:1px solid var(--border);vertical-align:top}
+.table tbody tr:last-child td{border-bottom:0}
+.table th,.table td:first-child,.table td:last-child{white-space:nowrap}
+.form,.lines,.pickers{display:grid;gap:1rem}
+.pickers{grid-template-columns:repeat(auto-fit,minmax(min(100%,19rem),1fr))}
+.pickers section p,.pickers > p{margin-block:.5rem}
+.form fieldset{padding:1rem;border:1px solid var(--border);border-radius:.55rem;min-width:0;background:var(--card);display:grid;gap:.75rem}
+.form legend{padding-inline:.35rem;font-weight:600}
+.line{grid-template-columns:minmax(0,1fr) minmax(8rem,12rem)}
+.lineNotes{grid-column:1/-1}
+.lines > button,.line > button{justify-self:start}
+@media(max-width:36rem){.line{grid-template-columns:minmax(0,1fr)}.filters label:not(.search){flex:1 1 8rem}.table th,.table td{padding:.5rem}}

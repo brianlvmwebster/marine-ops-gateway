@@ -16,6 +16,8 @@ export function serviceJobSaveStore(sql:any){return async(actor:number,input:unk
   const existing=p.id?(await tx`select * from service_jobs where id=${p.id} for update`)[0]:null;
   if(p.id&&!existing)throw new PlatformError(404,'Job not found.');
   if(existing&&existing.version!==p.version)throw new PlatformError(409,'This job changed. Reload the job before saving.');
+  if(existing?.data.repairOrderIntake!==p.data.repairOrderIntake||(p.data.repairOrderIntake&&existing.data.ro!==p.data.ro))
+   throw new PlatformError(409,'The repair order number and intake type are fixed.');
   if(p.data.status==='Completed'||p.data.adminReview||existing?.data.adminReview||existing?.data.status==='Completed')throw new PlatformError(400,'Completed jobs are locked. Use Service Admin review to complete a job.');
   if(existing&&(existing.data.sourceSubmissionId||'')!==(p.data.sourceSubmissionId||''))throw new PlatformError(400,'The source record identity cannot be changed.');
   const previous=p.id?(await tx`select customer_id from customer_service_jobs where job_id=${p.id}`)[0]:null;

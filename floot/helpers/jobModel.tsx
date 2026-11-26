@@ -2,7 +2,7 @@ import {z} from 'zod';
 import {jobStatuses} from './workflowModel';
 const text=z.string().max(10000).default('');
 const base=z.object({
- ro:text,firstName:z.string().max(200),lastName:z.string().max(200),phone:z.string().max(200),email:z.string().max(300),year:z.string().max(100),make:z.string().max(300),model:z.string().max(300),engine:z.string().max(1000),hullId:text,
+ ro:text,repairOrderIntake:z.literal(true).optional(),firstName:z.string().max(200),lastName:z.string().max(200),phone:z.string().max(200),email:z.string().max(300),year:z.string().max(100),make:z.string().max(300),model:z.string().max(300),engine:z.string().max(1000),hullId:text,
  scheduleMode:z.enum(['day','timed']).default('timed'),serviceDate:z.string(),time:z.string(),duration:z.number().int().min(0).max(1440),
  appointment:z.enum(['Unconfirmed','Confirmed','Cancelled']),cancelledBy:z.string().max(100).default(''),
  pickup:text,trailer:text,trailerLocation:text,lake:text,pickupAddress:text,returnType:text,returnAddress:text,pickupPlaceId:z.string().max(300).optional(),returnPlaceId:z.string().max(300).optional(),
@@ -18,6 +18,11 @@ export const jobModel=base.superRefine((d,ctx)=>{
  if(d.time&&!/^([01]\d|2[0-3]):[0-5]\d$/.test(d.time))issue('time','Enter a 24-hour time');
  if(d.appointment==='Cancelled'&&!d.cancelledBy.trim())issue('cancelledBy','Enter cancellation initials');
  if(d.sourceSubmissionId)return; // Historical records retain source omissions and unusual original values.
+ if(d.repairOrderIntake){
+  if(d.serviceDate&&d.scheduleMode==='timed'&&!d.time)issue('time','Enter a start time for a timed appointment');
+  if((d.serviceDate&&d.scheduleMode==='timed'||d.duration>0)&&d.duration<15)issue('duration','Duration must be at least 15 minutes');
+  return; // A repair order can capture work before it is scheduled or vessel details are complete.
+ }
  for(const key of ['firstName','lastName','make','model','engine'] as const)if(!d[key].trim())issue(key,'Required');
  if(d.phone.trim().length<7)issue('phone','Phone number is required');
  if(!z.email().safeParse(d.email).success)issue('email','Enter a valid email');

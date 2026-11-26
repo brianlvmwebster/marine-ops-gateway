@@ -28,6 +28,7 @@ test('standalone server starts without Floot; denied routes and anonymous APIs f
   }
   assert.equal((await fetch('http://127.0.0.1:18087/_api/platform')).status,401);
   assert.equal((await fetch('http://127.0.0.1:18087/_api/jobs')).status,401);
+  assert.equal((await fetch('http://127.0.0.1:18087/_api/repair-orders')).status,401);
   assert.equal((await fetch('http://127.0.0.1:18087/_api/mapping/maps')).status,401);
   assert.equal((await fetch('http://127.0.0.1:18087/_api/mapping/image?id=00000000-0000-4000-8000-000000000001')).status,401);
   assert.equal((await fetch('http://127.0.0.1:18087/static/__dev/notes/test')).status,404);

@@ -4,6 +4,7 @@ import { ChevronDown, Menu } from 'lucide-react';
 import { useCompanyWorkspace, companyUrl } from './CompanyWorkspace';
 import { useAuth } from '../helpers/useAuth';
 import AccountMenu from './GatewayAccountMenu';
+import { repairOrdersPath } from '../helpers/repairOrders';
 
 type Destination = { label: string; path: string; active: boolean; select?: () => void };
 
@@ -19,11 +20,11 @@ export function CompanySidebar({ tab, onTab }: { tab?: string; onTab?: (tab: str
   const query = new URLSearchParams(location.search);
   const destination = (label: string, path: string, active = location.pathname === path): Destination => ({ label, path, active });
   const groups: { label: string; links: Destination[] }[] = [
-    { label: 'Service', links: has('service-desk') ? ['Overview', 'Job queue', 'Schedule'].map(name => ({
+    { label: 'Service', links: has('service-desk') ? [...['Overview', 'Job queue', 'Schedule'].map(name => ({
       label: name, path: '/dashboard?tab=' + encodeURIComponent(name),
       active: location.pathname === '/dashboard' && (tab ?? query.get('tab') ?? 'Overview') === name,
       select: onTab ? () => onTab(name) : undefined,
-    })) : [] },
+    })), destination('Repair Orders', repairOrdersPath, location.pathname===repairOrdersPath||location.pathname.startsWith(repairOrdersPath+'/'))] : [] },
     { label: 'Customers', links: [
       ...(has('customers') ? [
         destination('Customers', '/customers', location.pathname === '/customers' && query.get('view') !== 'units'),
