@@ -1,13 +1,19 @@
 import { createHash, randomUUID } from 'node:crypto';
 import { z } from 'zod';
 import { customerAddressFields, customerContacts, customerExportColumns, maxCustomerExportBytes, maxCustomerExportRows } from '../helpers/customerExport';
+import { maxPartsUploadBytes } from '../helpers/partsExport';
 import { customerFields, readBody } from './customers';
-import { PlatformError, requireManager, requireSameOrigin } from './policy';
+import { LAKEVIEW_ID, PlatformError, requireManager, requireSameOrigin } from './policy';
 import { platformStore } from './store';
+import { partsInputRows, partsUpdatePlan, writePartsUpdate } from './parts-update';
 
 const dataset = z.enum(['customers', 'parts', 'ros', 'units']);
 const runId = z.string().regex(/^[1-9]\d{0,17}$/);
-const sourceName = 'Lightspeed Customer Bulk';
+const imports = {
+  customers: { source: 'Lightspeed Customer Bulk', tool: 'customers', maxBytes: maxCustomerExportBytes },
+  parts: { source: 'Lightspeed Parts Inventory Bulk', tool: 'parts-inventory', maxBytes: maxPartsUploadBytes },
+} as const;
+type ImportArea = keyof typeof imports;
 const field = z.string().trim().max(500);
 const inputRows = z.array(z.array(field).length(customerExportColumns.length)).min(1).max(maxCustomerExportRows);
 const contactEntries = Object.entries(customerContacts) as [keyof typeof customerContacts, string][];
@@ -116,12 +122,37 @@ async function plan(sql: any, company: string, sourceRows: Map<string, Source>) 
   return { summary, changes, preview, hash };
 }
 
+async function runPlan(sql: any, company: string, area: ImportArea, rows: unknown) {
+  if (area === 'parts') {
+    const result = await partsUpdatePlan(sql, company, partsInputRows.parse(rows));
+    return { ...result, write: (tx: any) => writePartsUpdate(tx, company, result) };
+  }
+  const result = await plan(sql, company, normalize(inputRows.parse(rows)));
+  return { ...result, hasChanges: !!result.changes.length, write: async (tx: any) => {
+    for (const change of result.changes) {
+      const values = { ...change.values, addresses: tx.json(change.values.addresses),
+        source_active: change.source.Active, source_record: tx.json(change.source) };
+      if ('id' in change) {
+        const updated = await tx`UPDATE customers SET ${tx(values)},version=version+1,updated_at=now()
+          WHERE id=${change.id} AND company_id=${company} AND version=${change.version} RETURNING id`;
+        if (!updated.length) throw new PlatformError(409, 'Customer data changed. Check the file again before applying.');
+      } else {
+        const inserted = await tx`INSERT INTO customers ${tx({ ...values, id: randomUUID(), company_id: company,
+          source_system: 'lightspeed', source_number: change.number })}
+          ON CONFLICT(company_id,source_system,source_number) DO NOTHING RETURNING id`;
+        if (!inserted.length) throw new PlatformError(409, 'Customer data changed. Check the file again before applying.');
+      }
+    }
+    return result.changes.length;
+  } };
+}
+
 const auditColumns = 'id::text, dataset, source, checked_at, status, summary, applied_at';
 export function importUpdatesStore(sql: any) {
   const platform = platformStore(sql);
-  async function access(actor: number, company: string, customerTool = false) {
-    // Use the same membership and rollout checks as the Customers workspace.
-    if (customerTool) return requireManager(await platform.toolAccess(actor, company, 'customers'));
+  async function access(actor: number, company: string, area?: ImportArea) {
+    if (area === 'parts' && company !== LAKEVIEW_ID) throw new PlatformError(403, 'Parts Inventory is Lakeview-only.');
+    if (area) return requireManager(await platform.toolAccess(actor, company, imports[area].tool));
     const [membership] = await sql`
       SELECT m.company_id,m.role,m.status,c.status AS company_status FROM platform_memberships m
       JOIN platform_companies c ON c.id=m.company_id WHERE m.company_id=${company} AND m.user_id=${actor}`;
@@ -142,49 +173,37 @@ export function importUpdatesStore(sql: any) {
         ORDER BY import_update_runs.id DESC LIMIT 26`;
       return { runs: rows.slice(0, 25), next: rows.length > 25 ? rows[24].id : null };
     },
-    async check(actor: number, company: string, load: () => Promise<string[][]>) {
-      await access(actor, company, true);
+    async check(actor: number, company: string, area: ImportArea, load: () => Promise<unknown>) {
+      await access(actor, company, area);
       const checkedAt = new Date();
+      const sourceName = imports[area].source;
       try {
-        const result = await plan(sql, company, normalize(await load()));
+        const result = await runPlan(sql, company, area, await load());
         const { summary, hash, preview } = result;
-        const status = result.changes.length ? 'pending' : summary.conflicts || summary.missing ? 'not_applied' : 'unchanged';
+        const status = result.hasChanges ? 'pending'
+          : summary.conflicts || summary.missing || ('omitted' in summary && summary.omitted) ? 'not_applied' : 'unchanged';
         const [run] = await sql`INSERT INTO import_update_runs(company_id,actor_user_id,dataset,source,checked_at,status,summary,preview_hash)
-          VALUES (${company},${actor},'customers',${sourceName},${checkedAt},${status},${sql.json(summary)},${hash})
+          VALUES (${company},${actor},${area},${sourceName},${checkedAt},${status},${sql.json(summary)},${hash})
           RETURNING ${sql.unsafe(auditColumns)}`;
         return { run, preview };
       } catch (error) {
         await sql`INSERT INTO import_update_runs(company_id,actor_user_id,dataset,source,checked_at,status,summary)
-          VALUES (${company},${actor},'customers',${sourceName},${checkedAt},'failed',${sql.json({ note: 'The customer comparison did not complete.' })})`;
+          VALUES (${company},${actor},${area},${sourceName},${checkedAt},'failed',${sql.json({ note: 'The export comparison did not complete.' })})`;
         throw error;
       }
     },
-    async apply(actor: number, company: string, load: () => Promise<{ id: string; rows: string[][] }>) {
-      await access(actor, company, true);
+    async apply(actor: number, company: string, area: ImportArea, load: () => Promise<{ id: string; rows: unknown }>) {
+      await access(actor, company, area);
       const { id, rows } = await load();
-      const source = normalize(rows);
       return sql.begin('isolation level serializable', async (tx: any) => {
-        const [run] = await tx`SELECT * FROM import_update_runs WHERE company_id=${company} AND id=${id} AND dataset='customers' FOR UPDATE`;
+        const [run] = await tx`SELECT * FROM import_update_runs WHERE company_id=${company} AND id=${id} AND dataset=${area} FOR UPDATE`;
         if (!run) throw new PlatformError(404, 'Import check not found.');
         if (run.status === 'applied' || run.status === 'partial') return { applied: run.summary.applied };
         if (run.status !== 'pending') throw new PlatformError(409, 'This import check has no changes to apply.');
-        const result = await plan(tx, company, source);
-        if (run.preview_hash !== result.hash) throw new PlatformError(409, 'The file or customer data changed. Check the file again before applying.');
-        for (const change of result.changes) {
-          const values = { ...change.values, addresses: tx.json(change.values.addresses),
-            source_active: change.source.Active, source_record: tx.json(change.source) };
-          if ('id' in change) {
-            const updated = await tx`UPDATE customers SET ${tx(values)},version=version+1,updated_at=now()
-              WHERE id=${change.id} AND company_id=${company} AND version=${change.version} RETURNING id`;
-            if (!updated.length) throw new PlatformError(409, 'Customer data changed. Check the file again before applying.');
-          } else {
-            const inserted = await tx`INSERT INTO customers ${tx({ ...values, id: randomUUID(), company_id: company,
-              source_system: 'lightspeed', source_number: change.number })}
-              ON CONFLICT(company_id,source_system,source_number) DO NOTHING RETURNING id`;
-            if (!inserted.length) throw new PlatformError(409, 'Customer data changed. Check the file again before applying.');
-          }
-        }
-        const applied = result.changes.length;
+        const result = await runPlan(tx, company, area, rows);
+        if (run.preview_hash !== result.hash || !result.hasChanges)
+          throw new PlatformError(409, 'The file or Marine Ops data changed. Check the file again before applying.');
+        const applied = await result.write(tx);
         const summary = { ...result.summary, applied };
         await tx`UPDATE import_update_runs SET status=${summary.conflicts ? 'partial' : 'applied'},
           applied_at=now(),summary=${tx.json(summary)} WHERE id=${id} AND company_id=${company}`;
@@ -208,13 +227,16 @@ export function importUpdatesHandler(store: ReturnType<typeof importUpdatesStore
       }
       if (request.method === 'POST') {
         requireSameOrigin(request);
-        if (url.pathname === '/_api/import-updates/customers/check') {
-          const body = () => readBody(request, maxCustomerExportBytes);
-          return Response.json(await store.check(actor, company, async () => z.object({ rows: inputRows }).strict().parse(await body()).rows));
-        }
-        if (url.pathname === '/_api/import-updates/customers/apply') {
-          const body = z.object({ id: runId, rows: inputRows }).strict();
-          return Response.json(await store.apply(actor, company, async () => body.parse(await readBody(request, maxCustomerExportBytes))));
+        const route = /^\/_api\/import-updates\/(customers|parts)\/(check|apply)$/.exec(url.pathname);
+        if (route) {
+          const area = route[1] as ImportArea;
+          const body = () => readBody(request, imports[area].maxBytes);
+          if (route[2] === 'check') {
+            const schema = z.object({ rows: z.array(z.unknown()) }).strict();
+            return Response.json(await store.check(actor, company, area, async () => schema.parse(await body()).rows));
+          }
+          const schema = z.object({ id: runId, rows: z.array(z.unknown()) }).strict();
+          return Response.json(await store.apply(actor, company, area, async () => schema.parse(await body())));
         }
       }
       return Response.json({ error: 'Not found.' }, { status: 404 });

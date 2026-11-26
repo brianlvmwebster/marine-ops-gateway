@@ -28,7 +28,7 @@ export function integrationApiStore(sql: any) {
     coalesce(nullif(mobile_phone, ''), nullif(home_phone, ''), nullif(work_phone, '')) AS phone`;
   const partFields = sql`p.id, p.part_number AS "partNumber", p.supplier_code AS "supplierCode",
     p.description, p.active, p.data->>'on_hand' AS "onHand", p.data->>'available' AS available,
-    greatest(p.created_at, (SELECT m.created_at FROM part_stock_movements m
+    greatest(p.created_at, p.lightspeed_quantity_updated_at, (SELECT m.created_at FROM part_stock_movements m
       WHERE m.company_id=p.company_id AND m.part_id=p.id ORDER BY m.id DESC LIMIT 1)) AS "quantityUpdatedAt"`;
   return {
     async access(hash: string, dataset: 'customers' | 'parts') {

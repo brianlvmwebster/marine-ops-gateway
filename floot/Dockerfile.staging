@@ -13,6 +13,7 @@ COPY --from=build --chown=node:node /app/package.json ./package.json
 COPY --from=build --chown=node:node /app/staging ./staging
 COPY --from=build --chown=node:node /app/platform ./platform
 COPY --from=build --chown=node:node /app/helpers ./helpers
+COPY --from=build --chown=node:node /app/pages/parts-source-columns.json ./pages/parts-source-columns.json
 COPY --from=build --chown=node:node /app/endpoints ./endpoints
 COPY --from=build --chown=node:node /app/migrations ./migrations
 COPY --from=build --chown=node:node /app/scheduler ./scheduler

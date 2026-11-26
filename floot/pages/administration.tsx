@@ -3,6 +3,7 @@ import { Link, useSearchParams } from 'react-router-dom';
 import { companyUrl, useCompanyWorkspace } from '../components/CompanyWorkspace';
 import { NativeGatewayGuard } from '../components/NativeGatewayGuard';
 import { maxCustomerExportBytes } from '../helpers/customerExport';
+import { maxPartsExportBytes, type PartExportRow } from '../helpers/partsExport';
 import Platform from './platform';
 import './administration.css';
 
@@ -10,6 +11,12 @@ const datasets = {
   customers: 'Customers', parts: 'Parts Inventory', ros: 'ROs', units: 'Units',
 } as const;
 type Dataset = keyof typeof datasets;
+type ImportArea = 'customers' | 'parts';
+type WorkbookRows = string[][] | PartExportRow[];
+const updateAreas = {
+  customers: { file: 'Lightspeed Customer Bulk export', label: 'customer', tools: 'customers', bytes: maxCustomerExportBytes },
+  parts: { file: 'Lightspeed Parts Inventory bulk export', label: 'parts inventory', tools: 'parts-inventory', bytes: maxPartsExportBytes },
+} as const;
 const statuses = {
   pending: 'Pending review', not_applied: 'Not applied', applied: 'Applied',
   partial: 'Partially applied', unchanged: 'No changes', failed: 'Failed',
@@ -17,11 +24,11 @@ const statuses = {
 type Run = {
   id: string; dataset: Dataset; source: string; checked_at: string | null;
   applied_at: string | null; status: keyof typeof statuses;
-  summary: Partial<Record<'compared' | 'excluded' | 'added' | 'updated' | 'missing' | 'conflicts' | 'alreadyCurrent' | 'applied', number>> & { note?: string };
+  summary: Partial<Record<'compared' | 'excluded' | 'added' | 'updated' | 'missing' | 'conflicts' | 'alreadyCurrent' | 'stockReview' | 'applied' | 'omitted', number>> & { note?: string };
 };
 type Preview = { run: Run; preview: {
-  number: string; name: string; outcome: 'add' | 'update' | 'conflict';
-  differences?: { field: string; before: string; after: string }[];
+  number: string; name: string; outcome: 'add' | 'update' | 'conflict' | 'missing';
+  differences?: { field: string; before: string; after: string; held?: boolean }[];
 }[] };
 type History = { runs: Run[]; next: string | null };
 const easternTime = new Intl.DateTimeFormat('en-US', {
@@ -40,27 +47,29 @@ async function api<Result>(company: string, path = '', body?: object, signal?: A
   return data;
 }
 
-function parseWorkbook(file: File) {
-  if (!/\.xlsx?$/i.test(file.name) || !file.size || file.size > maxCustomerExportBytes)
-    throw new Error('Choose an .xls or .xlsx file up to 12 MB.');
-  return new Promise<string[][]>((resolve, reject) => {
+function parseWorkbook(file: File, area: ImportArea) {
+  const { bytes: maxBytes } = updateAreas[area];
+  if (!/\.xlsx?$/i.test(file.name) || !file.size || file.size > maxBytes)
+    throw new Error(`Choose an .xls or .xlsx file up to ${maxBytes / 1024 / 1024} MB.`);
+  return new Promise<WorkbookRows>((resolve, reject) => {
     const worker = new Worker(new URL('../helpers/customerExport.worker.ts', import.meta.url), { type: 'module' });
-    const timeout = window.setTimeout(() => fail(new Error('Reading the workbook took too long.')), 20_000);
+    const timeout = window.setTimeout(() => fail(new Error('Reading the workbook took too long.')), 45_000);
     function cleanup() { window.clearTimeout(timeout); worker.terminate(); }
     function fail(error: Error) { cleanup(); reject(error); }
-    worker.onmessage = ({ data }: MessageEvent<{ rows?: string[][]; error?: string }>) => {
+    worker.onmessage = ({ data }: MessageEvent<{ rows?: WorkbookRows; error?: string }>) => {
       cleanup();
       if (data.rows) resolve(data.rows);
       else reject(new Error(data.error || 'The workbook could not be read.'));
     };
     worker.onerror = () => fail(new Error('The workbook could not be read.'));
-    file.arrayBuffer().then(bytes => worker.postMessage(bytes, [bytes])).catch(() => fail(new Error('The file could not be opened.')));
+    file.arrayBuffer().then(bytes => worker.postMessage({ area, bytes }, [bytes])).catch(() => fail(new Error('The file could not be opened.')));
   });
 }
 
 function findings(summary: Run['summary']) {
   const labels = { compared: 'checked', added: 'new', updated: 'updates', conflicts: 'conflicts',
-    missing: 'missing from file', alreadyCurrent: 'already current', excluded: 'unnamed rows excluded', applied: 'applied' } as const;
+    missing: 'missing from file', alreadyCurrent: 'already current', excluded: 'unnamed rows excluded',
+    stockReview: 'with stock quantities to review', applied: 'applied', omitted: 'outside preview size limit' } as const;
   const counts = (Object.keys(labels) as (keyof typeof labels)[]).filter(key => summary[key] !== undefined)
     .filter(key => ['compared', 'added', 'updated', 'conflicts'].includes(key) || !!summary[key])
     .map(key => `${summary[key]?.toLocaleString()} ${labels[key]}`);
@@ -80,9 +89,42 @@ function RunList({ runs }: { runs: Run[] }) {
   </li>)}</ol>;
 }
 
-function CustomerUpdate({ company, onRun }: { company: string; onRun: () => void }) {
+function ChangePreview({ rows, area }: { rows: Preview['preview']; area: ImportArea }) {
+  const [page, setPage] = useState(0);
+  const [filter, setFilter] = useState('all');
+  const filtered = filter === 'all' ? rows : rows.filter(row => row.outcome === filter || (filter === 'conflict' && row.differences?.some(change => change.held)));
+  const labels = { add: 'New', update: 'Update', conflict: 'Conflict', missing: 'Missing from file' } as const;
+  const pageSize = 25;
+  const start = page * pageSize;
+  return <details>
+    <summary>Review {area === 'customers' ? 'customer' : 'parts inventory'} changes</summary>
+    {area === 'parts' && <label className="import-preview-filter">Show
+      <select value={filter} onChange={event => { setFilter(event.target.value); setPage(0); }}>
+        <option value="all">All findings</option><option value="add">New parts</option>
+        <option value="update">Updates</option><option value="conflict">Conflicts</option>
+        <option value="missing">Missing from file</option>
+      </select>
+    </label>}
+    {filtered.length ? <ul className="import-preview">{filtered.slice(start, start + pageSize).map(change => <li key={change.number}>
+      <strong>{change.name} ({area === 'customers' ? '#' : ''}{change.number})</strong> · {labels[change.outcome]}
+      {change.differences?.length ? <ul>{change.differences.map(value => <li key={value.field}>
+        {value.field} · {value.before || 'Blank'} → {value.after || 'Blank'}{value.held && ' · Review only'}
+      </li>)}</ul> : null}
+    </li>)}</ul> : <p>No matching findings.</p>}
+    {filtered.length > pageSize && <div className="import-preview-pagination">
+      <button type="button" disabled={!page} onClick={() => setPage(value => value - 1)}>Previous</button>
+      <span aria-live="polite">{start + 1}–{Math.min(start + pageSize, filtered.length)} of {filtered.length.toLocaleString()}</span>
+      <button type="button" disabled={start + pageSize >= filtered.length} onClick={() => setPage(value => value + 1)}>Next</button>
+    </div>}
+    {area === 'customers' && rows.length === 50 && <p>The preview shows the first 50 affected customers.</p>}
+  </details>;
+}
+
+function WorkbookUpdate({ company, area, onRun }: { company: string; area: ImportArea; onRun: () => void }) {
+  const { file: fileLabel, label } = updateAreas[area];
+  const isParts = area === 'parts';
   const [file, setFile] = useState<File | null>(null);
-  const [review, setReview] = useState<{ result: Preview; rows: string[][] } | null>(null);
+  const [review, setReview] = useState<{ result: Preview; rows: WorkbookRows } | null>(null);
   const [busy, setBusy] = useState<'check' | 'apply' | null>(null);
   const [error, setError] = useState('');
   const [message, setMessage] = useState('');
@@ -95,8 +137,8 @@ function CustomerUpdate({ company, onRun }: { company: string; onRun: () => void
     setMessage('');
     setReview(null);
     try {
-      const rows = await parseWorkbook(file);
-      const result = await api<Preview>(company, '/customers/check', { rows });
+      const rows = await parseWorkbook(file, area);
+      const result = await api<Preview>(company, '/' + area + '/check', { rows });
       setReview({ result, rows });
     } catch (failure) {
       setError((failure as Error).message);
@@ -111,8 +153,8 @@ function CustomerUpdate({ company, onRun }: { company: string; onRun: () => void
     setBusy('apply');
     setError('');
     try {
-      const result = await api<{ applied: number }>(company, '/customers/apply', { id: review.result.run.id, rows: review.rows });
-      setMessage(`${result.applied.toLocaleString()} customer changes applied.`);
+      const result = await api<{ applied: number }>(company, '/' + area + '/apply', { id: review.result.run.id, rows: review.rows });
+      setMessage(`${result.applied.toLocaleString()} ${label} changes applied.`);
       setReview(null);
     } catch (failure) {
       setError((failure as Error).message);
@@ -124,39 +166,31 @@ function CustomerUpdate({ company, onRun }: { company: string; onRun: () => void
 
   return <div className="import-customer">
     <form className="import-upload" onSubmit={check}>
-      <label htmlFor="customer-update-file">Lightspeed Customer Bulk export (.xls or .xlsx)
-        <input id="customer-update-file" type="file" accept=".xls,.xlsx" disabled={busy !== null}
+      <label htmlFor={area + '-update-file'}>{fileLabel} (.xls or .xlsx)
+        <input id={area + '-update-file'} type="file" accept=".xls,.xlsx" disabled={busy !== null}
           onChange={event => { setFile(event.target.files?.[0] ?? null); setReview(null); setError(''); setMessage(''); }} />
       </label>
       <button type="submit" disabled={!file || busy !== null}>{busy === 'check' ? 'Checking…' : 'Check for changes'}</button>
     </form>
     {error && <p role="alert">{error}</p>}
     {message && <p role="status">{message}</p>}
-    {review && <section className="import-review" aria-label="Customer check results">
+    {review && <section className="import-review" aria-label={isParts ? 'Parts Inventory check results' : 'Customer check results'}>
       <h3>Check results</h3>
       <p role="status">{findings(review.result.run.summary)}</p>
-      {review.result.preview.length > 0 && <details>
-        <summary>Review customer changes</summary>
-        <ul className="import-preview">{review.result.preview.map(change => <li key={change.number}>
-          <strong>{change.name} (#{change.number})</strong> · {change.outcome === 'add' ? 'New' : change.outcome === 'update' ? 'Update' : 'Conflict'}
-          {change.differences?.length ? <ul>{change.differences.map(value => <li key={value.field}>
-            {value.field} · {value.before || 'Blank'} → {value.after || 'Blank'}
-          </li>)}</ul> : null}
-        </li>)}</ul>
-        {review.result.preview.length === 50 && <p>The preview shows the first 50 affected customers.</p>}
-      </details>}
+      {review.result.preview.length > 0 && <ChangePreview key={review.result.run.id} rows={review.result.preview} area={area} />}
+      {!!review.result.run.summary.omitted && <p>The findings exceed the preview limit. Check a smaller export before applying changes.</p>}
       {review.result.run.status === 'pending' && <>
-        <p>Conflicting records and customers missing from the file are left in place.</p>
+        <p>{isParts ? 'Changes marked Review only and parts missing from the file are left in place.' : 'Conflicting records and customers missing from the file are left in place.'}</p>
         <button type="button" disabled={busy !== null} onClick={apply}>
-          {busy === 'apply' ? 'Applying…' : 'Apply customer changes'}
+          {busy === 'apply' ? 'Applying…' : `Apply ${label} changes`}
         </button>
       </>}
-      {review.result.run.status === 'not_applied' && <p>No customer records changed. Review the flagged records before applying updates.</p>}
+      {review.result.run.status === 'not_applied' && <p>No {label} records changed.</p>}
     </section>}
   </div>;
 }
 
-function RecentImports({ company, canUpdateCustomers }: { company: string; canUpdateCustomers: boolean }) {
+function RecentImports({ company, tools }: { company: string; tools: string[] }) {
   const [history, setHistory] = useState<History | null>(null);
   const [error, setError] = useState('');
   const [revision, setRevision] = useState(0);
@@ -170,9 +204,9 @@ function RecentImports({ company, canUpdateCustomers }: { company: string; canUp
     {error && <p role="alert">{error}</p>}
     {areaKeys.map(area => <section key={area} className="import-panel" aria-labelledby={`import-${area}`}>
       <h2 id={`import-${area}`}>{datasets[area]}</h2>
-      {area === 'customers' && canUpdateCustomers
-        ? <CustomerUpdate company={company} onRun={() => setRevision(value => value + 1)} />
-        : <p className="import-muted">{area === 'customers' ? 'Customer updates require the Customers tool.' : 'File updates aren’t available for this section yet.'}</p>}
+      {(area === 'customers' || area === 'parts') && tools.includes(updateAreas[area].tools)
+        ? <WorkbookUpdate company={company} area={area} onRun={() => setRevision(value => value + 1)} />
+        : <p className="import-muted">File updates aren’t available for this section.</p>}
       <div className="import-run-heading">
         <h3>Recent runs</h3>
         <Link to={companyUrl('/company/admin?history=' + area, company)}>View full {datasets[area]} history</Link>
@@ -230,6 +264,6 @@ export default function Administration() {
     {!['owner', 'admin'].includes(workspace.role) ? <p role="alert">Company administrator access required.</p>
       : query.get('view') === 'members' ? <Platform key={company} administration />
       : area ? <FullHistory key={company + area} company={company} area={area} />
-      : <RecentImports key={company} company={company} canUpdateCustomers={workspace.tools.some(tool => tool.key === 'customers')} />}
+      : <RecentImports key={company} company={company} tools={workspace.tools.map(tool => tool.key)} />}
   </div>}</NativeGatewayGuard>;
 }

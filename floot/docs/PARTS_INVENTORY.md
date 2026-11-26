@@ -10,6 +10,8 @@ The authorized export contains 24,097 records: 17,942 active and 6,155 inactive.
 
 Receiving and signed stock adjustments are available to company owners/admins. Catalog editing, serial tracking and purchasing remain subsequent work. Service Desk parts usage records explicit stock deductions; live inventory synchronization is not enabled. Runtime routes and deployment are staging-only. Live Floot, main branches and Outlook synchronization remain unchanged.
 
+Administration provides the reviewed Lightspeed parts refresh. It preserves each part's original source row and opening values, and tracks the latest accepted mapped values separately. Quantity refreshes on parts without local movements have their own timestamp. See [Import update audit](IMPORT_AUDIT.md) for the review and application rules.
+
 PostgreSQL CI covers authorization, inactive and fractional/negative balances, independent supplier keys, retry safety and conflicting-batch rollback. Source XLS/JSON and staging records must never enter Git or container build contexts.
 
 ## Verified staging release — November 22, 2026

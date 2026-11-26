@@ -22,4 +22,6 @@
 .import-status[data-status=applied]{background:var(--secondary);color:var(--secondary-foreground)}
 .import-review summary{cursor:pointer;font-weight:600}
 .import-preview{display:grid;gap:.4rem;overflow-wrap:anywhere}
+.import-preview-filter,.import-preview-pagination{display:flex;align-items:center;flex-wrap:wrap;gap:.6rem;margin-block:.75rem}
+.import-preview-filter select{padding:.35rem;border:1px solid var(--border);border-radius:.35rem;background:var(--surface);color:var(--foreground);font:inherit}
 .import-administration [role=alert]{color:var(--destructive)}

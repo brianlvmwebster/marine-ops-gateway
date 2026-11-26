@@ -7,7 +7,9 @@ const db = platformDatabase();
 try {
   const connection = await db.reserve();
   try {
-    await connection.unsafe(await readFile(new URL('../migrations/019-import-update-audit.sql', import.meta.url), 'utf8'));
+    for (const migration of ['019-import-update-audit', '020-parts-import-updates']) {
+      await connection.unsafe(await readFile(new URL('../migrations/' + migration + '.sql', import.meta.url), 'utf8'));
+    }
   } finally {
     connection.release();
   }
