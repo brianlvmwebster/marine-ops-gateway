@@ -15,6 +15,8 @@ import '@mantine/dates/styles.css';
 import { AddressInput } from './DockAddressInput';
 import { WaterbodyInput } from './DockWaterbodyInput';
 import { applyAddress, updateAddressField } from './DockWaterbodyDraft';
+import { DockCustomerPicker } from './DockCustomerPicker';
+import { customerJobContact } from '../../helpers/customerJobContact';
 
 const editId = new URLSearchParams(window.location.search).get('jobId');
 const editMode = editId !== null;
@@ -25,14 +27,16 @@ const requestedSchedule = (() => {
   catch { return ''; }
 })();
 const draftKey = editMode ? `lakeview-edit-job-${editId}` : (requestedSchedule ? `lakeview-new-job-${requestedSchedule}` : 'lakeview-new-job');
-const empty = { firstName: '', lastName: '', phone: '', roNumber: '', street: '', city: '', state: 'MA', zip: '', bodyOfWater: '', workDescription: '', notes: '' };
+const empty = { firstName: '', lastName: '', phone: '', email: '', roNumber: '', street: '', city: '', state: 'MA', zip: '', bodyOfWater: '', workDescription: '', notes: '' };
 function initialDraft() {
-  try { const saved = JSON.parse(sessionStorage.getItem(draftKey)); if (saved?.requestId) return { ...saved, scheduleId: saved.scheduleId || requestedSchedule || '00000000-0000-4000-8000-000000000001' }; } catch {}
+  try { const saved = JSON.parse(sessionStorage.getItem(draftKey)); if (saved?.requestId) return { ...empty, ...saved, scheduleId: saved.scheduleId || requestedSchedule || '00000000-0000-4000-8000-000000000001' }; } catch {}
   return { ...empty, scheduleId: requestedSchedule, requestId: crypto.randomUUID(), date: null, duration: '120', start: null, appointmentLabel: '', time: '' };
 }
 
 export function DockNewJob() {
   const [draft, setDraft] = useState(initialDraft);
+  const [selectedCustomer, setSelectedCustomer] = useState(null);
+  const [selectedAddress, setSelectedAddress] = useState('');
   const [originalJob, setOriginalJob] = useState(null);
   const [recordLoaded, setRecordLoaded] = useState(!editMode);
   const [conflict, setConflict] = useState(false);
@@ -56,7 +60,25 @@ export function DockNewJob() {
   const [signInError, setSignInError] = useState('');
   const refreshAvailability = useRef(() => {});
   const connectionRevision = useRef(0);
-  const setField = (key, value) => setDraft(previous => ['street', 'city', 'state', 'zip'].includes(key) ? updateAddressField(previous, key, value) : { ...previous, [key]: value });
+  function setField(key, value) {
+    const isAddress = ['street', 'city', 'state', 'zip'].includes(key);
+    if (isAddress) setSelectedAddress('');
+    setDraft(previous => isAddress ? updateAddressField(previous, key, value) : { ...previous, [key]: value });
+  }
+  function selectCustomer(customer) {
+    if (customer?.id === selectedCustomer?.id) return;
+    setSelectedCustomer(customer);
+    setSelectedAddress('');
+    setDraft(previous => {
+      if (!customer) return { ...previous, customerId: undefined };
+      const location = selectedAddress ? applyAddress(previous, { street: '', city: '', state: 'MA', zip: '' }, null) : previous;
+      return { ...location, ...customerJobContact(customer), customerId: customer.id };
+    });
+  }
+  function selectSavedAddress(id, address) {
+    setSelectedAddress(id);
+    if (address) setDraft(previous => applyAddress(previous, address, null));
+  }
 
   const request = useCallback(async (url, options = {}) => {
     const response = await dockFetch(url, { cache: 'no-store', ...options });
@@ -166,7 +188,7 @@ export function DockNewJob() {
     if (saving || addressResolving) return;
     setSaving(true); setError(''); setLocked(true);
     try {
-      const result = await request('/api/entries', { method: editMode ? 'PUT' : 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(editMode ? { identity: draft.identity, requestId: draft.requestId, fields: draft } : { ...draft, appointmentTitle: draft.appointmentTitle ?? defaultAppointmentTitle(schedules.find(item=>item.id===draft.scheduleId)?.name || '',draft.lastName), calendarName: connection?.name, duration: Number(draft.duration) }) });
+      const result = await request('/api/entries', { method: editMode ? 'PUT' : 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(editMode ? { identity: draft.identity, requestId: draft.requestId, fields: draft } : { ...draft, appointmentTitle: draft.appointmentTitle ?? defaultAppointmentTitle(schedules.find(item=>item.id===draft.scheduleId)?.name || '',draft.lastName || draft.firstName), calendarName: connection?.name, duration: Number(draft.duration) }) });
       sessionStorage.removeItem(draftKey); setSuccess(result);
       try { localStorage.setItem('dockCrewJobUpdated', JSON.stringify({ jobId: result.job.jobId, at: Date.now() })); } catch {}
     } catch (failure) {
@@ -183,7 +205,7 @@ export function DockNewJob() {
   return <>
     <header className="entry-header"><Container size="lg"><Group justify="space-between"><Group gap="sm" wrap="nowrap"><img className="header-logo" src="/scheduler-assets/lakeview-logo.png" alt="Lakeview Marine Dock & Lift Services" width="117" height="78" /><div><Text size="xs" c="lakeview" fw={700} tt="uppercase">Lakeview Marine</Text><Title order={1} size="h3">{editMode ? 'Edit crew job' : 'Add a crew job'}</Title></div></Group><Button component="a" href="/dockscheduler" variant="default" leftSection={<IconArrowLeft size={14} />}>Scheduler</Button></Group></Container></header>
     <Container size="lg" py="xl">
-      {success ? <Paper withBorder p="xl" radius="lg"><Stack align="flex-start"><Badge color="teal" leftSection={<IconCheck size={12} />}>Saved</Badge><Title order={2}>{editMode ? 'Job changes saved' : 'Job and appointment saved'}</Title><Text>{success.job.fullName} {editMode ? 'has been updated.' : 'is now in the scheduler.'}</Text><Group><Button component="a" href="/dockscheduler">View scheduler</Button>{success.eventUrl && <Button component="a" href={success.eventUrl} target="_blank" rel="noopener noreferrer" variant="light">Open Outlook event</Button>}{editMode ? <Button variant="default" onClick={() => { setSuccess(null); setLocked(false); loadEdit(true); }}>Continue editing</Button> : <Button variant="default" onClick={() => { setDraft({ ...empty, scheduleId: draft.scheduleId, requestId: crypto.randomUUID(), date: null, duration: '120', start: null }); setLocked(false); setSuccess(null); }}>Add another job</Button>}</Group></Stack></Paper> : <>
+      {success ? <Paper withBorder p="xl" radius="lg"><Stack align="flex-start"><Badge color="teal" leftSection={<IconCheck size={12} />}>Saved</Badge><Title order={2}>{editMode ? 'Job changes saved' : 'Job and appointment saved'}</Title><Text>{success.job.fullName} {editMode ? 'has been updated.' : 'is now in the scheduler.'}</Text><Group><Button component="a" href="/dockscheduler">View scheduler</Button>{success.eventUrl && <Button component="a" href={success.eventUrl} target="_blank" rel="noopener noreferrer" variant="light">Open Outlook event</Button>}{editMode ? <Button variant="default" onClick={() => { setSuccess(null); setLocked(false); loadEdit(true); }}>Continue editing</Button> : <Button variant="default" onClick={() => { setDraft({ ...empty, scheduleId: draft.scheduleId, requestId: crypto.randomUUID(), date: null, duration: '120', start: null }); setSelectedCustomer(null); setSelectedAddress(''); setLocked(false); setSuccess(null); }}>Add another job</Button>}</Group></Stack></Paper> : <>
         <Text c="dimmed" mb="lg">{editMode ? 'Update this job’s details and save your changes.' : 'Enter the customer and work details, then choose an available time in the local schedule.'}</Text>
         {!editMode && schedules.find(item => item.id === draft.scheduleId)?.archived && <Alert color="orange" mb="md">This schedule is archived. Choose an open schedule below, or reopen this schedule from the scheduler before booking.</Alert>}
         {editMode && !recordLoaded && !error && <Group mb="md"><Loader size="xs" /><Text size="sm">Loading job…</Text></Group>}
@@ -191,7 +213,9 @@ export function DockNewJob() {
           <div className="entry-columns">
             <Paper withBorder p="lg" radius="lg"><Stack gap="md"><Title order={2} size="h4">Customer &amp; job details</Title><fieldset disabled={locked || saving || !recordLoaded} className="entry-fieldset"><Stack gap="md">
               {!editMode && <NativeSelect label="Schedule / season" value={draft.scheduleId || ''} onChange={event => setField('scheduleId', event.currentTarget.value)} required data={[{ value: '', label: 'Choose a schedule', disabled: true }, ...schedules.map(item => ({ value: item.id, label: item.name + (item.archived ? ' · Archived' : ''), disabled: item.archived }))]} />}
-              <SimpleGrid cols={{ base: 1, xs: 2 }}>{input('firstName', 'First name', true, { maxLength: 100, autoComplete: 'given-name' })}{input('lastName', 'Last name', true, { maxLength: 100, autoComplete: 'family-name' })}{input('phone', 'Contact phone', false, { type: 'tel', maxLength: 50 })}{input('roNumber', 'RO number', false, { maxLength: 100 })}</SimpleGrid>
+              {!editMode && <DockCustomerPicker disabled={locked || saving} selected={selectedCustomer}
+                selectedAddress={selectedAddress} onCustomer={selectCustomer} onAddress={selectSavedAddress} />}
+              <SimpleGrid cols={{ base: 1, xs: 2 }}>{input('firstName', 'First name', !draft.lastName.trim(), { maxLength: 100, autoComplete: 'given-name' })}{input('lastName', 'Last name', !draft.firstName.trim(), { maxLength: 100, autoComplete: 'family-name' })}{input('phone', 'Contact phone', false, { type: 'tel', maxLength: 50 })}{input('email', 'Contact email', false, { type: 'email', maxLength: 254 })}{input('roNumber', 'RO number', false, { maxLength: 100 })}</SimpleGrid>
               <Divider label="Job location" labelPosition="left" />
               <AddressInput value={draft.street} onChange={value => setField('street', value)} onSelect={(address, match) => setDraft(previous => applyAddress(previous, address, match))} onResolving={setAddressResolving} request={request} disabled={locked || saving || !recordLoaded} required={!editMode} />
               <SimpleGrid cols={{ base: 1, xs: 3 }}>{input('city', 'Town / city', true, { autoComplete: 'address-level2', maxLength: 100 })}{input('state', 'State', true, { autoComplete: 'address-level1', maxLength: 50 })}{input('zip', 'ZIP code', false, { autoComplete: 'postal-code', maxLength: 20 })}</SimpleGrid>
@@ -205,7 +229,7 @@ export function DockNewJob() {
                 <div><Text fw={600} size="sm">Schedule: {connection?.name || schedules.find(item => item.id === draft.scheduleId)?.outlook_calendar_name || schedules.find(item => item.id === draft.scheduleId)?.name || 'Choose a schedule'}</Text><Text c="dimmed" size="xs">{connection?.mailbox || 'Marine Ops local schedule'} · Eastern time</Text></div>
                 {!connection?.connected && <Alert color="blue" title="Local schedule status"><Text size="sm">{connection?.message || 'Loading local appointment availability. Outlook remains disconnected.'}</Text><Button mt="sm" ml="xs" size="xs" variant="subtle" onClick={checkConnection}>Check connection</Button></Alert>}
                 {connection?.signInMailbox && connection.signInMailbox !== connection.mailbox && <Text size="xs" c="dimmed">Shared mailbox access through {connection.signInMailbox}.</Text>}
-                <TextInput label="Appointment title" description="Defaults to DC-[Schedule Name]-[LastName]. You can customize it." value={draft.appointmentTitle ?? defaultAppointmentTitle(schedules.find(item=>item.id===draft.scheduleId)?.name || '',draft.lastName)} onChange={event=>setField('appointmentTitle',event.currentTarget.value)} maxLength={255} required disabled={locked||saving}/>
+                <TextInput label="Appointment title" description="Defaults to DC-[Schedule Name]-[LastName]. You can customize it." value={draft.appointmentTitle ?? defaultAppointmentTitle(schedules.find(item=>item.id===draft.scheduleId)?.name || '',draft.lastName || draft.firstName)} onChange={event=>setField('appointmentTitle',event.currentTarget.value)} maxLength={255} required disabled={locked||saving}/>
                 <Button type="button" variant="subtle" size="xs" disabled={locked||saving} onClick={()=>setField('appointmentTitle',undefined)}>Use default title</Button>
                 <DatePickerInput excludeDate={date=>!dockBookingDayAllowed(date,bookingWindow)} label="Appointment date" placeholder="Choose a date" value={draft.date} onChange={date => { setField('date', date); setField('start', null); }} minDate={new Date()} valueFormat="ddd, MMM D, YYYY" leftSection={<IconCalendar size={15} />} disabled={locked || saving} required clearable />
                 <NativeSelect label="Job duration" value={draft.duration} disabled={locked || saving} onChange={event => { setField('duration', event.currentTarget.value); setField('start', null); }} data={[{ value: '30', label: '30 minutes' }, { value: '60', label: '1 hour' }, { value: '90', label: '1½ hours' }, { value: '120', label: '2 hours' }, { value: '180', label: '3 hours' }, { value: '240', label: '4 hours' }, { value: '480', label: '8 hours' }]} />

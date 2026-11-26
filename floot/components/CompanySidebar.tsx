@@ -24,12 +24,11 @@ export function CompanySidebar({ tab, onTab }: { tab?: string; onTab?: (tab: str
       active: location.pathname === '/dashboard' && (tab ?? query.get('tab') ?? 'Overview') === name,
       select: onTab ? () => onTab(name) : undefined,
     })) : [] },
-    { label: 'Customers & sales', links: [
+    { label: 'Customers', links: [
       ...(has('customers') ? [
         destination('Customers', '/customers', location.pathname === '/customers' && query.get('view') !== 'units'),
         destination('Units', '/customers?view=units', location.pathname === '/customers' && query.get('view') === 'units'),
       ] : []),
-      ...(has('dock-builder') ? [destination('Sales / Dock Builder', '/dock-builder')] : []),
     ] },
     { label: 'Operations', links: [
       ...(has('parts-inventory') ? [destination('Inventory', '/inventory/parts')] : []),

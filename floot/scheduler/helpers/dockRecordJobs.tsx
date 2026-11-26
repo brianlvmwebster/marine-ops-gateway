@@ -14,7 +14,7 @@ import { recordMetadata } from './dockJobMetadata';
 const uuid = /^[a-f0-9]{8}-(?:[a-f0-9]{4}-){3}[a-f0-9]{12}$/i;
 export function editFields(row) {
   const job = translateRecord(row);
-  return { firstName: job.firstName, lastName: job.lastName, phone: job.phone, roNumber: job.roNumber, street: [job.houseNumber, job.street].filter(Boolean).join(' ') || job.address || '', city: job.town, state: job.state, zip: job.zip, bodyOfWater: job.bodyOfWater, workDescription: job.workDescription, notes: job.notes, appointmentLabel: job.appointment, date: job.appointmentDate || null, time: Number.isFinite(job.appointmentTimeMinutes) ? `${String(Math.floor(job.appointmentTimeMinutes / 60)).padStart(2, '0')}:${String(job.appointmentTimeMinutes % 60).padStart(2, '0')}` : '' };
+  return { firstName: job.firstName, lastName: job.lastName, phone: job.phone, email: job.email, roNumber: job.roNumber, street: [job.houseNumber, job.street].filter(Boolean).join(' ') || job.address || '', city: job.town, state: job.state, zip: job.zip, bodyOfWater: job.bodyOfWater, workDescription: job.workDescription, notes: job.notes, appointmentLabel: job.appointment, date: job.appointmentDate || null, time: Number.isFinite(job.appointmentTimeMinutes) ? `${String(Math.floor(job.appointmentTimeMinutes / 60)).padStart(2, '0')}:${String(job.appointmentTimeMinutes % 60).padStart(2, '0')}` : '' };
 }
 export function translateRecord(row, importHeaders = []) {
   const rowNumber = Number(row.sequence_id) + 1;
@@ -106,6 +106,7 @@ export function createRecordJobs({ database = recordDb, geocode = geocodeAddress
       const changes = {
         'Customer Name - First Name': fields.firstName, 'Customer Name - Last Name': fields.lastName,
         'Contact Phone': fields.phone, 'RO#': fields.roNumber, 'Description of Work': fields.workDescription,
+        ...(fields.email !== undefined ? { 'Contact Email': fields.email } : {}),
         Notes: fields.notes, Appointment: fields.appointmentLabel,
         [waterFields(row.data).isOther ? 'Other Body' : 'Body of Water']: fields.bodyOfWater,
         ...(addressChanged ? { 'Product Location/Address': `Street Name: ${fields.street}\nCity: ${fields.city}\nState: ${fields.state}\nPostal Code: ${fields.zip}`, Latitude: '', Longitude: '' } : {}),
@@ -142,6 +143,9 @@ export function createRecordJobs({ database = recordDb, geocode = geocodeAddress
       if (!existing[0]) throw new AppError('The new job could not be confirmed. Retry this submission.', 503);
       if (existing[0].deleted_at || existing[0].deletion_request_id) throw new AppError('This submission was deleted or is being deleted. Start a new job.', 410);
       if ((existing[0].schedule_id || DEFAULT_SCHEDULE) !== selectedSchedule) throw new AppError('This submission was already saved to another schedule.', 409);
+      for (const key of ['Contact Email', '_MarineOpsCustomerId']) {
+        if (clean_(existing[0].data[key]) !== clean_(source[key])) throw new AppError('This submission reference was already saved with different details.', 409);
+      }
       for (const [key, value] of Object.entries(source)) {
         if (clean_(existing[0].data[key]) !== clean_(value)) throw new AppError('This submission reference was already saved with different details.', 409);
       }

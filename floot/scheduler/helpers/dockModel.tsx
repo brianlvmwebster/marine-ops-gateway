@@ -97,6 +97,7 @@ export function translateRow_(
           'Contact Phone'
         ]
       ),
+    email: clean_(source['Contact Email']),
     appointment,
     appointmentTimeMinutes: parseAppointmentTime_(appointment),
     appointmentDate:

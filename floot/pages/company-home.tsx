@@ -15,7 +15,7 @@ export default function CompanyHome(){
  {has('dock-builder')&&<Link className="gateway-tool-card" to={companyUrl('/dock-builder',workspace.company.id)}><strong>Dock Builder</strong><span>Design docks and manage customer quotes.</span><span>Open Dock Builder →</span></Link>}
  {has('dock-scheduler')&&<Link className="gateway-tool-card" to={companyUrl('/dockscheduler',workspace.company.id)}><strong>Dock Crew Scheduler</strong><span>Book crew appointments and track job progress.</span><span>Open scheduler →</span></Link>}
  {has('mapping')?<Link className="gateway-tool-card" to={companyUrl('/mapping',workspace.company.id)}><strong>Mapping Tool</strong><span>Maps, locations and spreadsheet templates.</span><span>Open mapping →</span></Link>:<div className="gateway-tool-card gateway-tool-unavailable" aria-disabled="true"><strong>Mapping Tool</strong><span>Not enabled for this company.</span></div>}
- {workspace.tools.filter(t=>!isGatewayOnlyTool(t.key)&&!['service-desk','dock-builder','customers','parts-inventory'].includes(t.key)).map(t=><Link className="gateway-tool-card" key={t.key} to={companyUrl(t.path,workspace.company.id)}><strong>{t.name}</strong><span>Open tool →</span></Link>)}
+ {workspace.tools.filter(t=>!isGatewayOnlyTool(t.key)&&!['service-desk','customers','parts-inventory'].includes(t.key)).map(t=><Link className="gateway-tool-card" key={t.key} to={companyUrl(t.path,workspace.company.id)}><strong>{t.name}</strong><span>Open tool →</span></Link>)}
  </nav>{!has('service-desk')&&<p>Company Dashboard is not enabled for this company.</p>}</main>}</NativeGatewayGuard>;
 }
 export const CompanyTools=CompanyHome;

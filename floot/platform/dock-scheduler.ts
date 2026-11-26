@@ -65,7 +65,14 @@ export function schedulerHandler(sql:any,auth:(r:Request)=>Promise<number>,schem
       const entry=validateEntry(input),id=scheduleId(input.scheduleId);await tx`select id from scheduler_schedules where id=${id} for update`;const schedule=await requireOpenSchedule(id,tx);
       const start=dayjs(entry.start).tz(zone),source={...entrySource(entry,start.format('dddd, MMMM D, YYYY h:mm A')),_MarineOpsDuration:entry.duration,_MarineOpsAppointmentTitle:entry.appointmentTitle??''};
       const previous=await jobs.findEntry(source['Submission ID']);
-      if(!previous){const available=await availability(schedule,start.format('YYYY-MM-DD'),entry.duration);if(!available.slots.some(s=>s.start===entry.start))throw new PlatformError(409,'This time is no longer available. Choose another time.');}
+      if(!previous){
+       if(entry.customerId){
+        await platformStore(tx).toolAccess(actor,LAKEVIEW_ID,'customers');
+        const [customer]=await tx`select id from customers where id=${entry.customerId} and company_id=${LAKEVIEW_ID} and status='active' for share`;
+        if(!customer)throw new PlatformError(409,'The selected customer is no longer available. Choose another customer or enter contact details manually.');
+       }
+       const available=await availability(schedule,start.format('YYYY-MM-DD'),entry.duration);if(!available.slots.some(s=>s.start===entry.start))throw new PlatformError(409,'This time is no longer available. Choose another time.');
+      }
       const job=await jobs.addEntry(source,null,id);data={job,alreadySaved:!!previous,calendarMode:'local'};mutated=true;
      }
     }else if(path==='schedules'){

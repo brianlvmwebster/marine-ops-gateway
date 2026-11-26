@@ -117,7 +117,7 @@ function SharedLookup({ company, kind }: { company: string; kind: LookupKind }) 
   </DialogContent>;
 }
 
-export function GatewayToolWorkspace({ children }: { children: React.ReactNode }) {
+export function GatewayToolWorkspace({ children, showSharedLookups = true }: { children: React.ReactNode; showSharedLookups?: boolean }) {
   const workspace = useCompanyWorkspace();
   if (import.meta.env.VITE_APP_ENV !== 'staging' || !workspace) return <>{children}</>;
 
@@ -126,7 +126,7 @@ export function GatewayToolWorkspace({ children }: { children: React.ReactNode }
       <Button variant="outline" asChild><Link to={companyUrl('/', workspace.company.id)}>
         <ArrowLeft aria-hidden="true" /> Back to gateway
       </Link></Button>
-      <div className="gateway-tool-lookups" role="group" aria-label="Shared data">
+      {showSharedLookups && <div className="gateway-tool-lookups" role="group" aria-label="Shared data">
         {(['customers', 'parts'] as const).filter(kind => workspace.tools.some(tool => tool.key === lookups[kind].entitlement))
           .map(kind => {
             const { label, icon: Icon } = lookups[kind];
@@ -135,7 +135,7 @@ export function GatewayToolWorkspace({ children }: { children: React.ReactNode }
               <SharedLookup company={workspace.company.id} kind={kind} />
             </Dialog>;
           })}
-      </div>
+      </div>}
     </header>
     {children}
   </div>;

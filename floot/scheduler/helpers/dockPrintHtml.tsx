@@ -1,6 +1,6 @@
 // Shared print document for the scheduler's popup and history modal.
 export type DockPrintJob = {
-  fullName?: string; lastName?: string; phone?: string; address?: string; rawAddress?: string;
+  fullName?: string; lastName?: string; phone?: string; email?: string; address?: string; rawAddress?: string;
   bodyOfWater?: string; roNumber?: string; completed?: boolean; submissionId?: string;
   hasCoordinates?: boolean; latitude?: number; longitude?: number; appointment?: string;
   workDescription?: string; notes?: string; completionSignature?: string; completionDate?: string;
@@ -77,6 +77,7 @@ export function dockPrintHtml(location: DockPrintJob, {scheduleName = '', editUr
   const details =
     row('Customer', displayName) +
     row('Phone', location.phone) +
+    row('Email', location.email) +
     row(
       'Address',
       location.address || location.rawAddress

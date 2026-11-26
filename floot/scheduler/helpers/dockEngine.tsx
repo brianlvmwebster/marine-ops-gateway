@@ -621,6 +621,7 @@ function buildPopup(location) {
     <dl class="popup-details">
       ${location.roNumber ? `<dt>RO#</dt><dd>${e(location.roNumber)}</dd>` : ''}
       ${location.phone ? `<dt>Phone</dt><dd>${e(location.phone)}</dd>` : ''}
+      ${location.email ? `<dt>Email</dt><dd>${e(location.email)}</dd>` : ''}
       ${location.appointment ? `<dt>Appointment</dt><dd>${e(location.appointment)}</dd>` : ''}
     </dl>
     <div class="popup-actions">
