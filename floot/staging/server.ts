@@ -8,6 +8,7 @@ import {dockQuotesHandler,dockQuoteStore} from '../platform/dock-quotes';
 import {Hono} from 'hono';
 import {saveStagingJob} from './save-job';
 import {customersHandler,customersStore} from '../platform/customers.ts';
+import {integrationApiHandler,integrationApiStore} from '../platform/integration-api.ts';
 import {serve} from '@hono/node-server';
 import {serveStatic} from '@hono/node-server/serve-static';
 import superjson from 'superjson';
@@ -40,6 +41,8 @@ app.all('/_api/parts',c=>parts(c.req.raw));app.all('/_api/parts/*',c=>parts(c.re
 const units=unitsHandler(unitsStore(platformDatabase()),async request=>(await getServerUserSession(request)).user.id);
 app.all('/_api/units',c=>units(c.req.raw));app.all('/_api/units/*',c=>units(c.req.raw));
 app.all('/_api/customers',c=>customers(c.req.raw));app.all('/_api/customers/*',c=>customers(c.req.raw));
+const integration=integrationApiHandler(integrationApiStore(platformDatabase()));
+app.all('/api/v1/*',c=>integration(c.req.raw));
 app.get('/_api/dock_builder/asset',c=>stagingDockAsset(c.req.raw));
 const quotes=dockQuotesHandler(dockQuoteStore(platformDatabase()),async request=>(await nativeGatewayAccess(request)).authUserId);
 app.all('/_api/dock-quotes',c=>quotes(c.req.raw));

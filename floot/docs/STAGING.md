@@ -28,4 +28,6 @@ Apply the synthetic baseline and migrations with an explicitly invoked Cloud Run
 
 Dock Builder now supports shared quote storage, customer search/contact autofill, saved-quote search and reopening. See docs/DOCK_QUOTES.md. Its authenticated assets and the scheduler document can be framed only by this same origin; the rest of staging retains frame denial.
 
+The read-only integration API at `/api/v1` provides customer and parts search/lookup using company-scoped app credentials. See [integration API](INTEGRATION_API.md) for fields, access rules and key administration.
+
 Production remains on Floot. `main`, production DNS, production data and Outlook sync are unchanged. A production-ready login, full schema/data migration and integrations remain separate work.
