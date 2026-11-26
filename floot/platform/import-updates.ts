@@ -163,7 +163,7 @@ export function importUpdatesStore(sql: any) {
       await access(actor, company, true);
       const { id, rows } = await load();
       const source = normalize(rows);
-      return sql.begin('serializable', async (tx: any) => {
+      return sql.begin('isolation level serializable', async (tx: any) => {
         const [run] = await tx`SELECT * FROM import_update_runs WHERE company_id=${company} AND id=${id} AND dataset='customers' FOR UPDATE`;
         if (!run) throw new PlatformError(404, 'Import check not found.');
         if (run.status === 'applied' || run.status === 'partial') return { applied: run.summary.applied };
@@ -221,8 +221,9 @@ export function importUpdatesHandler(store: ReturnType<typeof importUpdatesStore
     } catch (error) {
       if (error instanceof PlatformError) return Response.json({ error: error.message }, { status: error.status });
       if (error instanceof z.ZodError) return Response.json({ error: 'The import request is invalid.' }, { status: 400 });
-      if ((error as { code?: string })?.code === '40001') return Response.json({ error: 'Data changed during the import. Check the file again.' }, { status: 409 });
-      console.error('Import update request failed.', (error as Error)?.name);
+      const code = (error as { code?: string })?.code;
+      if (code === '40001') return Response.json({ error: 'Data changed during the import. Check the file again.' }, { status: 409 });
+      console.error('Import update request failed.', code && /^[A-Z0-9_]{1,32}$/.test(code) ? code : (error as Error)?.name);
       return Response.json({ error: 'The import update is temporarily unavailable.' }, { status: 503 });
     }
   };
