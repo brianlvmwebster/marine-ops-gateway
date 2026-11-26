@@ -30,7 +30,9 @@ test('repair orders retain existing service rows and save separate job lines ato
   const bootstrap = postgres(process.env.TEST_DATABASE_URL);
   const schema = 'repair_orders_' + randomUUID().replaceAll('-', '');
   await bootstrap.unsafe('create schema ' + schema);
-  const db = postgres(process.env.TEST_DATABASE_URL, { connection: { search_path: schema } });
+  const db = postgres(process.env.TEST_DATABASE_URL, {
+    max: 1, connection: { search_path: schema }, onnotice: () => {},
+  });
   try {
     await db.unsafe(await readFile(new URL('../staging/000-baseline.sql', import.meta.url), 'utf8'));
     await db`create table native_gateway_members(auth_user_id integer,role text,enabled boolean)`;
