@@ -108,13 +108,13 @@ html[data-workspace-theme] .staging-banner {
   font-weight: 550;
   margin-inline-start: 8px;
 }
-.workspace-appearance-actions, .workspace-appearance-actions label {
+.workspace-appearance-actions, .workspace-appearance-field {
   display: flex;
   align-items: center;
   flex-wrap: wrap;
   gap: var(--mo-gap);
 }
-.workspace-appearance-actions label { gap: 6px; font-weight: 600; font-size: 13px; }
+.workspace-appearance-field { gap: 6px; font-weight: 600; font-size: 13px; }
 .workspace-environment {
   font-size: 11px;
   color: var(--muted-foreground);
@@ -309,7 +309,7 @@ html[data-workspace-theme] [role="dialog"] { font-size: 14px; }
 @media (max-width: 720px) {
   html[data-workspace-theme] { --mo-control-height: 44px; --mo-control-small: 44px; }
   .workspace-appearance { align-items: start; }
-  .workspace-appearance-actions label { flex: 1 1 auto; }
+  .workspace-appearance-field { flex: 1 1 auto; }
   .workspace-wordmark span, .workspace-environment { display: none; }
   html[data-workspace-theme] :is(.platform-page, .import-administration) :is(input, select, textarea) { font-size: 16px; }
 }

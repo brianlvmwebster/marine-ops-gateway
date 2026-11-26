@@ -24,17 +24,19 @@ export function WorkspaceAppearance(){
   <a href="/" className="workspace-wordmark">MARINE OPS <span>WORKSPACE</span></a>
   <div className="workspace-appearance-actions">
    <span className="workspace-environment">STAGING</span>
-   <label>Theme
+   <div className="workspace-appearance-field">
+   <label htmlFor="workspace-theme">Theme</label>
    <select id="workspace-theme" value={theme} onChange={e=>changeTheme(e.target.value)}>
     {workspaceThemeGroups.map(group=><optgroup key={group.label} label={group.label}>
      {group.themes.map(option=><option key={option.id} value={option.id}>{option.name}</option>)}
     </optgroup>)}
-   </select></label>
-   <label>Layout
+   </select></div>
+   <div className="workspace-appearance-field">
+    <label htmlFor="workspace-layout">Layout</label>
     <select id="workspace-layout" value={layout} onChange={event=>changeLayout(event.target.value)}>
      {workspaceLayouts.map(option=><option key={option.id} value={option.id}>{option.name}</option>)}
     </select>
-   </label>
+   </div>
   </div>
  </div>;
 }

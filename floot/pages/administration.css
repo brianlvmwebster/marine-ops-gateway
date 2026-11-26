@@ -1,11 +1,11 @@
-.import-administration{max-width:90rem;margin:0 auto;padding:var(--mo-gutter);display:grid;gap:var(--mo-section-gap);color:var(--foreground)}
+.import-administration{container-type:inline-size;max-width:90rem;margin:0 auto;padding:var(--mo-gutter);display:grid;gap:var(--mo-section-gap);color:var(--foreground)}
 .import-administration h1,.import-administration h2,.import-administration h3,.import-administration p{margin:0}
 .import-administration header,.import-administration header nav{display:flex;align-items:center;flex-wrap:wrap;gap:var(--mo-gap)}
 .import-administration header{justify-content:space-between}
 .import-administration header nav a{display:flex;align-items:center;min-height:var(--mo-control-height);padding:6px 12px;border:1px solid transparent;border-radius:var(--mo-tab-radius);text-decoration:none;color:var(--foreground)}
 .import-administration header a[aria-current],.import-administration header nav a:hover{background:var(--mo-active);border-color:var(--primary)}
 .import-administration a{color:var(--primary);text-decoration:underline;text-underline-offset:.18em}
-.import-sections{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,27rem),1fr));gap:var(--mo-section-gap)}
+.import-sections{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:var(--mo-section-gap)}
 .import-panel{container-type:inline-size;display:grid;align-content:start;gap:var(--mo-gap);min-width:0;border:1px solid var(--border);border-radius:var(--radius-lg);padding:var(--mo-section-gap);background:var(--card);box-shadow:var(--mo-lift)}
 .import-panel h2{font-size:1.2rem;line-height:1.25}
 .import-panel h3{font-size:1rem}
@@ -31,4 +31,7 @@
 .import-preview-filter{max-width:15rem}
 @container (max-width:430px){
  .import-upload{grid-template-columns:minmax(0,1fr)}
+}
+@container (max-width:870px){
+ .import-sections{grid-template-columns:minmax(0,1fr)}
 }
