@@ -23,6 +23,7 @@ try {
   await connection.unsafe(await readFile(new URL('../migrations/015-mapping.sql',import.meta.url),'utf8'));await connection.unsafe(await readFile(new URL('../migrations/016-mapping-route.sql',import.meta.url),'utf8'));
   await connection.unsafe(await readFile(new URL('../migrations/017-dock-scheduler.sql',import.meta.url),'utf8'));
   await connection.unsafe(await readFile(new URL('../migrations/018-integration-api.sql',import.meta.url),'utf8'));
+  await connection.unsafe(await readFile(new URL('../migrations/019-import-update-audit.sql',import.meta.url),'utf8'));
   await connection`insert into platform_operators(user_id) select id from users where email='owner@staging.example.invalid' on conflict do nothing`;
   await connection`insert into service_access_roles(user_id,role) select 'staging:'||id,'service_admin' from users where email='owner@staging.example.invalid' on conflict do nothing`;
   await connection`insert into native_gateway_links(id,contents) values(1,'[{"id":"service-desk","title":"Service Desk","url":"/dashboard/","description":"Synthetic staging jobs only","image":"","newTab":false,"slug":"service-management"}]') on conflict do nothing`;

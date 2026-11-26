@@ -1,0 +1,25 @@
+.import-administration{max-width:70rem;margin:0 auto;padding:clamp(1rem,3vw,2.5rem);display:grid;gap:1.25rem;color:var(--foreground)}
+.import-administration h1,.import-administration h2,.import-administration h3,.import-administration p{margin:0}
+.import-administration header,.import-administration header nav{display:flex;align-items:center;flex-wrap:wrap;gap:1rem}
+.import-administration header{justify-content:space-between}
+.import-administration header a[aria-current]{font-weight:700}
+.import-administration a{text-decoration:underline;text-underline-offset:.18em}
+.import-administration :focus-visible{outline:2px solid var(--primary);outline-offset:3px}
+.import-panel{display:grid;gap:1rem;border:1px solid var(--border);border-radius:.75rem;padding:clamp(1rem,2.5vw,1.5rem);background:var(--card)}
+.import-panel h2{font-size:1.2rem}
+.import-panel h3{font-size:1rem}
+.import-customer,.import-review{display:grid;gap:.75rem}
+.import-upload{display:flex;gap:.75rem;flex-wrap:wrap;align-items:end}
+.import-upload label{display:grid;gap:.4rem;font-weight:600;min-width:0}
+.import-upload input{font:inherit;font-weight:400;max-width:100%}
+.import-administration button:not(.platform-page button){width:fit-content;min-height:2.25rem;padding:.45rem .85rem;border:1px solid var(--border);border-radius:.4rem;background:var(--primary);color:var(--primary-foreground);font:inherit;font-weight:600;cursor:pointer}
+.import-administration button:disabled{opacity:.55;cursor:default}
+.import-run-heading{display:flex;align-items:center;justify-content:space-between;gap:.5rem 1rem;flex-wrap:wrap}
+.import-history{list-style:none;margin:0;padding:0;display:grid}
+.import-history li{padding:.7rem 0;border-top:1px solid var(--border);display:grid;gap:.25rem}
+.import-muted{color:var(--muted-foreground);font-size:.9rem}
+.import-status{border:1px solid var(--border);border-radius:2rem;padding:.15rem .55rem;font-weight:600;font-size:.85rem}
+.import-status[data-status=applied]{background:var(--secondary);color:var(--secondary-foreground)}
+.import-review summary{cursor:pointer;font-weight:600}
+.import-preview{display:grid;gap:.4rem;overflow-wrap:anywhere}
+.import-administration [role=alert]{color:var(--destructive)}

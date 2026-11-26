@@ -17,6 +17,6 @@ export function CompanySidebar({tab,onTab}:{tab?:string;onTab?:(tab:string)=>voi
  {has('mapping')&&link('Mapping & Storage','/mapping')}
  {has('dock-builder')&&link('Sales / Dock Builder','/dock-builder')}
  {has('parts-inventory')&&link('Inventory','/inventory/parts')}
- {['owner','admin'].includes(role)&&link('Company administration','/company/admin')}
+ {['owner','admin'].includes(role)&&link('Administration','/company/admin')}
  </nav><div className={s.sideBottom}>{link('Back to gateway','/')}<AccountMenu email={authState.type==='authenticated'?authState.user.email:undefined}/></div></aside>;
 }
