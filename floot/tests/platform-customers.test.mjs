@@ -23,7 +23,7 @@ test('customer database: tenant isolation, roles, import idempotency, source fla
   await db`create table service_jobs(id uuid primary key,job_number integer,data jsonb)`;
   await db`insert into users values(1,'owner@example.invalid','Owner'),(2,'member@example.invalid','Member'),(3,'other@example.invalid','Other')`;
   await db`insert into native_gateway_members values(1,'admin',true),(2,'user',true)`;
-  const conn=await db.reserve();try{for(const name of ['007-platform-foundation','008-customers','022-customer-company-name'])await conn.unsafe(await readFile(new URL('../migrations/'+name+'.sql',import.meta.url),'utf8'));}finally{conn.release();}
+  const conn=await db.reserve();try{for(const name of ['007-platform-foundation','008-customers','022-customer-company-name','024-repair-order-promised-at'])await conn.unsafe(await readFile(new URL('../migrations/'+name+'.sql',import.meta.url),'utf8'));}finally{conn.release();}
   const store=customersStore(db),row={source_number:'000123',source_active:'False',source_record:{Active:'False'},data};
   assert.deepEqual(await store.import(1,LAKEVIEW_ID,[row]),{inserted:1,skipped:0});
   const list=await store.list(2,LAKEVIEW_ID,'000123','active',0);assert.equal(list.total,1);assert.equal(list.canManage,false);

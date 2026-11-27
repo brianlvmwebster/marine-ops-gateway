@@ -2,7 +2,8 @@ import { createHash } from 'node:crypto';
 import { z } from 'zod';
 import { customerJobContact } from '../helpers/customerJobContact';
 import { emptyJob, jobModel } from '../helpers/jobModel';
-import { repairLineStatuses, repairOrderPageSize, repairOrderSorts } from '../helpers/repairOrders';
+import { defaultRepairOrderSort, repairLineStatuses, repairOrderPageSize, repairOrderSorts } from '../helpers/repairOrders';
+import { serviceTime } from '../helpers/serviceTime';
 import { unitJobVessel } from '../helpers/unitJobVessel';
 import { jobStatuses } from '../helpers/workflowModel';
 import { readBody } from './customers';
@@ -11,6 +12,7 @@ import { platformStore } from './store';
 
 const uuid = z.uuid();
 const notes = z.string().max(10000);
+const promised = z.string().regex(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}$/).nullable().optional();
 const line = z.object({
   id: uuid,
   title: z.string().trim().min(1).max(250),
@@ -19,9 +21,9 @@ const line = z.object({
 }).strict();
 const lines = z.array(line).max(50).refine(items => new Set(items.map(item => item.id)).size === items.length);
 const createInput = z.object({
-  id: uuid, customerId: uuid, unitId: uuid, notes, lines: lines.refine(items => items.length > 0),
+  id: uuid, customerId: uuid, unitId: uuid, notes, promised, lines: lines.refine(items => items.length > 0),
 }).strict();
-const updateInput = z.object({ id: uuid, version: z.number().int().positive(), notes, lines }).strict();
+const updateInput = z.object({ id: uuid, version: z.number().int().positive(), notes, lines, promised }).strict();
 const listInput = z.object({
   q: z.string().trim().max(200),
   status: z.enum(['all', ...jobStatuses]),
@@ -37,7 +39,7 @@ export function repairOrdersStore(sql: any) {
     if (creating) await platform.toolAccess(actor, company, 'customers');
   }
 
-  const fields = sql`j.id,j.version,j.created_at,j.updated_at,
+  const fields = sql`j.id,j.version,j.created_at,j.updated_at,j.repair_order_promised_at as promised_at,
     coalesce(nullif(trim(j.data->>'ro'),''),'Job #' || j.job_number) as number,
     trim(concat_ws(' ',j.data->>'firstName',j.data->>'lastName')) as customer_name,
     trim(concat_ws(' ',nullif(j.data->>'year','0'),j.data->>'make',j.data->>'model')) as unit_description,
@@ -49,6 +51,8 @@ export function repairOrdersStore(sql: any) {
       await access(actor, company);
       const pattern = '%' + input.q.replace(/[\\%_]/g, '\\$&') + '%';
       const order = {
+        promisedLatest: sql`promised_at desc nulls last,created_at desc nulls last,id desc`,
+        promisedSoonest: sql`promised_at asc nulls last,created_at desc nulls last,id desc`,
         newest: sql`created_at desc nulls last,id desc`,
         oldest: sql`created_at asc nulls last,id asc`,
         updated: sql`updated_at desc nulls last,id desc`,
@@ -90,6 +94,7 @@ export function repairOrdersStore(sql: any) {
     async create(actor: number, company: string, value: unknown) {
       const input = createInput.parse(value);
       await access(actor, company, true);
+      const promisedAt = parsePromisedTime(input.promised);
       const hash = createHash('sha256').update(JSON.stringify(input)).digest('hex');
       return sql.begin(async (tx: any) => {
         await tx`select pg_advisory_xact_lock(hashtextextended(${input.id},0))`;
@@ -114,8 +119,8 @@ export function repairOrdersStore(sql: any) {
           model: (vessel.model || unit.name || unit.length).slice(0, 300),
           notes: input.notes, scheduleMode: 'day', time: '', duration: 0,
         });
-        const [order] = await tx`insert into service_jobs(id,data,calendar_eligible) values
-          (${input.id},${tx.json(data)},false) on conflict(id) do nothing returning job_number`;
+        const [order] = await tx`insert into service_jobs(id,data,calendar_eligible,repair_order_promised_at) values
+          (${input.id},${tx.json(data)},false,${promisedAt}) on conflict(id) do nothing returning job_number`;
         if (!order) throw new PlatformError(409, 'That submission is already in use.');
         await tx`update service_jobs set data=jsonb_set(data,'{ro}',to_jsonb(${'RO-'+order.job_number}::text)) where id=${input.id}`;
         await tx`insert into repair_order_intakes(order_id,submission_hash) values(${input.id},${hash})`;
@@ -131,6 +136,7 @@ export function repairOrdersStore(sql: any) {
     async update(actor: number, company: string, value: unknown) {
       const input = updateInput.parse(value);
       await access(actor, company);
+      const promisedAt = parsePromisedTime(input.promised);
       return sql.begin(async (tx: any) => {
         const [order] = await tx`select id,version,data from service_jobs where id=${input.id} for update`;
         if (!order) throw new PlatformError(404, 'Repair order not found.');
@@ -142,6 +148,7 @@ export function repairOrdersStore(sql: any) {
           throw new PlatformError(400, 'Existing job lines must stay on the order. Use Cancelled for work that will not proceed.');
         await saveLines(tx, input.id, input.lines, previous);
         await tx`update service_jobs set data=jsonb_set(data,'{notes}',to_jsonb(${input.notes}::text)),
+          repair_order_promised_at=case when ${input.promised !== undefined} then ${promisedAt}::timestamptz else repair_order_promised_at end,
           version=version+1,updated_at=now() where id=${input.id}`;
         await tx`insert into platform_audit(actor_user_id,company_id,action,detail) values
           (${actor},${company},'repair_order.updated',${tx.json({ id: input.id, lineCount: input.lines.length })})`;
@@ -149,6 +156,16 @@ export function repairOrdersStore(sql: any) {
       });
     },
   };
+}
+
+function parsePromisedTime(value: string | null | undefined) {
+  if (!value) return null;
+  const [date, time] = value.split('T');
+  try {
+    return serviceTime.toUtc(date, time);
+  } catch {
+    throw new PlatformError(400, 'Enter a valid promised date and time in Eastern Time.');
+  }
 }
 
 async function saveLines(tx: any, orderId: string, items: z.infer<typeof lines>, previous: { id: string }[]) {
@@ -177,7 +194,7 @@ export function repairOrdersHandler(store: ReturnType<typeof repairOrdersStore>,
         if (id) return Response.json(await store.detail(actor, company, uuid.parse(id)));
         return Response.json(await store.list(actor, company, listInput.parse({
           q: searchParams.get('q') ?? '', status: searchParams.get('status') ?? 'all',
-          sort: searchParams.get('sort') ?? 'newest', page: searchParams.get('page') ?? '0',
+          sort: searchParams.get('sort') ?? defaultRepairOrderSort, page: searchParams.get('page') ?? '0',
         })));
       }
       if (request.method === 'POST' && ['/_api/repair-orders/create', '/_api/repair-orders/update'].includes(pathname)) {

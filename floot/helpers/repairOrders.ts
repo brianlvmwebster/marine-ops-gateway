@@ -3,7 +3,13 @@ import type { jobStatuses } from './workflowModel';
 export const repairOrdersPath = '/service/repair-orders';
 export const repairOrderPageSize = 25;
 export const repairLineStatuses = ['Pending', 'In progress', 'Done', 'Cancelled'] as const;
-export const repairOrderSorts = ['newest', 'oldest', 'updated', 'customer'] as const;
+export const defaultRepairOrderSort = 'promisedLatest';
+export const repairOrderSorts = [defaultRepairOrderSort, 'promisedSoonest', 'newest', 'oldest', 'updated', 'customer'] as const;
+const promisedFormat = new Intl.DateTimeFormat('en-US', {
+  dateStyle: 'medium', timeStyle: 'short', timeZone: 'America/New_York',
+});
+export const promisedDateLabel = (value: string | null | undefined) =>
+  value ? promisedFormat.format(new Date(value)) : 'No promised date';
 
 export type RepairLine = {
   id: string;
@@ -22,6 +28,7 @@ export type RepairOrderRow = {
   status: typeof jobStatuses[number];
   created_at: string;
   updated_at: string;
+  promised_at: string | null;
   line_count: number;
 };
 

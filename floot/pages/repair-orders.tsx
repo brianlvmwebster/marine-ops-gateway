@@ -5,10 +5,11 @@ import { companyUrl, useCompanyWorkspace } from '../components/CompanyWorkspace'
 import { JobCustomerPicker } from '../components/JobCustomerPicker';
 import { JobUnitPicker } from '../components/JobUnitPicker';
 import {
-  repairLineStatuses, repairOrderPageSize, repairOrderSorts, repairOrdersPath,
+  defaultRepairOrderSort, promisedDateLabel, repairLineStatuses, repairOrderPageSize, repairOrderSorts, repairOrdersPath,
   type RepairLine, type RepairOrder, type RepairOrderRow,
 } from '../helpers/repairOrders';
 import { jobStatuses } from '../helpers/workflowModel';
+import { serviceTime } from '../helpers/serviceTime';
 import styles from './repair-orders.module.css';
 
 async function request<T>(company: string, params: URLSearchParams, options?: RequestInit, action = ''): Promise<T> {
@@ -20,7 +21,10 @@ async function request<T>(company: string, params: URLSearchParams, options?: Re
 
 const dateFormat = new Intl.DateTimeFormat('en-US', { dateStyle: 'medium', timeZone: 'America/New_York' });
 const dateLabel = (date: string) => date ? dateFormat.format(new Date(date)) : '—';
-const sortNames = { newest: 'Newest first', oldest: 'Oldest first', updated: 'Recently updated', customer: 'Customer name' };
+const sortNames = {
+  promisedLatest: 'Latest promised first', promisedSoonest: 'Earliest promised first',
+  newest: 'Newest created first', oldest: 'Oldest created first', updated: 'Recently updated', customer: 'Customer name',
+};
 
 export default function RepairOrders({ create = false }: { create?: boolean }) {
   const workspace = useCompanyWorkspace();
@@ -49,7 +53,7 @@ function OrderList({ company, canCreate }: { company: string; canCreate: boolean
   const [revision, setRevision] = useState(0);
   const q = params.get('q') || '';
   const status = jobStatuses.find(value => value === params.get('status')) || 'all';
-  const sort = repairOrderSorts.find(value => value === params.get('sort')) || 'newest';
+  const sort = repairOrderSorts.find(value => value === params.get('sort')) || defaultRepairOrderSort;
   const requestedPage = Number(params.get('page'));
   const page = Number.isInteger(requestedPage) && requestedPage >= 0 && requestedPage <= 100000 ? requestedPage : 0;
   useEffect(() => { setQuery(q); }, [q]);
@@ -96,12 +100,12 @@ function OrderList({ company, canCreate }: { company: string; canCreate: boolean
       <p role="status">{result.total.toLocaleString()} {result.total === 1 ? 'repair order' : 'repair orders'}</p>
       {result.rows.length > 0 && <div className={styles.table}>
         <table aria-label="Repair Orders">
-          <thead><tr>{['Order', 'Customer', 'Unit', 'Status', 'Jobs', 'Created'].map(heading => <th key={heading} scope="col">{heading}</th>)}</tr></thead>
+          <thead><tr>{['Order', 'Customer', 'Unit', 'Status', 'Jobs', 'Promised (Eastern)'].map(heading => <th key={heading} scope="col">{heading}</th>)}</tr></thead>
           <tbody>{result.rows.map(row => <tr key={row.id}>
             <td><Link to={companyUrl(repairOrdersPath + '/' + row.id, company)}>{row.number}</Link></td>
             <td>{row.customer_name || '—'}</td>
             <td>{row.unit_description || '—'}{row.unit_serial && <small>{row.unit_serial}</small>}</td>
-            <td>{row.status}</td><td>{row.line_count}</td><td>{dateLabel(row.created_at)}</td>
+            <td>{row.status}</td><td>{row.line_count}</td><td>{promisedDateLabel(row.promised_at)}</td>
           </tr>)}</tbody>
         </table>
       </div>}
@@ -141,6 +145,7 @@ function OrderDetail({ company, id }: { company: string; id: string }) {
           : order.customer_name || 'Unlinked'}</dd></div>
         <div><dt>Unit</dt><dd>{order.unit_description || '—'}{order.unit_serial && <small>{order.unit_serial}</small>}</dd></div>
         <div><dt>Status</dt><dd>{order.status}</dd></div>
+        <div><dt>Promised (Eastern)</dt><dd>{promisedDateLabel(order.promised_at)}</dd></div>
         <div><dt>Created</dt><dd>{dateLabel(order.created_at)}</dd></div>
       </dl>
       {notice && <p role="status">{notice}</p>}
@@ -151,6 +156,11 @@ function OrderDetail({ company, id }: { company: string; id: string }) {
 
 const newLine = (): RepairLine => ({ id: crypto.randomUUID(), title: '', notes: '', status: 'Pending' });
 const ignoreLink = () => {};
+const promisedInput = (date: string | null | undefined) => {
+  if (!date) return '';
+  const { serviceDate, time } = serviceTime.fromUtc(date);
+  return serviceDate + 'T' + time;
+};
 
 function OrderForm({ company, order, reload, onSaved }: {
   company: string; order?: RepairOrder; reload?: () => void; onSaved?: () => void;
@@ -162,6 +172,8 @@ function OrderForm({ company, order, reload, onSaved }: {
   const [customerBusy, setCustomerBusy] = useState(false);
   const [unitBusy, setUnitBusy] = useState(false);
   const [notes, setNotes] = useState(order?.notes || '');
+  const initialPromised = promisedInput(order?.promised_at);
+  const [promised, setPromised] = useState(initialPromised);
   const [lines, setLines] = useState(() => order?.lines || [newLine()]);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
@@ -174,8 +186,9 @@ function OrderForm({ company, order, reload, onSaved }: {
     setSaving(true);
     setError('');
     try {
-      const value = order ? { id: order.id, version: order.version, notes, lines }
-        : { id: submissionId, customerId, unitId, notes, lines };
+      const fields = { notes, lines, ...(promised !== initialPromised ? { promised: promised || null } : {}) };
+      const value = order ? { id: order.id, version: order.version, ...fields }
+        : { id: submissionId, customerId, unitId, ...fields };
       const result = await request<{ id: string }>(company, new URLSearchParams(), {
         method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(value),
       }, order ? '/update' : '/create');
@@ -201,6 +214,8 @@ function OrderForm({ company, order, reload, onSaved }: {
         <JobUnitPicker key={customerId} disabled={saving || customerBusy} requiredSelection customerId={customerId}
           onBusyChange={setUnitBusy} onSelect={setUnitId}/>
       </div>}
+      <label>Promised date and time (Eastern)<input type="datetime-local" value={promised}
+        onChange={event => setPromised(event.target.value)}/></label>
       <label>Order notes<textarea rows={3} maxLength={10000} value={notes} onChange={event => setNotes(event.target.value)}/></label>
     </fieldset>
     <section className={styles.lines} aria-labelledby="repair-lines">

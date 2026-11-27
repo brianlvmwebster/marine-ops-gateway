@@ -38,7 +38,7 @@ test('repair orders retain existing service rows and save separate job lines ato
     await db`create table native_gateway_members(auth_user_id integer,role text,enabled boolean)`;
     await db`insert into users(id,email,display_name) values(1,'owner@example.invalid','Owner'),(2,'other@example.invalid','Other')`;
     await db`insert into native_gateway_members values(1,'admin',true)`;
-    for (const name of ['007-platform-foundation', '008-customers', '022-customer-company-name', '010-customer-units', '011-service-job-units', '021-repair-orders']) {
+    for (const name of ['007-platform-foundation', '008-customers', '022-customer-company-name', '010-customer-units', '011-service-job-units', '021-repair-orders', '024-repair-order-promised-at']) {
       await db.unsafe(await readFile(new URL('../migrations/' + name + '.sql', import.meta.url), 'utf8'));
     }
     const customer = randomUUID(), other = randomUUID(), unit = randomUUID(), wrongUnit = randomUUID(), legacy = randomUUID();
@@ -51,7 +51,8 @@ test('repair orders retain existing service rows and save separate job lines ato
     const store = repairOrdersStore(db);
     const handler = repairOrdersHandler(store, actor);
     const line = { id: randomUUID(), title: 'Inspect steering', notes: '', status: 'Pending' };
-    const draft = { id: randomUUID(), customerId: customer, unitId: unit, notes: 'Synthetic intake', lines: [line] };
+    const draft = { id: randomUUID(), customerId: customer, unitId: unit, notes: 'Synthetic intake',
+      promised: '2026-12-04T13:30', lines: [line] };
     assert.equal((await handler(post('create', { ...draft, lines: [] }))).status, 400);
     assert.equal((await handler(post('create', { ...draft, unitId: wrongUnit }))).status, 409);
     assert.deepEqual(await store.create(1, LAKEVIEW_ID, draft), { id: draft.id });
@@ -61,6 +62,7 @@ test('repair orders retain existing service rows and save separate job lines ato
     assert.match(saved.number, /^RO-\d+$/);
     assert.equal(saved.customer_id, customer);
     assert.equal(saved.unit_id, unit);
+    assert.equal(saved.promised_at.toISOString(), '2026-12-04T18:30:00.000Z');
     assert.deepEqual(saved.lines, [line]);
 
     const [parent] = await db`select data,calendar_eligible from service_jobs where id=${draft.id}`;
@@ -73,16 +75,21 @@ test('repair orders retain existing service rows and save separate job lines ato
 
     const added = { ...line, id: randomUUID(), title: 'Check impeller' };
     const edit = { id: draft.id, version: 1, notes: 'Updated order', lines: [{ ...line, status: 'Done' }, added] };
+    await assert.rejects(store.update(1, LAKEVIEW_ID, { ...edit, promised: '2026-03-08T02:30' }), { status: 400 });
     await store.update(1, LAKEVIEW_ID, edit);
     await assert.rejects(store.update(1, LAKEVIEW_ID, edit), { status: 409 });
     await assert.rejects(store.update(1, LAKEVIEW_ID, { ...edit, version: 2, lines: [added] }), { status: 400 });
     saved = await store.detail(1, LAKEVIEW_ID, draft.id);
     assert.equal(saved.version, 2);
     assert.equal(saved.notes, edit.notes);
+    assert.equal(saved.promised_at.toISOString(), '2026-12-04T18:30:00.000Z');
     assert.deepEqual(saved.lines, edit.lines);
 
     const orders = await store.list(1, LAKEVIEW_ID, { q: '', sort: 'customer', status: 'all', page: 0 });
     assert.deepEqual(orders.rows.map(order => order.id), [legacy, draft.id]);
+    const promisedFirst = await store.list(1, LAKEVIEW_ID, { q: '', sort: 'promisedSoonest', status: 'all', page: 0 });
+    assert.deepEqual(promisedFirst.rows.map(order => order.id), [draft.id, legacy]);
+    assert.equal(promisedFirst.rows[1].promised_at, null);
     const matched = await store.list(1, LAKEVIEW_ID, { q: '000124', sort: 'updated', status: 'Done', page: 0 });
     assert.equal(matched.total, 1);
     assert.equal(matched.rows[0].number, '000124');
