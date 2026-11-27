@@ -1,6 +1,6 @@
 {
   "repository": "https://github.com/brianlvmwebster/service-dashboard",
-  "sourceCommit": "9f89b7fae2505b4edece9e0910a30452ce8679e8",
+  "sourceCommit": "a20fb55169620b35379bbda919e780e16f67383d",
   "files": {
     ".dockerignore": "bd46bf310d0466b3d9bcf2aa5a753be970584067e7199456d7850704420c0eb9",
     ".gcloudignore": "bd46bf310d0466b3d9bcf2aa5a753be970584067e7199456d7850704420c0eb9",
@@ -931,7 +931,7 @@
     "tests/appearance.test.mjs": "966a24655df155e3f52a90240604c82dcb5d6b4daf76da7423b36533db9f8e53",
     "tests/job-customer.test.mjs": "6787f638ee853de5dfc17482d2daea3066381250a9ebb6ea86b7852fccbf32ae",
     "tests/platform-customers.test.mjs": "eeef829b475b3479dedcf86f9da894e3976a2ee32d4bf1f78bd2b81be810ca87",
-    "tests/platform-dock-quotes.test.mjs": "60e159088d8548bde54c6c72c6fa59d7042b76a2196857a7acb14b94cad01c7d",
+    "tests/platform-dock-quotes.test.mjs": "2bfa8ba91be669839c695af6523c914340310150657d9066e3d9ce990e51c437",
     "tests/platform-import-updates.test.mjs": "6f3f272e1f8812198e1c5c3e5b924bafd15ef1b9d573232008dae573374e398c",
     "tests/platform-integration-api.test.mjs": "70adf56a8f202b2c35eeb6f40dd33bbc78a39523c66aa80d3719436ce687a08c",
     "tests/platform-job-parts.test.mjs": "f261a5c8e0bed7e5e2c65cb6348c587b6f450a2ce9edded4a72382afc4585979",

@@ -27,7 +27,7 @@ test('shared quotes persist customer snapshots and enforce tenant, entitlement a
   await db`create table service_jobs(id uuid primary key,job_number integer,data jsonb)`;
   await db`insert into users values(1,'owner@example.invalid','Owner'),(2,'member@example.invalid','Member'),(3,'other@example.invalid','Other')`;
   await db`insert into native_gateway_members values(1,'admin',true),(2,'user',true)`;
-  const conn=await db.reserve();try{for(const name of ['007-platform-foundation','008-customers','022-customer-company-name','009-dock-quotes'])await conn.unsafe(await readFile(new URL('../migrations/'+name+'.sql',import.meta.url),'utf8'));}finally{conn.release();}
+  const conn=await db.reserve();try{for(const name of ['007-platform-foundation','008-customers','022-customer-company-name','009-dock-quotes','024-repair-order-promised-at'])await conn.unsafe(await readFile(new URL('../migrations/'+name+'.sql',import.meta.url),'utf8'));}finally{conn.release();}
   const customers=customersStore(db),store=dockQuoteStore(db);
   const data={first_name:'Synthetic',last_name:'Quote Customer',email:contact.email,home_phone:'',work_phone:'',mobile_phone:contact.phone,addresses:[],notes:'',status:'active'};
   const customer=await customers.save(1,LAKEVIEW_ID,undefined,0,data);
