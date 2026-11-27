@@ -12,6 +12,23 @@ const orderDate = new Intl.DateTimeFormat('en-US', { dateStyle: 'medium', timeZo
 const assignmentDate = (value: string | null, fallback: string) => value ? easternDate.format(new Date(value)) : fallback;
 const observedDate = (value: string | null) => value ? orderDate.format(new Date(value + 'T00:00:00Z')) : 'Unknown';
 
+function summarizeCustomers(history: History) {
+  const customers = new Map<string, Person & {
+    assignment: 'Current' | 'Previous' | null; observation?: Observation;
+  }>();
+  for (const row of history.assignments) {
+    const previous = customers.get(row.customer_id);
+    if (previous?.assignment === 'Current') continue;
+    customers.set(row.customer_id, { ...row, assignment: row.ended_at ? 'Previous' : 'Current' });
+  }
+  for (const row of history.observations) {
+    customers.set(row.customer_id, { ...row, assignment: customers.get(row.customer_id)?.assignment ?? null, observation: row });
+  }
+  return [...customers.values()].sort((a, b) =>
+    Number(b.assignment === 'Current') - Number(a.assignment === 'Current') ||
+    a.customer_name.localeCompare(b.customer_name) || a.customer_id.localeCompare(b.customer_id));
+}
+
 export function UnitCustomerHistory({ company, unitId, revision }: { company: string; unitId: string; revision: number }) {
   const [history, setHistory] = useState<History | null>(null);
   const [error, setError] = useState('');
@@ -35,32 +52,32 @@ export function UnitCustomerHistory({ company, unitId, revision }: { company: st
     return () => controller.abort();
   }, [company, unitId, revision, attempt]);
 
+  const customers = history ? summarizeCustomers(history) : [];
   return <details className="customer-section">
     <summary>Customer history</summary>
     <div className="customer-section-body">
       {error && <><p role="alert">{error}</p><button type="button" onClick={() => setAttempt(value => value + 1)}>Retry history</button></>}
       {!error && !history && <p role="status">Loading customer history…</p>}
-      {history && <>
-        <h3>Recorded assignments</h3>
-        {history.assignments.length ? <div className="customer-table"><table>
+      {history && (customers.length ? <div className="customer-table"><table aria-label="Unit customers">
+        <thead><tr><th scope="col">Customer</th><th scope="col">Assignment</th><th scope="col">Repair orders</th>
+          <th scope="col">First RO</th><th scope="col">Latest RO</th></tr></thead>
+        <tbody>{customers.map(row => <tr key={row.customer_id}>
+          <td>{row.customer_name}</td><td>{row.assignment ?? 'Recorded on RO'}</td>
+          <td>{row.observation?.order_count ?? '—'}</td>
+          <td>{row.observation ? observedDate(row.observation.first_order) : '—'}</td>
+          <td>{row.observation ? observedDate(row.observation.last_order) : '—'}</td>
+        </tr>)}</tbody>
+      </table></div> : <p>No customer history recorded.</p>)}
+      {!!history?.assignments.length && <details>
+        <summary>Assignment dates</summary>
+        <div className="customer-table"><table aria-label="Assignment dates">
           <thead><tr><th scope="col">Customer</th><th scope="col">Started</th><th scope="col">Ended</th></tr></thead>
           <tbody>{history.assignments.map(row => <tr key={row.id}>
             <td>{row.customer_name}</td><td>{assignmentDate(row.started_at, 'Unknown')}</td>
             <td>{assignmentDate(row.ended_at, 'Current')}</td>
           </tr>)}</tbody>
-        </table></div> : <p>No customer assignments recorded.</p>}
-        {history.observations.length > 0 && <>
-          <h3>Customer links recorded on Repair Orders</h3>
-          <p>These dates show when a customer and unit appeared together on an order.</p>
-          <div className="customer-table"><table>
-            <thead><tr><th scope="col">Customer</th><th scope="col">First order</th><th scope="col">Latest order</th><th scope="col">Orders</th></tr></thead>
-            <tbody>{history.observations.map(row => <tr key={row.customer_id}>
-              <td>{row.customer_name}</td><td>{observedDate(row.first_order)}</td>
-              <td>{observedDate(row.last_order)}</td><td>{row.order_count}</td>
-            </tr>)}</tbody>
-          </table></div>
-        </>}
-      </>}
+        </table></div>
+      </details>}
     </div>
   </details>;
 }

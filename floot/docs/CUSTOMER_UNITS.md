@@ -2,7 +2,7 @@
 
 ## Customer history
 
-Unit details shows dated customer assignments and a separate list of customers recorded on linked Repair Orders. Changing or clearing an assignment closes the prior period at the time of the change. The next assignment starts at the same time. Staging records future changes automatically, including changes made through imports. When the original start of a current assignment is unknown, the history leaves that date blank.
+Unit Details shows one row per customer across recorded assignments and linked Repair Orders. It shows the assignment status, RO count, and first and latest RO dates where available. Customers with RO evidence can appear without an assignment entry. Assignment dates are available in an expandable section. Assignment changes are recorded automatically and existing assignments can have an unknown start date.
 
 An RO keeps its original customer link, unit link, and saved contact and vessel details when a unit is reassigned. Its service date, or order creation date when the service date is unavailable, provides a dated observation of that pairing. Observations do not establish when an ownership period started or ended. A previously documented pairing can help resolve review candidates, but a match by Make alone still warrants review.
 
