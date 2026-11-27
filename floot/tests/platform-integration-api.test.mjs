@@ -56,7 +56,7 @@ test('integration API projects company-scoped rows and enforces grants, revocati
       await db`CREATE TABLE service_jobs(id uuid PRIMARY KEY)`;
       const connection = await db.reserve();
       try {
-        for (const migration of ['007-platform-foundation', '008-customers', '012-parts-inventory',
+        for (const migration of ['007-platform-foundation', '008-customers', '022-customer-company-name', '012-parts-inventory',
           '013-part-stock-movements', '018-integration-api', '018-integration-api', '020-parts-import-updates']) {
           await connection.unsafe(await readFile(new URL('../migrations/' + migration + '.sql', import.meta.url), 'utf8'));
         }

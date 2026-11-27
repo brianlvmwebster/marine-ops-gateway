@@ -21,7 +21,7 @@ test('units: tenant access, assignment, import retries, repeated rows, source re
  try{
  await db`create table users(id integer primary key,email text,display_name text)`;await db`create table native_gateway_members(auth_user_id integer,role text,enabled boolean)`;await db`create table service_jobs(id uuid primary key,job_number integer,data jsonb)`;
  await db`insert into users values(1,'owner@example.invalid','Owner'),(2,'member@example.invalid','Member'),(3,'other@example.invalid','Other')`;await db`insert into native_gateway_members values(1,'admin',true),(2,'user',true)`;
- const conn=await db.reserve();try{for(const name of ['007-platform-foundation','008-customers','010-customer-units'])await conn.unsafe(await readFile(new URL('../migrations/'+name+'.sql',import.meta.url),'utf8'));}finally{conn.release();}
+ const conn=await db.reserve();try{for(const name of ['007-platform-foundation','008-customers','022-customer-company-name','010-customer-units'])await conn.unsafe(await readFile(new URL('../migrations/'+name+'.sql',import.meta.url),'utf8'));}finally{conn.release();}
  const customers=customersStore(db),store=unitsStore(db),cdata={first_name:'Synthetic',last_name:'Owner',email:'',home_phone:'',work_phone:'',mobile_phone:'',addresses:[],notes:'',status:'active'};
  await customers.import(1,LAKEVIEW_ID,[{source_number:'123',source_active:'False',source_record:{},data:cdata}]);
  const cid=(await customers.list(1,LAKEVIEW_ID,'123','all',0)).rows[0].id;

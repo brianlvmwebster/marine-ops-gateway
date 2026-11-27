@@ -1,3 +1,4 @@
+import { customerDisplayName, type CustomerContact } from '../helpers/customerJobContact';
 import React, { useEffect, useId, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { ArrowLeft, PackageSearch, UsersRound } from 'lucide-react';
@@ -8,16 +9,7 @@ import { Input } from './Input';
 import './GatewayToolWorkspace.css';
 
 type LookupKind = 'customers' | 'parts';
-type CustomerResult = {
-  id: string;
-  first_name: string;
-  last_name: string;
-  source_number: string | null;
-  email: string;
-  home_phone: string;
-  work_phone: string;
-  mobile_phone: string;
-};
+type CustomerResult = CustomerContact;
 type PartResult = {
   id: string;
   data: { part_number: string; supplier_code: string; description: string; on_hand: string; available: string; active: boolean };
@@ -32,7 +24,7 @@ function customerItem(row: CustomerResult): Item {
   const phone = row.mobile_phone || row.home_phone || row.work_phone;
   return {
     id: row.id,
-    title: [row.first_name, row.last_name].filter(Boolean).join(' '),
+    title: customerDisplayName(row),
     details: [row.source_number ? 'Lightspeed #' + row.source_number : '', phone, row.email].filter(Boolean),
   };
 }

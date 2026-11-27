@@ -21,7 +21,7 @@ export function integrationTokenHash(token: string) {
 }
 
 export function integrationApiStore(sql: any) {
-  const customerSummary = sql`id, first_name AS "firstName", last_name AS "lastName",
+  const customerSummary = sql`id, first_name AS "firstName", last_name AS "lastName", company_name AS "companyName",
     CASE WHEN source_system = 'lightspeed' THEN source_number END AS "lightspeedNumber",
     status, updated_at AS "updatedAt"`;
   const customerDetail = sql`${customerSummary}, nullif(email, '') AS email,
@@ -49,7 +49,7 @@ export function integrationApiStore(sql: any) {
     customers(company: string, q: string, after: string | null, limit: number) {
       return sql`SELECT ${customerSummary} FROM customers
         WHERE company_id=${company} AND (${after}::uuid IS NULL OR id>${after}::uuid)
-          AND strpos(lower(concat_ws(' ', first_name, last_name, last_name||', '||first_name,
+          AND strpos(lower(concat_ws(' ', first_name, last_name, company_name, last_name||', '||first_name,
             CASE WHEN source_system='lightspeed' THEN source_number END)),lower(${q}))>0
         ORDER BY id LIMIT ${limit}`;
     },

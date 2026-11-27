@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Button, Group, Loader, NativeSelect, Stack, Text, TextInput } from '@mantine/core';
-import type { CustomerContact } from '../../helpers/customerJobContact';
+import { customerDisplayName, type CustomerContact } from '../../helpers/customerJobContact';
 import { LAKEVIEW_ID } from '../../platform/policy';
 
 type Address = {
@@ -94,7 +94,7 @@ export function DockCustomerPicker({ disabled, selected, selectedAddress, onCust
               setSearch(null);
               setResults(null);
             }}>
-            {[customer.first_name, customer.last_name].filter(Boolean).join(' ')}
+            {customerDisplayName(customer)}
             {customer.source_number && ` · #${customer.source_number}`}
           </Button>
         </li>)}
@@ -112,7 +112,7 @@ export function DockCustomerPicker({ disabled, selected, selectedAddress, onCust
     </> : <Text size="sm" role="status">No matching available customers.</Text>)}
     {selected && <>
       <Group justify="space-between" gap="xs">
-        <Text size="sm"><strong>Selected:</strong> {selected.first_name} {selected.last_name}</Text>
+        <Text size="sm"><strong>Selected:</strong> {customerDisplayName(selected)}</Text>
         <Button type="button" variant="subtle" size="compact-sm" disabled={disabled}
           onClick={() => onCustomer(null)}>Clear customer selection</Button>
       </Group>

@@ -3,6 +3,7 @@ import { z } from 'zod';
 import { customerAddressFields, customerContacts, customerExportColumns, maxCustomerExportBytes, maxCustomerExportRows } from '../helpers/customerExport';
 import { maxPartsUploadBytes } from '../helpers/partsExport';
 import { customerFields, readBody } from './customers';
+import { customerDisplayName } from '../helpers/customerJobContact';
 import { LAKEVIEW_ID, PlatformError, requireManager, requireSameOrigin } from './policy';
 import { platformStore } from './store';
 import { partsInputRows, partsUpdatePlan, writePartsUpdate } from './parts-update';
@@ -15,11 +16,12 @@ const imports = {
 } as const;
 type ImportArea = keyof typeof imports;
 const field = z.string().trim().max(500);
-const inputRows = z.array(z.array(field).length(customerExportColumns.length)).min(1).max(maxCustomerExportRows);
+const inputRows = z.array(z.array(field).min(customerExportColumns.length - 1).max(customerExportColumns.length))
+  .min(1).max(maxCustomerExportRows).refine(rows => rows.every(row => row.length === rows[0].length));
 const contactEntries = Object.entries(customerContacts) as [keyof typeof customerContacts, string][];
 const addressEntries = Object.entries(customerAddressFields) as [keyof typeof customerAddressFields, string][];
 const labels = ['primary', 'alternate'] as const;
-type Contact = Pick<z.infer<typeof customerFields>, keyof typeof customerContacts | 'addresses'>;
+type Contact = Required<Pick<z.infer<typeof customerFields>, keyof typeof customerContacts | 'addresses'>>;
 type Address = Contact['addresses'][number];
 type Source = Record<string, string>;
 type Customer = Contact & { id: string; version: number; source_number: string; source_record: Source | null };
@@ -40,7 +42,7 @@ function normalize(rows: string[][]) {
     const number = row[0];
     if (!/^\d{1,100}$/.test(number) || sourceRows.has(number))
       throw new PlatformError(400, 'The export contains an invalid or duplicate customer number.');
-    const source = Object.fromEntries(customerExportColumns.map((column, index) => [column, row[index]]));
+    const source = Object.fromEntries(row.map((value, index) => [customerExportColumns[index], value]));
     if (/^(true|false)$/i.test(source.Active)) source.Active = source.Active.toLowerCase() === 'true' ? 'True' : 'False';
     sourceRows.set(number, source);
   }
@@ -70,19 +72,23 @@ function compare(old: Contact, incoming: Contact, current: Contact) {
 
 async function plan(sql: any, company: string, sourceRows: Map<string, Source>) {
   const records: Customer[] = await sql`
-    SELECT id,version,source_number,source_record,first_name,last_name,email,home_phone,work_phone,mobile_phone,addresses
+    SELECT id,version,source_number,source_record,first_name,last_name,company_name,email,home_phone,work_phone,mobile_phone,addresses
     FROM customers WHERE company_id=${company} AND source_system='lightspeed' AND source_number IS NOT NULL`;
   const saved = new Map(records.map(record => [record.source_number, record]));
   const changes = [];
   const preview: { number: string; name: string; outcome: 'add' | 'update' | 'conflict'; differences?: ReturnType<typeof compare>['differences'] }[] = [];
   const summary = { compared: 0, excluded: 0, added: 0, updated: 0, missing: 0, conflicts: 0, alreadyCurrent: 0, applied: 0 };
   const orderedSource = [...sourceRows].sort(([a], [b]) => a.localeCompare(b));
-  for (const [number, source] of orderedSource) {
-    const incoming = sourceValues(source);
-    if (!incoming.first_name && !incoming.last_name) { summary.excluded++; continue; }
-    summary.compared++;
+  for (const [number, row] of orderedSource) {
     const record = saved.get(number);
-    const name = [incoming.first_name, incoming.last_name].filter(Boolean).join(' ');
+    const includesCompany = Object.hasOwn(row, 'Company Name');
+    const source = !includesCompany && Object.hasOwn(record?.source_record ?? {}, 'Company Name')
+      ? { ...row, 'Company Name': record!.source_record!['Company Name'] } : row;
+    const incoming = sourceValues(source);
+    if (!includesCompany && record) incoming.company_name = record.company_name;
+    if (!incoming.first_name && !incoming.last_name && !incoming.company_name) { summary.excluded++; continue; }
+    summary.compared++;
+    const name = customerDisplayName(incoming);
     if (!record) {
       summary.added++;
       changes.push({ number, source, values: incoming });
@@ -95,6 +101,7 @@ async function plan(sql: any, company: string, sourceRows: Map<string, Source>) 
       continue;
     }
     const old = sourceValues(record.source_record);
+    if (!includesCompany) old.company_name = incoming.company_name;
     const result = compare(old, incoming, record);
     if (result.conflict) {
       summary.conflicts++;

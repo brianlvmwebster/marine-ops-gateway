@@ -6,9 +6,9 @@ import {platformStore} from './store.ts';
 import {LAKEVIEW_ID,PlatformError,requireManager,requireSameOrigin} from './policy.ts';
 
 const text=z.string().trim().max(500);
-export const customerFields=z.object({first_name:text,last_name:text,email:text,home_phone:text,work_phone:text,mobile_phone:text,
+export const customerFields=z.object({first_name:text,last_name:text,company_name:text.optional(),email:text,home_phone:text,work_phone:text,mobile_phone:text,
  addresses:z.array(z.object({label:z.enum(['primary','alternate']),line1:text,line2:text,city:text,state:text,postal_code:text,county:text,country:text}).strict()).max(2),
- notes:z.string().max(5000),status:z.enum(['active','archived'])}).strict().refine(v=>!!(v.first_name||v.last_name),'A name is required');
+ notes:z.string().max(5000),status:z.enum(['active','archived'])}).strict().refine(v=>!!(v.first_name||v.last_name||v.company_name),'A personal or company name is required');
 export const importRow=z.object({source_number:z.string().trim().min(1).max(100),source_active:text,source_record:z.record(z.string(),text),data:customerFields}).strict();
 const uuid=z.uuid();
 export function customersStore(sql:any){
@@ -16,9 +16,9 @@ export function customersStore(sql:any){
  async function access(actor:number,company:string,write=false){const a=await platform.toolAccess(actor,company,'customers');if(write)requireManager(a);return a;}
  async function audit(tx:any,actor:number,company:string,action:string,detail:object){await tx`insert into platform_audit(actor_user_id,company_id,action,detail) values(${actor},${company},${action},${tx.json(detail)})`;}
  return {
- async quoteContext(actor:number,company:string,id:string){await access(actor,company);await platform.toolAccess(actor,company,'dock-builder');if(company!==LAKEVIEW_ID)throw new PlatformError(403,'Dock Builder is Lakeview-only.');const [customer]=await sql`select id,first_name,last_name,email,mobile_phone,home_phone,work_phone,addresses,status from customers where company_id=${company} and id=${id}`;if(!customer)throw new PlatformError(404,'Customer not found.');if(customer.status!=='active')throw new PlatformError(409,'This customer is archived. Make the customer available before starting a quote.');return {customer};},
+ async quoteContext(actor:number,company:string,id:string){await access(actor,company);await platform.toolAccess(actor,company,'dock-builder');if(company!==LAKEVIEW_ID)throw new PlatformError(403,'Dock Builder is Lakeview-only.');const [customer]=await sql`select id,first_name,last_name,company_name,email,mobile_phone,home_phone,work_phone,addresses,status from customers where company_id=${company} and id=${id}`;if(!customer)throw new PlatformError(404,'Customer not found.');if(customer.status!=='active')throw new PlatformError(409,'This customer is archived. Make the customer available before starting a quote.');return {customer};},
  async jobContext(actor:number,company:string,id:string){await access(actor,company);await platform.toolAccess(actor,company,'service-desk');if(company!==LAKEVIEW_ID)throw new PlatformError(403,'Service Desk is Lakeview-only.');
- const [customer]=await sql`select id,first_name,last_name,email,mobile_phone,home_phone,work_phone,source_number,status from customers where company_id=${company} and id=${id}`;
+ const [customer]=await sql`select id,first_name,last_name,company_name,email,mobile_phone,home_phone,work_phone,source_number,status from customers where company_id=${company} and id=${id}`;
  if(!customer)throw new PlatformError(404,'Customer not found.');if(customer.status!=='active')throw new PlatformError(409,'This customer is archived. Make the customer available before creating a job.');return {customer};},
  async serviceJob(actor:number,company:string,id:string,jobId:string){await access(actor,company);await platform.toolAccess(actor,company,'service-desk');if(company!==LAKEVIEW_ID)throw new PlatformError(403,'Service Desk is Lakeview-only.');
  const [j]=await sql`select j.* from customer_service_jobs l join customers u on u.id=l.customer_id and u.company_id=l.company_id join service_jobs j on j.id=l.job_id where l.company_id=${company} and l.customer_id=${id} and l.job_id=${jobId}`;
@@ -26,8 +26,8 @@ export function customersStore(sql:any){
  return {job:{id:j.id,jobNumber:String(j.job_number),version:j.version,data:normalizeJobStage(jobModel.parse(j.data)),calendarEligible:j.calendar_eligible,eventId:j.event_id,syncedVersion:j.synced_version,syncError:j.sync_error,remoteEtag:j.remote_etag,updatedAt:j.updated_at}};},
   async list(actor:number,company:string,q:string,status:string,page:number){
    const a=await access(actor,company);const pattern='%'+q.replace(/[\\%_]/g,'\\$&')+'%';
-   const where=sql`company_id=${company} and (${status}='all' or status=${status}) and (concat_ws(' ',first_name,last_name,source_number,email,home_phone,work_phone,mobile_phone) ilike ${pattern})`;
-   const rows=await sql`select id,first_name,last_name,email,home_phone,work_phone,mobile_phone,source_number,status,version,addresses from customers where ${where} order by last_name,first_name,id limit 50 offset ${page*50}`;
+   const where=sql`company_id=${company} and (${status}='all' or status=${status}) and (concat_ws(' ',first_name,last_name,company_name,source_number,email,home_phone,work_phone,mobile_phone) ilike ${pattern})`;
+   const rows=await sql`select id,first_name,last_name,company_name,email,home_phone,work_phone,mobile_phone,source_number,status,version,addresses from customers where ${where} order by coalesce(nullif(last_name,''),nullif(first_name,''),company_name),first_name,id limit 50 offset ${page*50}`;
    const [count]=await sql`select count(*)::integer as total from customers where ${where}`;
    return {rows,total:count.total,canManage:['owner','admin'].includes(a.role)};
   },

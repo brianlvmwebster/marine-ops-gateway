@@ -2,14 +2,14 @@ export const customerExportColumns = [
   'Customer Number', 'Active', 'First Name', 'Last Name', 'Home Phone', 'Work Phone', 'Mobile Phone',
   'E-Mail', 'Address 1', 'Address 2', 'City', 'State', 'Zip Code', 'County', 'Country',
   'Alternate Address 1', 'Alternate Address 2', 'Alternate City', 'Alternate State',
-  'Alternate Zip Code', 'Alternate County', 'Alternate Country',
+  'Alternate Zip Code', 'Alternate County', 'Alternate Country', 'Company Name',
 ] as const;
 
 export const maxCustomerExportRows = 20_000;
 export const maxCustomerExportBytes = 12 * 1024 * 1024;
 
 export const customerContacts = {
-  first_name: 'First Name', last_name: 'Last Name', email: 'E-Mail',
+  first_name: 'First Name', last_name: 'Last Name', company_name: 'Company Name', email: 'E-Mail',
   home_phone: 'Home Phone', work_phone: 'Work Phone', mobile_phone: 'Mobile Phone',
 } as const;
 
@@ -23,6 +23,8 @@ export function customerExportRows(rows: string[][]) {
   if (headerIndex < 0) throw new Error('The Lightspeed Customer Bulk headings were not found.');
   const headings = rows[headerIndex];
   const columns = customerExportColumns.map(name => headings.indexOf(name));
+  // An older export doesn't say whether a business name should change.
+  if (columns.at(-1) === -1) columns.pop();
   if (columns.includes(-1) || new Set(headings.filter(Boolean)).size !== headings.filter(Boolean).length)
     throw new Error('The file is missing required Lightspeed Customer Bulk columns or has duplicate headings.');
   const result = [];

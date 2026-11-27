@@ -38,7 +38,7 @@ test('repair orders retain existing service rows and save separate job lines ato
     await db`create table native_gateway_members(auth_user_id integer,role text,enabled boolean)`;
     await db`insert into users(id,email,display_name) values(1,'owner@example.invalid','Owner'),(2,'other@example.invalid','Other')`;
     await db`insert into native_gateway_members values(1,'admin',true)`;
-    for (const name of ['007-platform-foundation', '008-customers', '010-customer-units', '011-service-job-units', '021-repair-orders']) {
+    for (const name of ['007-platform-foundation', '008-customers', '022-customer-company-name', '010-customer-units', '011-service-job-units', '021-repair-orders']) {
       await db.unsafe(await readFile(new URL('../migrations/' + name + '.sql', import.meta.url), 'utf8'));
     }
     const customer = randomUUID(), other = randomUUID(), unit = randomUUID(), wrongUnit = randomUUID(), legacy = randomUUID();

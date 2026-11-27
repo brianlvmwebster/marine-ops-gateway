@@ -15,6 +15,7 @@ function row(number, fields = {}) {
 test('Customer Bulk parser accepts a title row and rejects invalid headings and duplicate IDs', () => {
   const id = row('0007');
   assert.deepEqual(customerExportRows([['Lightspeed Customer Bulk'], [...customerExportColumns], id, row('Customer: 1')]), [id]);
+  assert.deepEqual(customerExportRows([customerExportColumns.slice(0,-1), id.slice(0,-1)]), [id.slice(0,-1)]);
   assert.throws(() => customerExportRows([['Customer Number'], id]), /missing required/);
   assert.throws(() => customerExportRows([[...customerExportColumns], id, id]), /duplicate/);
 });
@@ -49,7 +50,7 @@ test('customer preview is read-only, safe to apply, and recorded in paginated co
       await db`INSERT INTO native_gateway_members VALUES (1,'admin',true),(2,'user',true)`;
       const conn = await db.reserve();
       try {
-        for (const migration of ['007-platform-foundation', '008-customers', '019-import-update-audit', '019-import-update-audit']) {
+        for (const migration of ['007-platform-foundation', '008-customers', '022-customer-company-name', '019-import-update-audit', '019-import-update-audit']) {
           await conn.unsafe(await readFile(new URL('../migrations/' + migration + '.sql', import.meta.url), 'utf8'));
         }
       } finally { conn.release(); }
@@ -108,6 +109,22 @@ test('customer preview is read-only, safe to apply, and recorded in paginated co
       const page = await history('?dataset=parts');
       assert.equal(page.runs.length, 25);
       assert.equal((await history('?dataset=parts&before=' + page.next)).runs.length, 1);
+      const business = row('06', { 'First Name': '', 'Last Name': '', 'Company Name': 'Synthetic Boat Club' });
+      const blank = row('07', { 'First Name': '', 'Last Name': '' });
+      const businessPreview = await (await handler(request('/customers/check', { rows: [business, blank] }))).json();
+      assert.equal(businessPreview.run.summary.added, 1);
+      assert.equal(businessPreview.run.summary.excluded, 1);
+      assert.equal(businessPreview.preview[0].name, 'Synthetic Boat Club');
+      assert.equal((await db`SELECT id FROM customers WHERE source_number='06'`).length, 0);
+      assert.equal((await apply(businessPreview.run.id, [business, blank])).status, 200);
+      const legacy = row('06', { 'First Name': '', 'Last Name': '', 'E-Mail': 'club@example.invalid' }).slice(0,-1);
+      const legacyPreview = await (await handler(request('/customers/check', { rows: [legacy] }))).json();
+      assert.equal(legacyPreview.run.summary.updated, 1);
+      assert.equal((await apply(legacyPreview.run.id, [legacy])).status, 200);
+      const [company] = await db`SELECT first_name,last_name,company_name,email,source_record->>'Company Name' AS source_company
+        FROM customers WHERE source_number='06'`;
+      assert.deepEqual({ ...company }, { first_name:'',last_name:'',company_name:'Synthetic Boat Club',
+        email:'club@example.invalid',source_company:'Synthetic Boat Club' });
     } finally {
       await db.end();
       await root`DROP SCHEMA ${root(schema)} CASCADE`;
