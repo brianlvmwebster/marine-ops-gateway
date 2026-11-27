@@ -1,5 +1,6 @@
 import {z} from 'zod';
 import {jobStatuses} from './workflowModel';
+import type { RepairChecklistItem } from './repairOrders';
 const text=z.string().max(10000).default('');
 const base=z.object({
  ro:text,repairOrderIntake:z.literal(true).optional(),firstName:z.string().max(200),lastName:z.string().max(200),phone:z.string().max(200),email:z.string().max(300),year:z.string().max(100),make:z.string().max(300),model:z.string().max(300),engine:z.string().max(1000),hullId:text,
@@ -36,5 +37,5 @@ export const jobModel=base.superRefine((d,ctx)=>{
  if(!d.services.length)issue('services','Select at least one service');
 });
 export type JobData=z.infer<typeof jobModel>;
-export type Job={id:string;jobNumber:string;version:number;data:JobData;calendarEligible?:boolean;eventId:string|null;syncedVersion:number;syncError:string|null;remoteEtag:string|null;updatedAt:Date};
+export type Job={id:string;jobNumber:string;version:number;data:JobData;calendarEligible?:boolean;eventId:string|null;syncedVersion:number;syncError:string|null;remoteEtag:string|null;updatedAt:Date;repairChecklist?:RepairChecklistItem[]};
 export const emptyJob:JobData={scheduleMode:'timed',ro:'',firstName:'',lastName:'',phone:'',email:'',year:'',make:'',model:'',engine:'',hullId:'',serviceDate:'',time:'09:00',duration:120,appointment:'Unconfirmed',cancelledBy:'',pickup:'Customer Drop-off (Land)',trailer:'Customer Trailer',trailerLocation:'Not applicable',lake:'',pickupAddress:'',returnType:'Customer Pickup',returnAddress:'',services:[],removeItems:[],notes:'',technician:'Unassigned',priority:'Normal',status:'New',checklist:[]};

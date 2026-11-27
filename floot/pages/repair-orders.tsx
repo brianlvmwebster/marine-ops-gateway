@@ -5,7 +5,7 @@ import { companyUrl, useCompanyWorkspace } from '../components/CompanyWorkspace'
 import { JobCustomerPicker } from '../components/JobCustomerPicker';
 import { JobUnitPicker } from '../components/JobUnitPicker';
 import {
-  defaultRepairOrderSort, promisedDateLabel, repairLineStatuses, repairOrderPageSize, repairOrderSorts, repairOrdersPath,
+  defaultRepairOrderSort, promisedDateLabel, repairLineStatuses, repairOrderPageSize, repairOrderSortLabels, repairOrderSorts, repairOrdersPath,
   type RepairLine, type RepairOrder, type RepairOrderRow,
 } from '../helpers/repairOrders';
 import { jobStatuses } from '../helpers/workflowModel';
@@ -21,10 +21,6 @@ async function request<T>(company: string, params: URLSearchParams, options?: Re
 
 const dateFormat = new Intl.DateTimeFormat('en-US', { dateStyle: 'medium', timeZone: 'America/New_York' });
 const dateLabel = (date: string) => date ? dateFormat.format(new Date(date)) : '—';
-const sortNames = {
-  promisedLatest: 'Latest promised first', promisedSoonest: 'Earliest promised first',
-  newest: 'Newest created first', oldest: 'Oldest created first', updated: 'Recently updated', customer: 'Customer name',
-};
 
 export default function RepairOrders({ create = false }: { create?: boolean }) {
   const workspace = useCompanyWorkspace();
@@ -90,7 +86,7 @@ function OrderList({ company, canCreate }: { company: string; canCreate: boolean
       </label>
       <label>Sort by
         <select value={sort} onChange={event => filter({ sort: event.target.value, q: query.trim() })}>
-          {repairOrderSorts.map(value => <option key={value} value={value}>{sortNames[value]}</option>)}
+          {repairOrderSorts.map(value => <option key={value} value={value}>{repairOrderSortLabels[value]}</option>)}
         </select>
       </label>
     </form>

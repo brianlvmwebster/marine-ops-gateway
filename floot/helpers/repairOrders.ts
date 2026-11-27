@@ -2,9 +2,14 @@ import type { jobStatuses } from './workflowModel';
 
 export const repairOrdersPath = '/service/repair-orders';
 export const repairOrderPageSize = 25;
-export const repairLineStatuses = ['Pending', 'In progress', 'Done', 'Cancelled'] as const;
+export const repairLineStatuses = ['Pending', 'In progress', 'Done', 'Ready to Cashier', 'Cashiered', 'Cancelled'] as const;
+export const repairLineIsChecked = (status: string) => status === 'Ready to Cashier' || status === 'Cashiered';
 export const defaultRepairOrderSort = 'promisedLatest';
 export const repairOrderSorts = [defaultRepairOrderSort, 'promisedSoonest', 'newest', 'oldest', 'updated', 'customer'] as const;
+export const repairOrderSortLabels = {
+  promisedLatest: 'Latest promised first', promisedSoonest: 'Earliest promised first',
+  newest: 'Newest created first', oldest: 'Oldest created first', updated: 'Recently updated', customer: 'Customer name',
+} satisfies Record<typeof repairOrderSorts[number], string>;
 const promisedFormat = new Intl.DateTimeFormat('en-US', {
   dateStyle: 'medium', timeStyle: 'short', timeZone: 'America/New_York',
 });
@@ -16,6 +21,15 @@ export type RepairLine = {
   title: string;
   notes: string;
   status: typeof repairLineStatuses[number];
+};
+
+export type RepairChecklistItem = Pick<RepairLine, 'id' | 'title' | 'status'>;
+
+export type RepairOrderTile = RepairOrderRow & {
+  checklist: RepairChecklistItem[];
+  pickup: string;
+  trailer: string;
+  technician: string;
 };
 
 export type RepairOrderRow = {

@@ -7,6 +7,7 @@ import { repairOrdersHandler, repairOrdersStore } from '../platform/repair-order
 import { serviceJobSaveStore } from '../platform/service-job-save.ts';
 import { LAKEVIEW_ID } from '../platform/policy.ts';
 import { emptyJob, jobModel } from '../helpers/jobModel.tsx';
+import { repairLineIsChecked } from '../helpers/repairOrders.ts';
 
 const origin = 'https://example.invalid';
 const url = origin + '/_api/repair-orders';
@@ -24,6 +25,12 @@ test('repair orders reject anonymous users, invalid filters, cross-origin saves 
   assert.equal((await handler(post('create', {}, 'https://other.invalid'))).status, 403);
   assert.equal((await handler(post('create', {}))).status, 400);
   assert.equal((await handler(new Request(list.url + '&sort=unknown'))).status, 400);
+});
+
+test('RO checkboxes reflect only exact cashiering statuses', () => {
+  for (const status of ['Cashiered', 'Ready to Cashier']) assert.equal(repairLineIsChecked(status), true);
+  for (const status of ['Done', 'Pending', 'In progress', 'Cancelled', 'Tech Complete', 'cashiered'])
+    assert.equal(repairLineIsChecked(status), false);
 });
 
 test('repair orders retain existing service rows and save separate job lines atomically', { skip: !process.env.TEST_DATABASE_URL }, async () => {
@@ -96,6 +103,23 @@ test('repair orders retain existing service rows and save separate job lines ato
     assert.equal(matched.rows[0].id, legacy);
     await store.update(1, LAKEVIEW_ID, { id: legacy, version: 1, notes: 'Existing order', lines: [{ ...added, id: randomUUID() }] });
     assert.equal((await store.detail(1, LAKEVIEW_ID, legacy)).lines.length, 1);
+    await db`insert into repair_order_lines(id,order_id,position,title,notes,status) values
+      (${randomUUID()},${draft.id},3,'Synthetic cashiered',
+        ${'Lightspeed Job ID: 1\n\nLightspeed job status: Cashiered'},'Done'),
+      (${randomUUID()},${draft.id},4,'Synthetic ready',
+        ${'Lightspeed Job ID: 2\n\nLightspeed job status: Ready to Cashier\n\nCustomer approval: Approved'},'Done'),
+      (${randomUUID()},${draft.id},5,'Synthetic tech complete',
+        ${'Lightspeed Job ID: 3\n\nLightspeed job status: Tech Complete'},'Done')`;
+    const cashiering = await readFile(new URL('../migrations/025-repair-order-cashiering-status.sql', import.meta.url), 'utf8');
+    await db.unsafe(cashiering);
+    const tile = await store.list(1, LAKEVIEW_ID,
+      { q:'Synthetic ready', sort:'promisedLatest', status:'open', priority:'Normal', tiles:true, page:0 });
+    assert.equal(tile.total,1);
+    assert.deepEqual(tile.rows[0].checklist.map(item=>item.status), ['Done','Pending','Cashiered','Ready to Cashier','Done']);
+    assert.ok(tile.rows[0].checklist.every(item=>!('notes' in item)));
+    assert.equal((await store.detail(1, LAKEVIEW_ID, draft.id)).version,3);
+    await db.unsafe(cashiering);
+    assert.equal((await store.detail(1, LAKEVIEW_ID, draft.id)).version,3);
     await assert.rejects(store.detail(2, LAKEVIEW_ID, draft.id), { status: 403 });
     await assert.rejects(store.detail(1, randomUUID(), draft.id), { status: 403 });
   } finally {

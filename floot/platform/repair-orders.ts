@@ -26,9 +26,11 @@ const createInput = z.object({
 const updateInput = z.object({ id: uuid, version: z.number().int().positive(), notes, lines, promised }).strict();
 const listInput = z.object({
   q: z.string().trim().max(200),
-  status: z.enum(['all', ...jobStatuses]),
+  status: z.enum(['all', 'open', ...jobStatuses]),
   sort: z.enum(repairOrderSorts),
   page: z.coerce.number().int().min(0).max(100000),
+  priority: z.enum(['all', 'Normal', 'High', 'Urgent']).default('all'),
+  tiles: z.boolean().default(false),
 });
 
 export function repairOrdersStore(sql: any) {
@@ -47,9 +49,11 @@ export function repairOrdersStore(sql: any) {
     case when j.data->>'status'='Completed' and not j.data ? 'adminReview' then 'Done' else j.data->>'status' end as status`;
 
   return {
-    async list(actor: number, company: string, input: z.infer<typeof listInput>) {
+    async list(actor: number, company: string, value: unknown) {
+      const input = listInput.parse(value);
       await access(actor, company);
       const pattern = '%' + input.q.replace(/[\\%_]/g, '\\$&') + '%';
+      const { priority, tiles } = input;
       const order = {
         promisedLatest: sql`promised_at desc nulls last,created_at desc nulls last,id desc`,
         promisedSoonest: sql`promised_at asc nulls last,created_at desc nulls last,id desc`,
@@ -59,18 +63,30 @@ export function repairOrdersStore(sql: any) {
         customer: sql`lower(customer_name),created_at desc nulls last,id desc`,
       };
       const rows = await sql`with orders as (
-        select ${fields},j.job_number from service_jobs j
+        select ${fields},j.job_number,j.data->>'priority' as priority,j.data->>'appointment' as appointment,
+          j.data->>'pickup' as pickup,j.data->>'trailer' as trailer,j.data->>'technician' as technician
+        from service_jobs j
       ), filtered as (
-        select * from orders where (${input.status}='all' or status=${input.status})
-          and concat_ws(' ',number,job_number,customer_name,unit_description,unit_serial) ilike ${pattern}
+        select * from orders
+        where (${input.status}='all' or status=${input.status}
+          or (${input.status}='open' and status not in ('Done','Completed','Cancelled') and appointment is distinct from 'Cancelled'))
+          and (${priority}='all' or priority=${priority})
+          and (concat_ws(' ',number,job_number,customer_name,unit_description,unit_serial,technician) ilike ${pattern}
+            or (${tiles} and exists(select 1 from repair_order_lines l where l.order_id=orders.id and l.title ilike ${pattern})))
       ), paged as (
         select * from filtered order by ${order[input.sort]}
         limit ${repairOrderPageSize} offset ${input.page * repairOrderPageSize}
       )
       select (select count(*)::integer from filtered) as total, coalesce((
-        select jsonb_agg(to_jsonb(paged) || jsonb_build_object('line_count',(
-          select count(*) from repair_order_lines where order_id=paged.id
-        )) order by ${order[input.sort]}) from paged
+        select jsonb_agg(to_jsonb(paged) || jsonb_build_object('line_count',l.line_count)
+          || case when ${tiles} then jsonb_build_object('checklist',l.checklist) else '{}'::jsonb end
+          order by ${order[input.sort]})
+        from paged cross join lateral (
+          select count(*)::int as line_count,
+            case when ${tiles} then coalesce(jsonb_agg(jsonb_build_object('id',id,'title',title,'status',status)
+              order by position),'[]'::jsonb) end as checklist
+          from repair_order_lines where order_id=paged.id
+        ) l
       ),'[]'::jsonb) as rows`;
       return rows[0];
     },
@@ -192,10 +208,11 @@ export function repairOrdersHandler(store: ReturnType<typeof repairOrdersStore>,
       if (request.method === 'GET' && pathname === '/_api/repair-orders') {
         const id = searchParams.get('id');
         if (id) return Response.json(await store.detail(actor, company, uuid.parse(id)));
-        return Response.json(await store.list(actor, company, listInput.parse({
+        return Response.json(await store.list(actor, company, {
           q: searchParams.get('q') ?? '', status: searchParams.get('status') ?? 'all',
           sort: searchParams.get('sort') ?? defaultRepairOrderSort, page: searchParams.get('page') ?? '0',
-        })));
+          priority: searchParams.get('priority') ?? 'all', tiles: searchParams.get('view') === 'tiles',
+        }));
       }
       if (request.method === 'POST' && ['/_api/repair-orders/create', '/_api/repair-orders/update'].includes(pathname)) {
         requireSameOrigin(request);

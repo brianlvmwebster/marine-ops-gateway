@@ -4,6 +4,8 @@ Open **Service → Repair Orders** in Marine Ops staging. The management page se
 
 The Promised field uses the Lightspeed Date & Time Promised in Eastern Time where supplied. Repair Order details also show the original creation date. Promised times can be entered on new and editable orders. The promised date does not schedule an appointment or change the service date.
 
+The Service Overview shows searchable, paginated Repair Order tiles with status, priority and sort controls. Each tile lists the RO job titles as a read-only checklist. Ready to Cashier and Cashiered are the checked statuses. Change a line's status from the repair order itself.
+
 New orders require a shared customer, an available unit assigned to that customer and at least one job line. They start unscheduled. Each line has requested work, status and notes. Open an order to edit existing lines or add more. Use Cancelled to retain a line in the order history when work will not proceed.
 
 Each existing Service Job record is a repair order. Its original RO number, workflow and history carry forward. New orders use the same Service record identity and receive an `RO-<number>` reference. Child job lines are stored separately and reference the Service record UUID. Customer and unit histories continue to link to the Service record. Reviewed and completed Service records stay locked.

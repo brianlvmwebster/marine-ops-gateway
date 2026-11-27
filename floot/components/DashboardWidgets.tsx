@@ -4,12 +4,13 @@ import {Dialog,DialogContent,DialogTitle,DialogDescription} from './Dialog';
 import {Plus,ChevronUp,ChevronDown,X} from 'lucide-react';
 import {CompactCalendarWidget} from './CompactCalendarWidget';
 import {WidgetResizeHandle} from './WidgetResizeHandle';
+import {RepairOrderChecklist} from './RepairOrderChecklist';
 import type {AssignmentOption} from '../helpers/workflowModel';
 import type {Job} from '../helpers/jobModel';import {statusLabel} from '../helpers/workflowModel';
 import {widgetLibrary,widgetTypes,defaultWidgets,matchingWidgetJobs,matchingCalendarJobs,defaultCalendarSettings,type DashboardWidget,type WidgetType} from '../helpers/dashboardWidgets';
 import {api} from '../helpers/api';import s from './DashboardWidgets.module.css';
 
-export function DashboardWidgets({jobs,today,onOpenJob,assignments,onOpenSchedule,actions,summary}:{jobs:Job[];today:string;onOpenJob:(id:string)=>void;assignments:AssignmentOption[];onOpenSchedule:()=>void;actions:React.ReactNode;summary:React.ReactNode}){
+export function DashboardWidgets({jobs,today,onOpenJob,assignments,onOpenSchedule,actions,summary,tileView}:{jobs:Job[];today:string;onOpenJob:(id:string)=>void;assignments:AssignmentOption[];onOpenSchedule:()=>void;actions:React.ReactNode;summary:React.ReactNode;tileView?:React.ReactNode}){
  const [columns,setColumns]=useState(3);
  const [resizing,setResizing]=useState<{id:string;width:number}|null>(null);
  const [widgets,setWidgets]=useState<DashboardWidget[]>(defaultWidgets),[version,setVersion]=useState(0),[ready,setReady]=useState(false),[busy,setBusy]=useState(false),[error,setError]=useState(''),[library,setLibrary]=useState(false);const lock=useRef(false);
@@ -20,7 +21,7 @@ export function DashboardWidgets({jobs,today,onOpenJob,assignments,onOpenSchedul
  const move=(index:number,amount:number)=>{const next=[...widgets];[next[index],next[index+amount]]=[next[index+amount],next[index]];void save(next);};
  return <section aria-label="Dashboard" className={s.dashboard}>
   <div className={s.heading}><h1>Dashboard</h1><div className={s.actions}><label>Columns<Select value={String(columns)} disabled={!ready||controlsBusy} onValueChange={value=>void save(widgets,Number(value))}><SelectTrigger className={s.columns} aria-label="Dashboard columns"><SelectValue/></SelectTrigger><SelectContent>{[1,2,3,4].map(n=><SelectItem key={n} value={String(n)}>{n}</SelectItem>)}</SelectContent></Select></label><Button disabled={!ready||controlsBusy||widgets.length>=12} onClick={()=>setLibrary(true)}><Plus size={16}/>Add widget</Button>{actions}</div></div>
-  {summary}
+  {summary}{tileView}
   {error&&<div className={s.error} role="alert">{error}<Button variant="link" size="sm" onClick={()=>void load()}>Reload my cards</Button></div>}
   {!ready&&!error&&<p role="status">Loading your dashboard cards…</p>}
   {ready&&widgets.length===0&&<div className={s.empty}><h3>Build your daily view</h3><p>Add a compact calendar or cards for tomorrow, pickups, deliveries, trailers, and upcoming jobs.</p><Button onClick={()=>setLibrary(true)}>Add your first widget</Button></div>}
@@ -41,5 +42,5 @@ export function DashboardWidgets({jobs,today,onOpenJob,assignments,onOpenSchedul
 
 function WidgetJob({job,type,onOpen}:{job:Job;type:WidgetType;onOpen:()=>void}){
  const d=job.data;
- return <article className={s.job}><div className={s.jobTop}><small>#{String(job.jobNumber).padStart(4,'0')}{!d.serviceDate?' · Unscheduled':''}{d.scheduleMode==='day'?' · Day-based':''}{d.time?' · '+d.time+' ET':''}</small><div className={s.statusDate}><span className={s.jobStatus}>{statusLabel(d.status)}</span>{d.serviceDate&&<time className={s.jobDate} dateTime={d.serviceDate} title={d.serviceDate} aria-label={'Service date '+d.serviceDate}>{d.serviceDate.slice(5,7)}/{d.serviceDate.slice(8,10)}</time>}</div></div><Button variant="link" className={s.customer} onClick={onOpen}>{d.firstName} {d.lastName}</Button><p className={s.vessel}>{d.year} {d.make} · {d.model}</p><p>{d.services.join(' · ')}</p>{type==='road-pickups'&&<p className={s.location}><b>Pickup address</b>{d.pickupAddress||'Address not provided'}<b>Body of water</b>{d.lake||'Not provided'}</p>}{type==='deliveries'&&<p className={s.location}><b>Return address</b>{d.returnAddress||'Address not provided'}</p>}<div className={s.tags}><span>{d.pickup||'Pickup not specified'}</span><span>{d.trailer||'Trailer not specified'}</span></div>{type==='customer-trailers'&&d.trailerLocation&&<p>Trailer location: {d.trailerLocation}</p>}<small>Assigned: {d.technician||'Unassigned'}</small></article>;
+ return <article className={s.job}><div className={s.jobTop}><small>#{String(job.jobNumber).padStart(4,'0')}{!d.serviceDate?' · Unscheduled':''}{d.scheduleMode==='day'?' · Day-based':''}{d.time?' · '+d.time+' ET':''}</small><div className={s.statusDate}><span className={s.jobStatus}>{statusLabel(d.status)}</span>{d.serviceDate&&<time className={s.jobDate} dateTime={d.serviceDate} title={d.serviceDate} aria-label={'Service date '+d.serviceDate}>{d.serviceDate.slice(5,7)}/{d.serviceDate.slice(8,10)}</time>}</div></div><Button variant="link" className={s.customer} onClick={onOpen}>{d.firstName} {d.lastName}</Button><p className={s.vessel}>{d.year} {d.make} · {d.model}</p>{job.repairChecklist ? <RepairOrderChecklist items={job.repairChecklist}/> : <p>{d.services.join(' · ')}</p>}{type==='road-pickups'&&d.lake&&<p className={s.location}><b>Body of water</b>{d.lake}</p>}<div className={s.tags}><span>{d.pickup||'Pickup not specified'}</span><span>{d.trailer||'Trailer not specified'}</span></div>{type==='customer-trailers'&&d.trailerLocation&&<p>Trailer location: {d.trailerLocation}</p>}<small>Assigned: {d.technician||'Unassigned'}</small></article>;
 }
