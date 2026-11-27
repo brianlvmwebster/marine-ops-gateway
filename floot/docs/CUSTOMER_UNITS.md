@@ -1,5 +1,11 @@
 # Customer units in standalone staging
 
+## Customer history
+
+Unit details shows dated customer assignments and a separate list of customers recorded on linked Repair Orders. Changing or clearing an assignment closes the prior period at the time of the change. The next assignment starts at the same time. Staging records future changes automatically, including changes made through imports. When the original start of a current assignment is unknown, the history leaves that date blank.
+
+An RO keeps its original customer link, unit link, and saved contact and vessel details when a unit is reassigned. Its service date, or order creation date when the service date is unavailable, provides a dated observation of that pairing. Observations do not establish when an ownership period started or ended. A previously documented pairing can help resolve review candidates, but a match by Make alone still warrants review.
+
 Customers has a Units view for company-wide search and a units section within each customer record. Members can view; company owners/admins can create/edit/archive units, search and assign an available customer, clear an assignment and acknowledge duplicate-source flags. All APIs require Customers entitlement and active company membership. Customer links use a company/customer composite foreign key. Edits use optimistic versions and audit previous/new customer IDs. Original import references remain immutable when ownership or descriptive fields change.
 
 The authorized cleaner Lightspeed export contains Customer Number, VIN 1, Make, Model and Length. No stable source unit ID exists. Each source row receives its own Marine Ops UUID. Blank/zero customer references are excluded. Known customer numbers resolve within Lakeview; unresolved nonzero references are retained as unassigned units in Needs review. Do not create omitted unnamed customers or guess owners. Repeated VINs and identical rows are retained and flagged; they are not proof that units should be merged. The existing Lightspeed customer Active flag remains informational.

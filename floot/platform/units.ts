@@ -11,6 +11,25 @@ export const unitImportRow=z.object({row:z.number().int().positive(),customer_nu
 export function unitsStore(sql:any){const platform=platformStore(sql);
  async function access(actor:number,company:string,write=false){const a=await platform.toolAccess(actor,company,'customers');if(write)requireManager(a);return a;}
  return{
+ async customerHistory(actor:number,company:string,id:string){
+  await access(actor,company);
+  const [unit]=await sql`select id from customer_units where company_id=${company} and id=${id}`;
+  if(!unit)throw new PlatformError(404,'Unit not found.');
+  const name=sql`concat_ws(' · ',nullif(trim(concat_ws(' ',c.first_name,c.last_name)),''),nullif(c.company_name,''))`;
+  const assignments=await sql`select a.id::text, a.customer_id,${name} as customer_name,a.started_at,a.ended_at
+    from unit_customer_assignments a join customers c on c.id=a.customer_id and c.company_id=a.company_id
+    where a.company_id=${company} and a.unit_id=${id} order by a.ended_at desc nulls first,a.id desc`;
+  let observations=[];
+  try {
+    await platform.toolAccess(actor,company,'service-desk');
+    if(company===LAKEVIEW_ID)observations=await sql`select o.customer_id,${name} as customer_name,
+      min(o.observed_on)::text as first_order,max(o.observed_on)::text as last_order,count(*)::int as order_count
+      from unit_customer_order_observations o join customers c on c.id=o.customer_id and c.company_id=o.company_id
+      where o.company_id=${company} and o.unit_id=${id}
+      group by o.customer_id,c.first_name,c.last_name,c.company_name order by max(o.observed_on) desc nulls last,o.customer_id`;
+  } catch(e) { if(!(e instanceof PlatformError))throw e; }
+  return {assignments,observations};
+ },
  async serviceJob(actor:number,company:string,id:string,jobId:string){await access(actor,company);await platform.toolAccess(actor,company,'service-desk');if(company!==LAKEVIEW_ID)throw new PlatformError(403,'Service Desk is Lakeview-only.');
  const [j]=await sql`select j.* from customer_unit_service_jobs l join customer_units u on u.id=l.unit_id and u.company_id=l.company_id join service_jobs j on j.id=l.job_id where l.company_id=${company} and l.unit_id=${id} and l.job_id=${jobId}`;
  if(!j)throw new PlatformError(404,'Linked service job not found.');
@@ -58,6 +77,7 @@ export function unitsHandler(store:ReturnType<typeof unitsStore>,auth:(r:Request
  const u=new URL(r.url),company=uuid.parse(u.searchParams.get('companyId'));
  if(r.method==='GET'&&u.pathname==='/_api/units/service-job')return Response.json(await store.serviceJob(actor,company,uuid.parse(u.searchParams.get('id')),uuid.parse(u.searchParams.get('jobId'))));
  if(r.method==='GET'&&u.pathname==='/_api/units/job-context')return Response.json(await store.jobContext(actor,company,uuid.parse(u.searchParams.get('id'))));
+ if(r.method==='GET'&&u.pathname==='/_api/units/customer-history')return Response.json(await store.customerHistory(actor,company,uuid.parse(u.searchParams.get('id'))));
  if(r.method==='GET'&&u.pathname==='/_api/units/history')return Response.json(await store.history(actor,company,uuid.parse(u.searchParams.get('id')),z.coerce.number().int().min(0).max(100000).parse(u.searchParams.get('page')||0)));
  if(r.method==='GET'&&u.pathname==='/_api/units/job')return Response.json(await store.job(actor,company,uuid.parse(u.searchParams.get('jobId'))));
  if(r.method==='GET'&&u.pathname==='/_api/units')return Response.json(await store.list(actor,company,z.string().max(200).parse(u.searchParams.get('q')||''),z.enum(['active','archived','all','review']).parse(u.searchParams.get('filter')||'active'),z.coerce.number().int().min(0).max(100000).parse(u.searchParams.get('page')||0),u.searchParams.has('customerId')?uuid.parse(u.searchParams.get('customerId')):null));

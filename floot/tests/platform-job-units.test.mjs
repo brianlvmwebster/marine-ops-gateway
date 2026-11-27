@@ -22,7 +22,7 @@ test('job unit linking is atomic, owner checked, immutable and preserves histori
  const schema='test_job_units_'+Date.now(),setup=postgres(process.env.TEST_DATABASE_URL,{onnotice:()=>{}});await setup.unsafe(`create schema ${schema}`);await setup.end();
  const db=postgres(process.env.TEST_DATABASE_URL,{connection:{search_path:schema},onnotice:()=>{}});
  try{
- const c=await db.reserve();try{await c.unsafe(await readFile(new URL('../staging/000-baseline.sql',import.meta.url),'utf8'));await c`create table native_gateway_members(auth_user_id integer,role text,enabled boolean)`;await c`insert into users(id,email,display_name) values(1,'owner@example.invalid','Owner'),(2,'member@example.invalid','Member'),(3,'other@example.invalid','Other')`;await c`insert into native_gateway_members values(1,'admin',true),(2,'user',true)`;for(const m of ['007-platform-foundation','008-customers','022-customer-company-name','010-customer-units','011-service-job-units'])await c.unsafe(await readFile(new URL('../migrations/'+m+'.sql',import.meta.url),'utf8'));}finally{c.release();}
+ const c=await db.reserve();try{await c.unsafe(await readFile(new URL('../staging/000-baseline.sql',import.meta.url),'utf8'));await c`create table native_gateway_members(auth_user_id integer,role text,enabled boolean)`;await c`insert into users(id,email,display_name) values(1,'owner@example.invalid','Owner'),(2,'member@example.invalid','Member'),(3,'other@example.invalid','Other')`;await c`insert into native_gateway_members values(1,'admin',true),(2,'user',true)`;for(const m of ['007-platform-foundation','008-customers','022-customer-company-name','010-customer-units','011-service-job-units','023-unit-customer-history'])await c.unsafe(await readFile(new URL('../migrations/'+m+'.sql',import.meta.url),'utf8'));}finally{c.release();}
  const cs=customersStore(db),us=unitsStore(db),save=serviceJobSaveStore(db);
  const a=await cs.save(1,LAKEVIEW_ID,undefined,0,customer),b=await cs.save(1,LAKEVIEW_ID,undefined,0,{...customer,last_name:'Other'});
  const ua=await us.save(1,LAKEVIEW_ID,undefined,0,a.id,unit),ub=await us.save(1,LAKEVIEW_ID,undefined,0,b.id,unit),unassigned=await us.save(1,LAKEVIEW_ID,undefined,0,null,unit);
@@ -39,6 +39,17 @@ test('job unit linking is atomic, owner checked, immutable and preserves histori
  await assert.rejects(us.job(3,LAKEVIEW_ID,created.id),{status:403});
  await assert.rejects(save(2,{id:created.id,version:1,data:job,unitId:ub.id}),{status:409});
  await us.save(1,LAKEVIEW_ID,ua.id,1,b.id,{...unit,status:'archived',model:'Changed current record',vin:'CHANGED'});
+ const owners=await us.customerHistory(2,LAKEVIEW_ID,ua.id);
+ assert.deepEqual(owners.assignments.map(x=>x.customer_id),[b.id,a.id]);
+ assert.equal(owners.assignments[0].ended_at,null);
+ assert.ok(owners.assignments[0].started_at instanceof Date);
+ assert.equal(owners.assignments[1].ended_at.getTime(),owners.assignments[0].started_at.getTime());
+ assert.deepEqual(owners.observations.map(x=>[x.customer_id,x.first_order,x.last_order,x.order_count]),
+  [[a.id,job.serviceDate,job.serviceDate,1]]);
+ assert.equal((await cs.job(2,LAKEVIEW_ID,created.id)).customer.id,a.id);
+ assert.equal((await us.job(2,LAKEVIEW_ID,created.id)).unit.id,ua.id);
+ await assert.rejects(us.customerHistory(3,LAKEVIEW_ID,ua.id),{status:403});
+ await assert.rejects(us.customerHistory(2,LAKEVIEW_ID,randomUUID()),{status:404});
  await assert.rejects(us.jobContext(2,LAKEVIEW_ID,ua.id),{status:409});
  await save(2,{id:created.id,version:1,data:{...job,notes:'Manual job edit'}});
  await save(2,{id:created.id,version:2,data:job,unitId:ua.id});
@@ -70,6 +81,9 @@ test('job unit linking is atomic, owner checked, immutable and preserves histori
  assert.equal((await handler(new Request(url))).status,200);assert.equal((await handler(new Request(url.replace('/history','/service-job')+'&jobId='+created.id))).status,200);assert.equal((await handler(new Request(url.replace('/history','/service-job')+'&jobId=invalid'))).status,400);assert.equal((await handler(new Request(url.replace('/history','/job-context').replace(ua.id,ub.id)))).status,200);
  assert.equal((await unitsHandler(us,async()=>{throw Error('no session');})(new Request(url))).status,401);
  await db`update platform_entitlements set status='disabled' where company_id=${LAKEVIEW_ID} and tool_key='service-desk'`;
+ const visibleHistory=await us.customerHistory(2,LAKEVIEW_ID,ua.id);
+ assert.equal(visibleHistory.assignments.length,2);
+ assert.deepEqual(visibleHistory.observations,[]);
  await assert.rejects(us.history(2,LAKEVIEW_ID,ua.id,0),{status:403});await assert.rejects(us.jobContext(2,LAKEVIEW_ID,ub.id),{status:403});await assert.rejects(us.serviceJob(2,LAKEVIEW_ID,ua.id,created.id),{status:403});await assert.rejects(cs.serviceJob(2,LAKEVIEW_ID,a.id,created.id),{status:403});await assert.rejects(cs.jobContext(2,LAKEVIEW_ID,b.id),{status:403});
  await db`update platform_entitlements set status='enabled' where company_id=${LAKEVIEW_ID} and tool_key='service-desk'`;
  await db`update platform_entitlements set status='disabled' where company_id=${LAKEVIEW_ID} and tool_key='customers'`;
